@@ -1,0 +1,16 @@
+{% load static %}
+<div class="my_table">
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                {% block table_head %}
+                {% endblock table_head %}
+            </tr>
+        </thead>
+
+        <tbody>
+            {% block table_content %}
+            {% endblock table_content %}
+        </tbody>
+    </table>
+</div>
