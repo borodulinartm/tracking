@@ -13,6 +13,8 @@ class Project(models.Model):
     project_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=50, default="hello_world")
     description = models.TextField(default='description of the project')
+    # This field needs to add by default
+    date_create = models.DateField(default=django.utils.timezone.now(), blank=True)
 
     def __str__(self):
         return str(self.project_id)

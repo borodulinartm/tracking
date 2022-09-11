@@ -20,8 +20,6 @@ from tracking_dev.views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    # Главная страница (может быть изменена)
-    path('', index),
     # Страница - картотека проектов
     path('main_page/projects', get_list_projects, name="projects"),
     path('main_page/projects/<int:project_id>', project_description, name="project_description")

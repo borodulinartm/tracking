@@ -9,7 +9,9 @@ from .models import *
 
 # This view provides a main page.
 def index(request):
-    return render(request, 'include/main_page.html')
+    return render(request, 'include/main_page.html', {
+        'show_list_group': 1
+    })
 
 
 # This view provides a list of the projects (displayed by the table)
@@ -18,12 +20,11 @@ def get_list_projects(request):
         raw_query="SELECT * FROM tracking_dev_project"
     )
 
-    head = ["Номер", "Название", "Описание"]
-
     return render(request, 'include/content/project_list.html', {
         'title_page': 'Картотека проектов',
-        'head': head,
-        'table': raw_data
+        'table': raw_data,
+        'show_list_group': 1,
+        'data_group': raw_data
     })
 
 
@@ -33,9 +34,15 @@ def project_description(request, project_id):
         raw_query=f"SELECT * FROM tracking_dev_project WHERE project_id = {project_id}"
     )
 
-    head = ["Номер", "Название", "Описание"]
+    data = Project.objects.raw(
+        raw_query=f"SELECT * FROM tracking_dev_project"
+    )
+
+    head = ["Номер", "Название", "Описание", "Дата создания"]
     return render(request, "include/description/project.html", {
         'title_page': 'Сведения о проекте',
         'head': head,
-        'table': raw_data
+        'table': raw_data,
+        'show_list_group': 1,
+        'data_group': data,
     })

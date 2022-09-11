@@ -24,6 +24,11 @@
                 <span class="fw-bolder text_button">Описание:</span>
                 <span class="fw-normal text">{{ content_list.description }}</span>
             </div>
+
+            <div class="position_block">
+                <span class="fw-bolder text_button">Дата создания:</span>
+                <span class="fw-normal text">{{ content_list.date_create }}</span>
+            </div>
         {% endfor %}
 
         <a href="#" class="btn btn-primary text_button"> Редактировать</a>
