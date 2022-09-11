@@ -38,7 +38,7 @@ def project_description(request, project_id):
         raw_query=f"SELECT * FROM tracking_dev_project"
     )
 
-    head = ["Номер", "Название", "Описание", "Дата создания"]
+    head = ["Номер", "Код", "Название", "Описание", "Дата создания"]
     return render(request, "include/description/project.html", {
         'title_page': 'Сведения о проекте',
         'head': head,

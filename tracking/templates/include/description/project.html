@@ -12,22 +12,27 @@
         {% for content_list in table %}
             <div class="position_block">
                 <span class="fw-bolder text_button">Номер:</span>
-                <span class="fw-normal text">{{ content_list.project_id }}</span>
+                <span class="fw-normal text_button">{{ content_list.project_id }}</span>
+            </div>
+
+            <div class="position_block">
+                <span class="fw-bolder text_button">Код:</span>
+                <span class="fw-normal text_button">{{ content_list.code }}</span>
             </div>
 
             <div class="position_block">
                 <span class="fw-bolder text_button">Название:</span>
-                <span class="fw-normal text">{{ content_list.name }}</span>
+                <span class="fw-normal text_button">{{ content_list.name }}</span>
             </div>
 
             <div class="position_block">
                 <span class="fw-bolder text_button">Описание:</span>
-                <span class="fw-normal text">{{ content_list.description }}</span>
+                <span class="fw-normal text_button">{{ content_list.description }}</span>
             </div>
 
             <div class="position_block">
                 <span class="fw-bolder text_button">Дата создания:</span>
-                <span class="fw-normal text">{{ content_list.date_create }}</span>
+                <span class="fw-normal text_button">{{ content_list.date_create }}</span>
             </div>
         {% endfor %}
 

@@ -81,3 +81,11 @@ td, th {
 .position_block {
     margin: 15px;
 }
+
+.button_create {
+    margin-top: 15px;
+}
+
+.block_title {
+    margin-bottom: 10px;
+}
