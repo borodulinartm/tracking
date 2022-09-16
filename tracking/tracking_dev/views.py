@@ -10,7 +10,8 @@ from .models import *
 # This view provides a main page.
 def index(request):
     return render(request, 'include/main_page.html', {
-        'show_list_group': 1
+        'title_page': 'Привет, мир',
+        'show_list_group': 0
     })
 
 
@@ -20,11 +21,12 @@ def get_list_projects(request):
         raw_query="SELECT * FROM tracking_dev_project"
     )
 
-    return render(request, 'include/content/project_list.html', {
-        'title_page': 'Картотека проектов',
+    return render(request, 'include/list.html', {
+        'title_page': 'Выберите проект для его просмотра или удаления',
         'table': raw_data,
         'show_list_group': 1,
-        'data_group': raw_data
+        'data_group': raw_data,
+        'what_open': 1
     })
 
 
@@ -45,4 +47,40 @@ def project_description(request, project_id):
         'table': raw_data,
         'show_list_group': 1,
         'data_group': data,
+        'what_open': 1
+    })
+
+
+# This view provides list of the states
+def get_state_list(request):
+    raw_data = State.objects.raw(
+        raw_query="SELECT * FROM tracking_dev_state"
+    )
+
+    return render(request, "include/list.html", {
+        'title_page': "Выберите состояние задачи для его просмотра или удаления",
+        'table': raw_data,
+        'show_list_group': 1,
+        'data_group': raw_data,
+        'what_open': 2
+    })
+
+
+def state_description(request, state_id):
+    raw_data = State.objects.raw(
+        raw_query=f"SELECT * FROM tracking_dev_state WHERE state_id = {state_id}"
+    )
+
+    data = State.objects.raw(
+        raw_query=f"SELECT * FROM tracking_dev_state"
+    )
+
+    head = ["Номер", "Код", "Название", "Описание", "Дата создания"]
+    return render(request, "include/description/state.html", {
+        'title_page': 'Сведения о состоянии задачи',
+        'head': head,
+        'table': raw_data,
+        'show_list_group': 1,
+        'data_group': data,
+        'what_open': 2
     })

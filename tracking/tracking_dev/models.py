@@ -23,3 +23,20 @@ class Project(models.Model):
     class Meta:
         verbose_name = "Project"
         verbose_name_plural = "Project description"
+
+
+# Class—State of the tasks
+class State(models.Model):
+    state_id = models.AutoField(primary_key=True)
+    code = models.CharField(max_length=50, default="default code")
+    date_create = models.DateField(default=django.utils.timezone.now(), blank=True)
+    name = models.CharField(max_length=50, default="hello_world")
+    isClosed = models.BooleanField(default=False)
+    description = models.TextField(default="")
+
+    def __str__(self):
+        return str(self.state_id)
+
+    class Meta:
+        verbose_name = "State"
+        verbose_name_plural = "State description"

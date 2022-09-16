@@ -12,11 +12,17 @@
             {% include 'include/sidebar.html' %}
 
             {% if show_list_group == 1 %}
-                {% include 'include/list_group.html' %}
+                {% if what_open == 1 %}
+                    {% include 'include/content/project_list_group.html' %}
+                {% endif %}
+
+                {% if what_open == 2 %}
+                    {% include 'include/content/state_list_group.html' %}
+                {% endif %}
             {% endif %}
 
             <div class="col py-3">
-{#                {% include 'include/list_group.html' %}#}
+{#                {% include 'include/project_list_group.html' %}#}
                 {% block title %}
                 {% endblock title %}
 

@@ -21,6 +21,9 @@ from tracking_dev.views import *
 urlpatterns = [
     path('admin/', admin.site.urls),
     # Страница - картотека проектов
+    path('main_page', index, name="main_page"),
     path('main_page/projects', get_list_projects, name="projects"),
-    path('main_page/projects/<int:project_id>', project_description, name="project_description")
+    path('main_page/states', get_state_list, name="states"),
+    path('main_page/projects/<int:project_id>', project_description, name="project_description"),
+    path('main_page/states/<int:state_id>', state_description, name="state_description")
 ]
