@@ -1,0 +1,42 @@
+{% extends 'include/base.html' %}
+{% load static %}
+
+{% block title %}
+    <div class="title_block">
+        <h2 class="title">{{ title_page }}</h2>
+    </div>
+{% endblock title %}
+
+{% block content %}
+    <div class="list_button_block">
+        {% for content_list in table %}
+            <div class="position_block">
+                <span class="fw-bolder text_button">Номер:</span>
+                <span class="fw-normal text_button">{{ content_list.priority_id }}</span>
+            </div>
+
+            <div class="position_block">
+                <span class="fw-bolder text_button">Код:</span>
+                <span class="fw-normal text_button">{{ content_list.code }}</span>
+            </div>
+
+            <div class="position_block">
+                <span class="fw-bolder text_button">Название:</span>
+                <span class="fw-normal text_button">{{ content_list.name }}</span>
+            </div>
+
+            <div class="position_block">
+                <span class="fw-bolder text_button">Описание:</span>
+                <span class="fw-normal text_button">{{ content_list.description }}</span>
+            </div>
+
+            <div class="position_block">
+                <span class="fw-bolder text_button">Дата создания:</span>
+                <span class="fw-normal text_button">{{ content_list.date_create }}</span>
+            </div>
+        {% endfor %}
+
+        <a href="#" class="btn btn-primary text_button"> Редактировать</a>
+        <a href="#" class="btn btn-primary text_button"> Удалить</a>
+    </div>
+{% endblock content %}

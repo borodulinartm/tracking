@@ -23,7 +23,6 @@ def get_list_projects(request):
 
     return render(request, 'include/list.html', {
         'title_page': 'Выберите проект для его просмотра или удаления',
-        'table': raw_data,
         'show_list_group': 1,
         'data_group': raw_data,
         'what_open': 1
@@ -59,7 +58,6 @@ def get_state_list(request):
 
     return render(request, "include/list.html", {
         'title_page': "Выберите состояние задачи для его просмотра или удаления",
-        'table': raw_data,
         'show_list_group': 1,
         'data_group': raw_data,
         'what_open': 2
@@ -83,4 +81,76 @@ def state_description(request, state_id):
         'show_list_group': 1,
         'data_group': data,
         'what_open': 2
+    })
+
+
+# This view provides a list of the task priority table
+def get_priority_list(request):
+    raw_data = Priority.objects.raw(
+        raw_query="SELECT * FROM tracking_dev_priority"
+    )
+
+    return render(request, "include/list.html", {
+        'title_page': "Выберите приоритет задачи для его просмотра или удаления",
+        'show_list_group': 1,
+        'data_group': raw_data,
+        'what_open': 3
+    })
+
+
+# This view provides a description of the file
+def priority_description(request, priority_id):
+    raw_data = Priority.objects.raw(
+        raw_query=f"SELECT * FROM tracking_dev_priority WHERE priority_id = {priority_id}"
+    )
+
+    data = Priority.objects.raw(
+        raw_query=f"SELECT * FROM tracking_dev_priority"
+    )
+
+    head = ["Номер", "Код", "Название", "Описание", "Дата создания"]
+    return render(request, "include/description/priority.html", {
+        'title_page': 'Сведение о приоритете задачи',
+        'head': head,
+        'table': raw_data,
+        'show_list_group': 1,
+        'data_group': data,
+        'what_open': 3
+    })
+
+
+# This view provides a list of the types tasks (like new feature, test, task or bug)
+def type_task_list(request):
+    raw_data = TypeTask.objects.raw(
+        raw_query="SELECT * FROM tracking_dev_typetask"
+    )
+
+    return render(request, "include/list.html", {
+        'title_page': 'Выберите тип задачи для его просмотра или удаления',
+        'show_list_group': 1,
+        'data_group': raw_data,
+        'what_open': 4
+    })
+
+
+# This view provides a description of the type task
+def type_task_description(request, type_id):
+    # Select the task by id
+    raw_data = TypeTask.objects.raw(
+        raw_query=f"SELECT * FROM tracking_dev_typetask WHERE type_id = {type_id}"
+    )
+
+    # Select all tasks
+    data = TypeTask.objects.raw(
+        raw_query=f"SELECT * FROM tracking_dev_typetask"
+    )
+
+    head = ["Номер", "Код", "Название", "Описание", "Дата создания"]
+    return render(request, "include/description/type.html", {
+        'title_page': 'Сведения о типе задачи',
+        'head': head,
+        'table': raw_data,
+        'show_list_group': 1,
+        'data_group': data,
+        'what_open': 4
     })

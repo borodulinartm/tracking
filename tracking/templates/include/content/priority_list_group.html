@@ -1,0 +1,24 @@
+{% load static %}
+<div class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 bg-light flex-column d-flex">
+    <div class="list-group d-flex flex-column align-items-center  text-white min-vh-100">
+        <div class="dropdown pb-4 button_create">
+            <a class="btn btn-primary d-flex align-items-center text-white text-decoration-none"
+               href="#" data-bs-toggle="dropdown" aria-expanded="false" id="dropdownUser1">Добавить новые данные</a>
+        </div>
+        <ul class="nav-pills flex-fill mb-sm-auto mb-0 align-items-center align-items-sm-start" id="menu">
+            {% for data in data_group %}
+                <li class="nav-item block_title">
+                    <a href="{% url 'priority_description' priority_id=data.priority_id %}"
+                   class="list-group-item list-group-item-action " aria-current="true">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">{{ data.code|truncatechars:30 }}</h5>
+                        <small>{{ data.date_create }}</small>
+                    </div>
+                    <p class="mb-1">{{ data.description|truncatechars:30 }}</p>
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+        <hr>
+    </div>
+</div>

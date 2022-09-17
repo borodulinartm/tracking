@@ -19,6 +19,15 @@
                 {% if what_open == 2 %}
                     {% include 'include/content/state_list_group.html' %}
                 {% endif %}
+
+                {% if what_open == 3 %}
+                    {% include 'include/content/priority_list_group.html' %}
+                {% endif %}
+
+                {% if what_open == 4 %}
+                    {% include 'include/content/type_list_group.html' %}
+                {% endif %}
+
             {% endif %}
 
             <div class="col py-3">

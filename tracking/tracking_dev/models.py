@@ -40,3 +40,35 @@ class State(models.Model):
     class Meta:
         verbose_name = "State"
         verbose_name_plural = "State description"
+
+
+# Class—Priority of the Tasks
+class Priority(models.Model):
+    priority_id = models.AutoField(primary_key=True)
+    code = models.CharField(max_length=50, default='default code')
+    name = models.CharField(max_length=40, default='default name')
+    description = models.TextField(default="")
+    date_create = models.DateField(default=django.utils.timezone.now(), blank=True)
+
+    def __str__(self):
+        return str(self.priority_id)
+
+    class Meta:
+        verbose_name = "Priority"
+        verbose_name_plural = "Priority description"
+
+
+# Class-type of the tasks (new functionality, task, bug, test)
+class TypeTask(models.Model):
+    type_id = models.AutoField(primary_key=True)
+    code = models.CharField(max_length=50, default='default code')
+    name = models.CharField(max_length=40, default='default name')
+    description = models.TextField(default="")
+    date_create = models.DateField(default=django.utils.timezone.now(), blank=True)
+
+    def __str__(self):
+        return str(self.type_id)
+
+    class Meta:
+        verbose_name = "Type"
+        verbose_name_plural = "Type description"
