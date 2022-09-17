@@ -31,6 +31,9 @@ urlpatterns = [
     path('main_page/priorities/<int:priority_id>', priority_description, name="priority_description"),
 
     path('main_page/types', type_task_list, name="types"),
-    path('main_page/types/<int:type_id>', type_task_description, name="type_description")
+    path('main_page/types/<int:type_id>', type_task_description, name="type_description"),
+
+    path('main_page/employees', employee_list, name="employees"),
+    path('main_page/employees/<int:employee_id>', employee_description, name="employee_description")
 ]
 

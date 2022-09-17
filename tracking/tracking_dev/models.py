@@ -2,7 +2,7 @@ import datetime
 
 import django.utils.timezone
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, AbstractUser
 
 
 # Create your models here.
@@ -72,3 +72,22 @@ class TypeTask(models.Model):
     class Meta:
         verbose_name = "Type"
         verbose_name_plural = "Type description"
+
+
+# This model provides an employee, which extends user
+# I can make the extent of the abstract user, but I don't make it
+# because it is more simple.
+class Employee(models.Model):
+    employee_id = models.AutoField(primary_key=True)
+    post = models.CharField(max_length=50, default="default post")
+    description = models.CharField(max_length=50, default="the description of the post")
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    date_create = models.DateField(default=django.utils.timezone.now(), blank=True)
+
+    def __str__(self):
+        return str(self.employee_id)
+
+    class Meta:
+        verbose_name = "Employee"
+        verbose_name_plural = "Employee description"
+

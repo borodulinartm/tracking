@@ -154,3 +154,41 @@ def type_task_description(request, type_id):
         'data_group': data,
         'what_open': 4
     })
+
+
+# This employee provides an employee list
+def employee_list(request):
+    raw_data = Employee.objects.raw(
+        raw_query="select au.first_name, au.last_name, tde.employee_id, tde.post, tde.description, tde.date_create "
+                  "from tracking_dev_employee tde join auth_user au on au.id = tde.user_id;"
+    )
+
+    return render(request, "include/list.html", {
+        'title_page': 'Выберите сотрудника для его просмотра или удаления',
+        'show_list_group': 1,
+        'data_group': raw_data,
+        'what_open': 5
+    })
+
+
+# This employee provides a description of the employee
+def employee_description(request, employee_id):
+    raw_data = Employee.objects.raw(
+        raw_query=f"select * from tracking_dev_employee tde join auth_user au on au.id = tde.user_id "
+                  f"where employee_id = {employee_id};"
+    )
+
+    data = Employee.objects.raw(
+        raw_query="select au.first_name, au.last_name, tde.employee_id, tde.post, tde.description, tde.date_create "
+                  "from tracking_dev_employee tde join auth_user au on au.id = tde.user_id;"
+    )
+
+    head = ["Номер", "Должность", "Описание", "Дата"]
+    return render(request, "include/description/employee.html", {
+        'title_page': 'Сведения о сотруднике',
+        'head': head,
+        'table': raw_data,
+        'show_list_group': 1,
+        'data_group': data,
+        'what_open': 5
+    })
