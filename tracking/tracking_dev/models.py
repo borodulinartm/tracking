@@ -80,7 +80,7 @@ class TypeTask(models.Model):
 class Employee(models.Model):
     employee_id = models.AutoField(primary_key=True)
     post = models.CharField(max_length=50, default="default post")
-    description = models.CharField(max_length=50, default="the description of the post")
+    description = models.TextField(default="the description of the post")
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     date_create = models.DateField(default=django.utils.timezone.now(), blank=True)
 
@@ -91,3 +91,28 @@ class Employee(models.Model):
         verbose_name = "Employee"
         verbose_name_plural = "Employee description"
 
+
+# This model provides an information about task
+class Task(models.Model):
+    task_id = models.AutoField(primary_key=True)
+    code = models.CharField(max_length=50, default="default code")
+    name = models.CharField(max_length=50, default="default name")
+    description = models.TextField(default="description of the task", blank=True)
+    responsible = models.OneToOneField('Employee', on_delete=models.CASCADE, related_name="r")  # This is a
+    # person who must work
+    initiator = models.OneToOneField('Employee', on_delete=models.CASCADE, related_name="rr")  # A person, who
+    # assign the responsible
+    state = models.OneToOneField(State, on_delete=models.CASCADE, related_name="rrr")
+    priority = models.OneToOneField(Priority, on_delete=models.CASCADE, related_name="rrrr")
+    type = models.OneToOneField(TypeTask, on_delete=models.CASCADE, related_name="rrrrr")
+    project = models.OneToOneField(Project, on_delete=models.CASCADE, related_name="rrrrrr")
+    date_create = models.DateField(default=django.utils.timezone.now(), blank=True)  # This date you cannot change
+    date_change = models.DateField(default=django.utils.timezone.now(), blank=True)  # This date you can change
+    date_deadline = models.DateField(default=django.utils.timezone.now(), blank=True)
+
+    def __str__(self):
+        return str(self.task_id)
+
+    class Meta:
+        verbose_name = "Task"
+        verbose_name_plural = "Task description"

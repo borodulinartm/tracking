@@ -192,3 +192,46 @@ def employee_description(request, employee_id):
         'data_group': data,
         'what_open': 5
     })
+
+
+# This view provides a list of the tasks
+def task_list(request):
+    raw_data = Task.objects.raw(
+        raw_query="SELECT * FROM tracking_dev_task"
+    )
+
+    return render(request, "include/list.html", {
+        'title_page': "Выберите задачу для его просмотра или удаления",
+        'show_list_group': 1,
+        'data_group': raw_data,
+        'what_open': 6
+    })
+
+
+def task_description(request, task_id):
+    raw_data = Task.objects.raw(
+        raw_query=f"select tdt.task_id, tdt.code, tdt.name, tdt.description, au.first_name  as init_name,"
+                  f"au.last_name as init_surname, au2.last_name as resp_surname,"
+                    f"au2.first_name  as resp_name, tds.name as state_name, tdp.name as project_name, "
+                    f"tdp2.name as priority_name, tdt2.name as type_task_name from tracking_dev_task tdt  "
+                    f"join tracking_dev_employee tde on tde.employee_id = tdt.initiator_id join tracking_dev_state tds "
+                    f"on tds.state_id = tdt.state_id join tracking_dev_project tdp on tdp.project_id = tdt.project_id "
+                    f"join tracking_dev_priority tdp2 on tdp2.priority_id = tdt.priority_id join tracking_dev_employee "
+                    f"tde2 on tde2.employee_id = tdt.responsible_id join tracking_dev_typetask tdt2 "
+                    f"on tdt2.type_id = tdt.type_id join auth_user au on au.id = tde.user_id "
+                    f"join auth_user au2 on au2.id = tde2.user_id WHERE tdt.task_id = {task_id};"
+    )
+
+    data = Task.objects.raw(
+        raw_query=f"SELECT * FROM tracking_dev_task"
+    )
+
+    head = ["ID", "Код", "Название", "Описание", "Инициатор", "Ответственный", "Состояние", "Проект", "Приоритет", "Тип"]
+    return render(request, "include/description/task.html", {
+        'title_page': 'Сведения о задаче',
+        'head': head,
+        'table': raw_data,
+        'show_list_group': 1,
+        'data_group': data,
+        'what_open': 6
+    })
