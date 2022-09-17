@@ -34,6 +34,28 @@
                 <span class="fw-bolder text_button">Дата создания:</span>
                 <span class="fw-normal text_button">{{ content_list.date_create }}</span>
             </div>
+
+            <div class="position_block">
+                <span class="fw-bolder text_button">Участники движа:</span>
+                {% for participant in participants %}
+                    <a class="align-items-center text-primary text_button text-decoration-none dropdown-toggle"
+                       href="#" id="dropdown_menu_1" data-bs-toggle="dropdown">
+                        <span class="d-none d-sm-inline mx-1">
+                            {{ participant.first_name }} {{ participant.last_name }}
+                        </span>
+                    </a>
+
+                    <div class="dropdown-menu dropdown-menu-end text-small shadow rounded-10" aria-labelledby="dropdown_menu_1">
+                        <p class="fw-bolder text_button position_block dropdown-item-text">
+                            ФИО: {{ participant.first_name }} {{ participant.last_name }}
+                        </p>
+                        <p class="fw-normal dropdown-item-text text_button">Должность: {{ participant.post }}</p>
+                        <p class="fw-normal dropdown-item-text text_button">Почта: {{ participant.email }}</p>
+                        <a class="btn btn-primary position_block"
+                           href="{% url 'employee_description' employee_id=participant.employee_id %}">Подробнее</a>
+                    </div>
+                {% endfor %}
+            </div>
         {% endfor %}
 
         <a href="#" class="btn btn-primary text_button"> Редактировать</a>

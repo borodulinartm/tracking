@@ -39,6 +39,14 @@ def project_description(request, project_id):
         raw_query=f"SELECT * FROM tracking_dev_project"
     )
 
+    participants = Project.objects.raw(
+        raw_query=f"select au.first_name, au.last_name, tde.post,  tdep.project_id, tdep.employee_id , au.email "
+                  f"from tracking_dev_employee_projects tdep "
+                  f"join tracking_dev_employee tde on tde.employee_id = tdep.employee_id "
+                  f"join auth_user au on au.id = tde.user_id "
+                  f"where project_id = {project_id};"
+    )
+
     head = ["Номер", "Код", "Название", "Описание", "Дата создания"]
     return render(request, "include/description/project.html", {
         'title_page': 'Сведения о проекте',
@@ -46,6 +54,7 @@ def project_description(request, project_id):
         'table': raw_data,
         'show_list_group': 1,
         'data_group': data,
+        'participants': participants,
         'what_open': 1
     })
 
@@ -135,7 +144,7 @@ def type_task_list(request):
 
 # This view provides a description of the type task
 def type_task_description(request, type_id):
-    # Select the task by id
+    # Select the task by ID
     raw_data = TypeTask.objects.raw(
         raw_query=f"SELECT * FROM tracking_dev_typetask WHERE type_id = {type_id}"
     )

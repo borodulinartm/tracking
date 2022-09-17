@@ -84,6 +84,9 @@ class Employee(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     date_create = models.DateField(default=django.utils.timezone.now(), blank=True)
 
+    # Add Many-to-many relationship
+    projects = models.ManyToManyField(Project, related_name="employee_projects")
+
     def __str__(self):
         return str(self.employee_id)
 
