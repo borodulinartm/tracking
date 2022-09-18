@@ -9,7 +9,7 @@
             {% for data in data_group %}
                 <li class="nav-item block_title">
                     <a href="{% url 'employee_description' employee_id=data.employee_id %}"
-                   class="list-group-item list-group-item-action " aria-current="true">
+                   class="list-group-item list-group-item-action" aria-current="true">
                     <div class="d-flex w-100 justify-content-between">
                         <h5 class="mb-1">{{ data.first_name|truncatechars:20 }} {{ data.last_name|truncatechars:10 }}</h5>
                         <small>{{ data.date_create }}</small>
