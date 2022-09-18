@@ -3,6 +3,7 @@ from django.utils.timezone import now
 from django.contrib import auth, messages
 from django.http import HttpResponseNotFound, HttpResponseForbidden
 from django.shortcuts import render, redirect, reverse, get_object_or_404
+from django.db import connection
 
 from .models import *
 
@@ -47,12 +48,17 @@ def project_description(request, project_id):
                   f"where project_id = {project_id} and tdep.is_activate=True;"
     )
 
+    count_tasks = Task.objects.raw(
+        raw_query=f"select * from tracking_dev_task tdt where tdt.project_id = {project_id} and is_activate=True"
+    )
+
     head = ["Номер", "Код", "Название", "Описание", "Дата создания"]
     return render(request, "include/description/project.html", {
         'title_page': 'Сведения о проекте',
         'head': head,
         'table': raw_data,
         'show_list_group': 1,
+        'count_tasks': len(list(count_tasks)),
         'data_group': data,
         'participants': participants,
         'what_open': 1
@@ -284,3 +290,68 @@ def type_remove(request, type_id):
     # TODO Add the authorize condition
     TypeTask.objects.filter(type_id=type_id).update(is_activate=False)
     return redirect(reverse('types'))
+
+
+# This view provides a list of the collaborators for current project.
+def get_list_collobarators_to_project(request, project_id):
+    participants = Project.objects.raw(
+        raw_query=f"select au.first_name, au.last_name, tde.post,  tdep.project_id, tdep.employee_id , au.email "
+                  f"from tracking_dev_employee_projects tdep "
+                  f"join tracking_dev_employee tde on tde.employee_id = tdep.employee_id "
+                  f"join auth_user au on au.id = tde.user_id "
+                  f"where project_id = {project_id} and tdep.is_activate=True;"
+    )
+
+    data = Project.objects.raw(
+        raw_query=f"SELECT * FROM tracking_dev_project where is_activate=True"
+    )
+
+    head = ["Номер", "Код", "Название", "Описание", "Дата создания"]
+    return render(request, "include/description/collobarators.html", {
+        'title_page': 'Участники проекта',
+        'head': head,
+        'table': participants,
+        'show_list_group': 1,
+        'current_project': project_id,
+        'data_group': data,
+        'what_open': 1
+    })
+
+
+# This view allows admin remove the user from current project
+def remove_user_from_current_project(request, project_id, employee_id):
+    # Because the query contains UPDATE, we need use connection.cursor() instead of objects.raw
+    with connection.cursor() as cursor:
+        cursor.execute(f"update tracking_dev_employee_projects set "
+                       f"is_activate = false where employee_id = {employee_id} and project_id = {project_id}")
+
+    # Redirect to the website with projects
+    return redirect(reverse('projects'))
+
+
+# This view allows admin remove all users from this project
+def remove_all_users_from_current_project(request, project_id):
+    with connection.cursor() as cursor:
+        cursor.execute(f"update tracking_dev_employee_projects set "
+                       f"is_activate = false where project_id = {project_id}")
+
+    # Redirect to the website with project
+    return redirect(reverse('projects'))
+
+
+# This view provides list of the task by current project
+def get_all_tasks_by_project(request, project_id):
+    raw_data = Task.objects.raw(
+        raw_query=f"select * from tracking_dev_task tdt where tdt.project_id = {project_id} and is_activate=True;"
+    )
+
+    project_name = Project.objects.raw(
+        raw_query=f"SELECT * FROM tracking_dev_project WHERE project_id={project_id}"
+    )
+
+    return render(request, "include/list.html", {
+        'title_page': f"Выберите задачи, относящиеся к проекту '{list(project_name)[0].name}'",
+        'show_list_group': 1,
+        'data_group': raw_data,
+        'what_open': 6
+    })

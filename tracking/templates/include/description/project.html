@@ -36,33 +36,41 @@
             </div>
 
             <div class="position_block">
-                <span class="fw-bolder text_button">Участники движа:</span>
-                {% for participant in participants %}
-                    <a class="align-items-center text-primary text_button text-decoration-none dropdown-toggle"
-                       href="#" id="dropdown_menu_1" data-bs-toggle="dropdown">
-                        <span class="d-none d-sm-inline mx-1">
-                            {{ participant.first_name }} {{ participant.last_name }}
-                        </span>
-                    </a>
+                <a class="align-items-center text-dark fw-bolder text_button text-decoration-none dropdown-toggle"
+                   data-bs-toggle="collapse" href="#collapseExample" role="button"
+                   aria-expanded="false" aria-controls="collapseExample">
+                    Участники движа
+                </a>
 
-                    <div class="dropdown-menu dropdown-menu-end text-small shadow rounded-10"
-                         aria-labelledby="dropdown_menu_1">
-                        <p class="fw-bolder text_button position_block dropdown-item-text">
-                            ФИО: {{ participant.first_name }} {{ participant.last_name }}
-                        </p>
-                        <p class="fw-normal dropdown-item-text text_button">Должность: {{ participant.post }}</p>
-                        <p class="fw-normal dropdown-item-text text_button">Почта: {{ participant.email }}</p>
-                        <a class="btn btn-primary position_block"
-                           href="{% url 'employee_description' employee_id=participant.employee_id %}">
-                            Подробнее
+                {% for participant in participants %}
+                    <div class="collapse rounded mt-2" id="collapseExample">
+                        <a href="{% url 'employee_description' employee_id=participant.employee_id %}"
+                           class="list-group-item list-group-item-action" aria-current="true">
+                            <div>
+                                <p class="text_button position_block dropdown-item-text">
+                                    <span class="fw-bolder">{{ participant.first_name }} {{ participant.last_name }}
+                                    </span>,
+                                    <span class="fw-normal">{{ participant.post }}</span>
+                                </p>
+                            </div>
                         </a>
                     </div>
                 {% endfor %}
             </div>
 
             <a href="#" class="btn btn-primary text_button"> Редактировать</a>
-            <a type="button" data-bs-toggle="modal" data-bs-target="#exampleModal" href="#"
-               class="btn btn-danger text_button"> Удалить</a>
+            <a href="{% url 'collabs' project_id=content_list.project_id %}"
+               class="btn btn-primary text_button">Участники</a>
+
+            {% if count_tasks == 0 %}
+                <a type="button" data-bs-toggle="modal" data-bs-target="#exampleModal" href="#"
+                   class="btn btn-danger text_button"> Удалить
+                </a>
+            {% else %}
+                <a type="button" data-bs-toggle="modal" data-bs-target="#errorModal" href="#"
+                   class="btn btn-danger text_button"> Удалить
+                </a>
+            {% endif %}
 
             <!-- Modal -->
             <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
@@ -78,6 +86,29 @@
                             <a type="button" class="btn btn-primary" data-bs-dismiss="modal">Отмена</a>
                             <a type="button" href="{% url 'project_delete' project_id=content_list.project_id %}"
                                class="btn btn-danger">Подтвердить удаление</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+                 aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title text-danger" id="exampleModalLabel">Ошибка</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+
+                        <div class="modal-body text_button">К сожалению, проект нельзя удалить так, как
+                            есть не закрытые задачи, относящиеся к этому проекту. Для удаления проекта необходимо
+                            удалить ссылающиеся задачи
+                        </div>
+
+                        <div class="modal-footer">
+                            <a type="button" href="{% url 'tasks_for_project' project_id=content_list.project_id %}"
+                               class="btn btn-primary">К списку задач</a>
+                            <a type="button" class="btn btn-primary" data-bs-dismiss="modal">Ок</a>
                         </div>
                     </div>
                 </div>

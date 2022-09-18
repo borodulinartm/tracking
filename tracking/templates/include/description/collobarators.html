@@ -1,0 +1,112 @@
+{% extends 'include/base.html' %}
+{% load static %}
+
+{% block title %}
+    <div class="title_block">
+        <h2 class="title">{{ title_page }}</h2>
+    </div>
+{% endblock title %}
+
+{% block content %}
+    <style>
+        .bs-example {
+            margin: 20px;
+        }
+    </style>
+
+    <div class="list_button_block">
+        <div class="position_block">
+            <div class="d-flex justify-content-between bs-example">
+                <div>
+                    <a href="#" class="btn btn-primary text_button">Добавить участников</a>
+                    <a href="{% url 'delete_all_employee_from_project' project_id=current_project %}"
+                       class="btn btn-danger text_button" data-bs-toggle="modal" data-bs-target="#exampleModal2">
+                        Удалить всех
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal -->
+        <div class="modal fade" id="exampleModal2" tabindex="-1" aria-labelledby="exampleModalLabel2"
+             aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel2">Внимание</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Close">
+                        </button>
+                    </div>
+                    <div class="modal-body text_button">
+                        Вы действительно хотите всех сотрудников?
+                    </div>
+                    <div class="modal-footer">
+                        <a type="button" class="btn btn-primary" data-bs-dismiss="modal">Отмена</a>
+                        <a type="button"
+                           href="{% url 'delete_all_employee_from_project' project_id=current_project %}"
+                           class="btn btn-danger">Подтвердить удаление</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% for content_list in table %}
+            <div class="position_block">
+                <div class="d-flex justify-content-between bs-example">
+                    <div class="fw-bolder text_button">
+                        <a class="align-items-center text-dark text_button text-decoration-none dropdown-toggle" href="#"
+                           id="dropdown_menu_1" data-bs-toggle="dropdown">
+                            <span class="d-none d-sm-inline mx-1">
+                                {{ content_list.first_name }} {{ content_list.last_name }}
+                            </span>
+                        </a>
+
+                        <div class="dropdown-menu dropdown-menu-end text-small shadow rounded-10"
+                             aria-labelledby="dropdown_menu_1">
+                            <p class="fw-bolder text_button position_block dropdown-item-text">
+                                ФИО: {{ content_list.first_name }} {{ content_list.last_name }}
+                            </p>
+                            <p class="fw-normal dropdown-item-text text_button">
+                                Должность: {{ content_list.post }}</p>
+                            <p class="fw-normal dropdown-item-text text_button">Почта: {{ content_list.email }}</p>
+                            <a class="btn btn-primary position_block"
+                               href="{% url 'employee_description' employee_id=content_list.employee_id %}">
+                                Подробнее
+                            </a>
+                        </div>
+                    </div>
+
+                    <div>
+                        <a type="button" data-bs-toggle="modal" data-bs-target="#exampleModal" href="#"
+                           class="btn btn-outline-danger text_button">Удалить</a>
+                    </div>
+
+                    <!-- Modal -->
+                    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+                         aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="exampleModalLabel">Внимание</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body text_button">
+                                    Вы действительно хотите удалить сотрудника "{{ content_list.first_name }}
+                                    {{ content_list.last_name }}"?
+                                </div>
+                                <div class="modal-footer">
+                                    <a type="button" class="btn btn-primary" data-bs-dismiss="modal">Отмена</a>
+                                    <a type="button"
+                                       href="{% url 'delete_employee_from_project' project_id=content_list.project_id employee_id=content_list.employee_id %}"
+                                       class="btn btn-danger">Подтвердить удаление</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock content %}
