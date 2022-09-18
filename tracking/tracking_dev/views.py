@@ -18,7 +18,7 @@ def index(request):
 # This view provides a list of the projects (displayed by the table)
 def get_list_projects(request):
     raw_data = Project.objects.raw(
-        raw_query="SELECT * FROM tracking_dev_project"
+        raw_query="SELECT * FROM tracking_dev_project WHERE is_activate=True"
     )
 
     return render(request, 'include/list.html', {
@@ -32,11 +32,11 @@ def get_list_projects(request):
 # This is the view, which provide description about this project
 def project_description(request, project_id):
     raw_data = Project.objects.raw(
-        raw_query=f"SELECT * FROM tracking_dev_project WHERE project_id = {project_id}"
+        raw_query=f"SELECT * FROM tracking_dev_project WHERE project_id = {project_id} and is_activate=True"
     )
 
     data = Project.objects.raw(
-        raw_query=f"SELECT * FROM tracking_dev_project"
+        raw_query=f"SELECT * FROM tracking_dev_project where is_activate=True"
     )
 
     participants = Project.objects.raw(
@@ -44,7 +44,7 @@ def project_description(request, project_id):
                   f"from tracking_dev_employee_projects tdep "
                   f"join tracking_dev_employee tde on tde.employee_id = tdep.employee_id "
                   f"join auth_user au on au.id = tde.user_id "
-                  f"where project_id = {project_id};"
+                  f"where project_id = {project_id} and tdep.is_activate=True;"
     )
 
     head = ["Номер", "Код", "Название", "Описание", "Дата создания"]
@@ -62,7 +62,7 @@ def project_description(request, project_id):
 # This view provides list of the states
 def get_state_list(request):
     raw_data = State.objects.raw(
-        raw_query="SELECT * FROM tracking_dev_state"
+        raw_query="SELECT * FROM tracking_dev_state where is_activate=True"
     )
 
     return render(request, "include/list.html", {
@@ -75,11 +75,11 @@ def get_state_list(request):
 
 def state_description(request, state_id):
     raw_data = State.objects.raw(
-        raw_query=f"SELECT * FROM tracking_dev_state WHERE state_id = {state_id}"
+        raw_query=f"SELECT * FROM tracking_dev_state WHERE state_id = {state_id} and is_activate=True"
     )
 
     data = State.objects.raw(
-        raw_query=f"SELECT * FROM tracking_dev_state"
+        raw_query=f"SELECT * FROM tracking_dev_state where is_activate=True"
     )
 
     head = ["Номер", "Код", "Название", "Описание", "Дата создания"]
@@ -96,7 +96,7 @@ def state_description(request, state_id):
 # This view provides a list of the task priority table
 def get_priority_list(request):
     raw_data = Priority.objects.raw(
-        raw_query="SELECT * FROM tracking_dev_priority"
+        raw_query="SELECT * FROM tracking_dev_priority where is_activate=True"
     )
 
     return render(request, "include/list.html", {
@@ -110,11 +110,11 @@ def get_priority_list(request):
 # This view provides a description of the file
 def priority_description(request, priority_id):
     raw_data = Priority.objects.raw(
-        raw_query=f"SELECT * FROM tracking_dev_priority WHERE priority_id = {priority_id}"
+        raw_query=f"SELECT * FROM tracking_dev_priority WHERE priority_id = {priority_id} and is_activate=True"
     )
 
     data = Priority.objects.raw(
-        raw_query=f"SELECT * FROM tracking_dev_priority"
+        raw_query=f"SELECT * FROM tracking_dev_priority where is_activate=True"
     )
 
     head = ["Номер", "Код", "Название", "Описание", "Дата создания"]
@@ -131,7 +131,7 @@ def priority_description(request, priority_id):
 # This view provides a list of the types tasks (like new feature, test, task or bug)
 def type_task_list(request):
     raw_data = TypeTask.objects.raw(
-        raw_query="SELECT * FROM tracking_dev_typetask"
+        raw_query="SELECT * FROM tracking_dev_typetask where is_activate=True"
     )
 
     return render(request, "include/list.html", {
@@ -146,7 +146,7 @@ def type_task_list(request):
 def type_task_description(request, type_id):
     # Select the task by ID
     raw_data = TypeTask.objects.raw(
-        raw_query=f"SELECT * FROM tracking_dev_typetask WHERE type_id = {type_id}"
+        raw_query=f"SELECT * FROM tracking_dev_typetask WHERE type_id = {type_id} and is_activate=True"
     )
 
     # Select all tasks
@@ -169,7 +169,7 @@ def type_task_description(request, type_id):
 def employee_list(request):
     raw_data = Employee.objects.raw(
         raw_query="select au.first_name, au.last_name, tde.employee_id, tde.post, tde.description, tde.date_create "
-                  "from tracking_dev_employee tde join auth_user au on au.id = tde.user_id;"
+                  "from tracking_dev_employee tde join auth_user au on au.id = tde.user_id where tde.is_activate=True;"
     )
 
     return render(request, "include/list.html", {
@@ -184,12 +184,12 @@ def employee_list(request):
 def employee_description(request, employee_id):
     raw_data = Employee.objects.raw(
         raw_query=f"select * from tracking_dev_employee tde join auth_user au on au.id = tde.user_id "
-                  f"where employee_id = {employee_id};"
+                  f"where employee_id = {employee_id} and is_activate=True;"
     )
 
     data = Employee.objects.raw(
         raw_query="select au.first_name, au.last_name, tde.employee_id, tde.post, tde.description, tde.date_create "
-                  "from tracking_dev_employee tde join auth_user au on au.id = tde.user_id;"
+                  "from tracking_dev_employee tde join auth_user au on au.id = tde.user_id where tde.is_activate=True;"
     )
 
     head = ["Номер", "Должность", "Описание", "Дата"]
@@ -206,7 +206,7 @@ def employee_description(request, employee_id):
 # This view provides a list of the tasks
 def task_list(request):
     raw_data = Task.objects.raw(
-        raw_query="SELECT * FROM tracking_dev_task"
+        raw_query="SELECT * FROM tracking_dev_task where is_activate=True"
     )
 
     return render(request, "include/list.html", {
@@ -228,11 +228,11 @@ def task_description(request, task_id):
                     f"join tracking_dev_priority tdp2 on tdp2.priority_id = tdt.priority_id join tracking_dev_employee "
                     f"tde2 on tde2.employee_id = tdt.responsible_id join tracking_dev_typetask tdt2 "
                     f"on tdt2.type_id = tdt.type_id join auth_user au on au.id = tde.user_id "
-                    f"join auth_user au2 on au2.id = tde2.user_id WHERE tdt.task_id = {task_id};"
+                    f"join auth_user au2 on au2.id = tde2.user_id WHERE tdt.task_id = {task_id} and tdt.is_activate=True;"
     )
 
     data = Task.objects.raw(
-        raw_query=f"SELECT * FROM tracking_dev_task"
+        raw_query=f"SELECT * FROM tracking_dev_task where is_activate=True"
     )
 
     head = ["ID", "Код", "Название", "Описание", "Инициатор", "Ответственный", "Состояние", "Проект", "Приоритет", "Тип"]
