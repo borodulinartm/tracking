@@ -45,20 +45,43 @@
                         </span>
                     </a>
 
-                    <div class="dropdown-menu dropdown-menu-end text-small shadow rounded-10" aria-labelledby="dropdown_menu_1">
+                    <div class="dropdown-menu dropdown-menu-end text-small shadow rounded-10"
+                         aria-labelledby="dropdown_menu_1">
                         <p class="fw-bolder text_button position_block dropdown-item-text">
                             ФИО: {{ participant.first_name }} {{ participant.last_name }}
                         </p>
                         <p class="fw-normal dropdown-item-text text_button">Должность: {{ participant.post }}</p>
                         <p class="fw-normal dropdown-item-text text_button">Почта: {{ participant.email }}</p>
                         <a class="btn btn-primary position_block"
-                           href="{% url 'employee_description' employee_id=participant.employee_id %}">Подробнее</a>
+                           href="{% url 'employee_description' employee_id=participant.employee_id %}">
+                            Подробнее
+                        </a>
                     </div>
                 {% endfor %}
             </div>
-        {% endfor %}
 
-        <a href="#" class="btn btn-primary text_button"> Редактировать</a>
-        <a href="#" class="btn btn-primary text_button"> Удалить</a>
+            <a href="#" class="btn btn-primary text_button"> Редактировать</a>
+            <a type="button" data-bs-toggle="modal" data-bs-target="#exampleModal" href="#"
+               class="btn btn-danger text_button"> Удалить</a>
+
+            <!-- Modal -->
+            <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+                 aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Внимание</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body text_button">Вы действительно хотите удалить проект?</div>
+                        <div class="modal-footer">
+                            <a type="button" class="btn btn-primary" data-bs-dismiss="modal">Отмена</a>
+                            <a type="button" href="{% url 'project_delete' project_id=content_list.project_id %}"
+                               class="btn btn-danger">Подтвердить удаление</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
     </div>
 {% endblock content %}

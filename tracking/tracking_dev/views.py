@@ -244,3 +244,43 @@ def task_description(request, task_id):
         'data_group': data,
         'what_open': 6
     })
+
+
+# This view allows you to remove project. But it cannot remove if the tasks linked to project exists.
+def project_remove(request, project_id):
+    # TODO: Add the authorize condition
+
+    # raw_query = Task.objects.raw(
+    #     raw_query=f"select * from tracking_dev_task tdt where tdt.project_id = {project_id};"
+    # )
+
+    Project.objects.filter(project_id=project_id).update(is_activate=False)
+    return redirect(reverse('projects'))
+
+
+# This view allows you remove the task
+def task_remove(request, task_id):
+    # TODO: Add the authorize condition
+    Task.objects.filter(task_id=task_id).update(is_activate=False)
+    return redirect(reverse('tasks'))
+
+
+# This view allows you remove the priority
+def priority_remove(request, priority_id):
+    # TODO Add the authorize condition
+    Priority.objects.filter(priority_id=priority_id).update(is_activate=False)
+    return redirect(reverse('priorities'))
+
+
+# This view allows you to remove the employee
+def employee_remove(request, employee_id):
+    # TODO Add the authorize condition
+    Employee.objects.filter(employee_id=employee_id).update(is_activate=False)
+    return redirect(reverse('employees'))
+
+
+# This view allows you to remove the type of task
+def type_remove(request, type_id):
+    # TODO Add the authorize condition
+    TypeTask.objects.filter(type_id=type_id).update(is_activate=False)
+    return redirect(reverse('types'))

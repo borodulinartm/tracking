@@ -21,22 +21,28 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     # Страница - картотека проектов
     path('main_page', index, name="main_page"),
+
     path('main_page/projects', get_list_projects, name="projects"),
     path('main_page/projects/<int:project_id>', project_description, name="project_description"),
+    path('main_page/projects/<int:project_id>/delete', project_remove, name="project_delete"),
 
     path('main_page/states', get_state_list, name="states"),
     path('main_page/states/<int:state_id>', state_description, name="state_description"),
 
     path('main_page/priorities', get_priority_list, name="priorities"),
     path('main_page/priorities/<int:priority_id>', priority_description, name="priority_description"),
+    path('main_page/priorities/<int:priority_id>/delete', priority_remove, name="priority_delete"),
 
     path('main_page/types', type_task_list, name="types"),
     path('main_page/types/<int:type_id>', type_task_description, name="type_description"),
+    path('main_page/types<int:type_id>/delete', type_remove, name="type_remove"),
 
     path('main_page/employees', employee_list, name="employees"),
     path('main_page/employees/<int:employee_id>', employee_description, name="employee_description"),
+    path('main_page/employees<int:employee_id>/delete', employee_remove, name="employee_delete"),
 
     path('main_page/tasks', task_list, name="tasks"),
-    path('main_page/tasks/<int:task_id>', task_description, name="task_description")
+    path('main_page/tasks/<int:task_id>', task_description, name="task_description"),
+    path('main_page/tasks/<int:task_id>/delete', task_remove, name="task_delete")
 ]
 
