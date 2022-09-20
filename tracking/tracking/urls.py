@@ -38,10 +38,12 @@ urlpatterns = [
     path('main_page/priorities', get_priority_list, name="priorities"),
     path('main_page/priorities/<int:priority_id>', priority_description, name="priority_description"),
     path('main_page/priorities/<int:priority_id>/delete', priority_remove, name="priority_delete"),
+    path('main_page/priorities/<int:priority_id>/tasks', get_all_tasks_by_priority, name="tasks_for_priority"),
 
     path('main_page/types', type_task_list, name="types"),
     path('main_page/types/<int:type_id>', type_task_description, name="type_description"),
     path('main_page/types<int:type_id>/delete', type_remove, name="type_remove"),
+    path('main_page/types<int:type_id>/tasks', get_all_tasks_by_type, name="tasks_for_type"),
 
     path('main_page/employees', employee_list, name="employees"),
     path('main_page/employees/<int:employee_id>', employee_description, name="employee_description"),

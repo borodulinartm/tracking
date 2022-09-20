@@ -123,12 +123,17 @@ def priority_description(request, priority_id):
         raw_query=f"SELECT * FROM tracking_dev_priority where is_activate=True"
     )
 
+    count_tasks = Task.objects.raw(
+        raw_query=f"select * from tracking_dev_task tdt where tdt.priority_id = {priority_id} and is_activate=True"
+    )
+
     head = ["Номер", "Код", "Название", "Описание", "Дата создания"]
     return render(request, "include/description/priority.html", {
         'title_page': 'Сведение о приоритете задачи',
         'head': head,
         'table': raw_data,
         'show_list_group': 1,
+        'count_tasks': len(list(count_tasks)),
         'data_group': data,
         'what_open': 3
     })
@@ -160,12 +165,17 @@ def type_task_description(request, type_id):
         raw_query=f"SELECT * FROM tracking_dev_typetask"
     )
 
+    count_tasks = Task.objects.raw(
+        raw_query=f"select * from tracking_dev_task tdt where tdt.type_id = {type_id} and is_activate=True"
+    )
+
     head = ["Номер", "Код", "Название", "Описание", "Дата создания"]
     return render(request, "include/description/type.html", {
         'title_page': 'Сведения о типе задачи',
         'head': head,
         'table': raw_data,
         'show_list_group': 1,
+        'count_tasks': len(list(count_tasks)),
         'data_group': data,
         'what_open': 4
     })
@@ -351,6 +361,42 @@ def get_all_tasks_by_project(request, project_id):
 
     return render(request, "include/list.html", {
         'title_page': f"Выберите задачи, относящиеся к проекту '{list(project_name)[0].name}'",
+        'show_list_group': 1,
+        'data_group': raw_data,
+        'what_open': 6
+    })
+
+
+# This view provides list of the task by current priority
+def get_all_tasks_by_priority(request, priority_id):
+    raw_data = Task.objects.raw(
+        raw_query=f"select * from tracking_dev_task tdt where tdt.priority_id = {priority_id} and is_activate=True;"
+    )
+
+    priority_name = Priority.objects.raw(
+        raw_query=f"SELECT * FROM tracking_dev_priority WHERE priority_id={priority_id}"
+    )
+
+    return render(request, "include/list.html", {
+        'title_page': f"Выберите задачи, относящиеся с приоритетом '{list(priority_name)[0].name}'",
+        'show_list_group': 1,
+        'data_group': raw_data,
+        'what_open': 6
+    })
+
+
+# This view provides list of the task by current type
+def get_all_tasks_by_type(request, type_id):
+    raw_data = Task.objects.raw(
+        raw_query=f"select * from tracking_dev_task tdt where tdt.type_id = {type_id} and is_activate=True;"
+    )
+
+    type_name = TypeTask.objects.raw(
+        raw_query=f"SELECT * FROM tracking_dev_typetask WHERE type_id={type_id}"
+    )
+
+    return render(request, "include/list.html", {
+        'title_page': f"Выберите задачи, относящиеся с типом задачи '{list(type_name)[0].name}'",
         'show_list_group': 1,
         'data_group': raw_data,
         'what_open': 6
