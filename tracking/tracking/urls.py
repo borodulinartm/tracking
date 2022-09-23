@@ -31,6 +31,8 @@ urlpatterns = [
     path('main_page/projects/<int:project_id>/collobarators/remove_all', remove_all_users_from_current_project,
          name="delete_all_employee_from_project"),
     path('main_page/projects/<int:project_id>/tasks', get_all_tasks_by_project, name="tasks_for_project"),
+    path('main_page/projects/create', create_project, name="create_project"),
+    path('main_page/projects/<int:project_id>/edit', edit_project, name="edit_project"),
 
     path('main_page/states', get_state_list, name="states"),
     path('main_page/states/<int:state_id>', state_description, name="state_description"),
@@ -39,6 +41,8 @@ urlpatterns = [
     path('main_page/priorities/<int:priority_id>', priority_description, name="priority_description"),
     path('main_page/priorities/<int:priority_id>/delete', priority_remove, name="priority_delete"),
     path('main_page/priorities/<int:priority_id>/tasks', get_all_tasks_by_priority, name="tasks_for_priority"),
+    path('main_page/priorities/create', create_priority, name="create_priority"),
+    path('main_page/priorities<int:priority_id>/edit', edit_priority, name="edit_priority"),
 
     path('main_page/types', type_task_list, name="types"),
     path('main_page/types/<int:type_id>', type_task_description, name="type_description"),

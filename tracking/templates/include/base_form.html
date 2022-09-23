@@ -1,0 +1,25 @@
+{% extends 'include/base.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block title %}
+    <div class="title_block">
+        <h2 class="title">{{ title_page }}</h2>
+    </div>
+{% endblock title %}
+
+{% block content %}
+    <div>
+        <form role="form" action="" method="post">
+            {% csrf_token %}
+            {{ form | crispy }}
+            <button type="submit" class="btn btn-primary mt-3 text_button">{{ text_button }}</button>
+        </form>
+
+        {% for message in messages %}
+            <div class="alert alert-danger" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+{% endblock content %}

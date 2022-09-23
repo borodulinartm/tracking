@@ -6,6 +6,7 @@ from django.shortcuts import render, redirect, reverse, get_object_or_404
 from django.db import connection
 
 from .models import *
+from .forms import *
 
 
 # This view provides a main page.
@@ -400,4 +401,98 @@ def get_all_tasks_by_type(request, type_id):
         'show_list_group': 1,
         'data_group': raw_data,
         'what_open': 6
+    })
+
+
+# This view provides a creation form of the project
+def create_project(request):
+    if request.method == "POST":
+        creation_form = CreateProjectForm(data=request.POST)
+
+        if creation_form.is_valid():
+            creation_form.save()
+            return redirect(reverse('projects'))
+        else:
+            messages.error(request, "Error")
+    else:
+        creation_form = CreateProjectForm()
+
+    data = Project.objects.raw(
+        raw_query=f"SELECT * FROM tracking_dev_project where is_activate=True"
+    )
+
+    return render(request, 'include/base_form.html', {
+        'title_page': 'Форма создания нового проекта',
+        'form': creation_form,
+        'text_button': 'Добавить форму',
+        'show_list_group': 1,
+        'data_group': data,
+        'what_open': 1
+    })
+
+
+# These methods provide edit project
+def edit_project(request, project_id):
+    instance = get_object_or_404(Project, project_id=project_id)
+    form = CreateProjectForm(request.POST or None, instance=instance)
+    if form.is_valid():
+        form.save()
+        return redirect(reverse('projects'))
+
+    data = Project.objects.raw(
+        raw_query=f"SELECT * FROM tracking_dev_project where is_activate=True"
+    )
+
+    return render(request, 'include/base_form.html', {
+        'form': form,
+        'title_page': 'Форма редактироваиня проекта',
+        'text_button': 'Сохранить изменения',
+        'show_list_group': 1,
+        'data_group': data,
+        'what_open': 1
+    })
+
+
+def create_priority(request):
+    if request.method == "POST":
+        creation_form = CreatePriorityForm(data=request.POST)
+
+        if creation_form.is_valid():
+            creation_form.save()
+            return redirect(reverse('priorities'))
+    else:
+        creation_form = CreateProjectForm()
+
+    data = Priority.objects.raw(
+        raw_query=f"SELECT * FROM tracking_dev_priority where is_activate=True"
+    )
+
+    return render(request, 'include/base_form.html', {
+        'title_page': 'Форма создания нового приоритета',
+        'form': creation_form,
+        'text_button': 'Добавить форму',
+        'show_list_group': 1,
+        'data_group': data,
+        'what_open': 3
+    })
+
+
+def edit_priority(request, priority_id):
+    instance = get_object_or_404(Priority, priority_id=priority_id)
+    form = CreatePriorityForm(request.POST or None, instance=instance)
+    if form.is_valid():
+        form.save()
+        return redirect(reverse('priorities'))
+
+    data = Priority.objects.raw(
+        raw_query=f"SELECT * FROM tracking_dev_priority where is_activate=True"
+    )
+
+    return render(request, 'include/base_form.html', {
+        'title_page': 'Форма редактирования приоритета',
+        'form': form,
+        'text_button': 'Применить изменения',
+        'show_list_group': 1,
+        'data_group': data,
+        'what_open': 3
     })
