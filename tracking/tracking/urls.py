@@ -48,6 +48,8 @@ urlpatterns = [
     path('main_page/types/<int:type_id>', type_task_description, name="type_description"),
     path('main_page/types<int:type_id>/delete', type_remove, name="type_remove"),
     path('main_page/types<int:type_id>/tasks', get_all_tasks_by_type, name="tasks_for_type"),
+    path('main_page/types/create', create_type_task, name="create_type_task"),
+    path('main_page/types/<int:type_id>/edit', edit_type_task, name="edit_type_task"),
 
     path('main_page/employees', employee_list, name="employees"),
     path('main_page/employees/<int:employee_id>', employee_description, name="employee_description"),
@@ -55,6 +57,7 @@ urlpatterns = [
 
     path('main_page/tasks', task_list, name="tasks"),
     path('main_page/tasks/<int:task_id>', task_description, name="task_description"),
-    path('main_page/tasks/<int:task_id>/delete', task_remove, name="task_delete")
+    path('main_page/tasks/<int:task_id>/delete', task_remove, name="task_delete"),
+    path('main_page/tasks/create', create_task, name="task_create")
 ]
 

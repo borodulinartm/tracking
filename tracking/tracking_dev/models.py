@@ -14,13 +14,13 @@ class Project(models.Model):
     name = models.CharField(max_length=50, default="hello_world")
     description = models.TextField(default='description of the project')
     # This field needs to add by default
-    date_create = models.DateField(default=django.utils.timezone.now(), blank=True)
+    date_create = models.DateField(auto_now=True, blank=True)
     code = models.CharField(max_length=50, default="default code")
     # This field uses for deleting information from a database
     is_activate = models.BooleanField(default=True)
 
     def __str__(self):
-        return str(self.project_id)
+        return str(self.name)
 
     class Meta:
         verbose_name = "Project"
@@ -38,7 +38,7 @@ class State(models.Model):
     is_activate = models.BooleanField(default=True)
 
     def __str__(self):
-        return str(self.state_id)
+        return str(self.name)
 
     class Meta:
         verbose_name = "State"
@@ -51,11 +51,11 @@ class Priority(models.Model):
     code = models.CharField(max_length=50, default='default code')
     name = models.CharField(max_length=40, default='default name')
     description = models.TextField(default="")
-    date_create = models.DateField(default=django.utils.timezone.now(), blank=True)
+    date_create = models.DateField(blank=True, auto_now=True)
     is_activate = models.BooleanField(default=True)
 
     def __str__(self):
-        return str(self.priority_id)
+        return str(self.name)
 
     class Meta:
         verbose_name = "Priority"
@@ -68,11 +68,11 @@ class TypeTask(models.Model):
     code = models.CharField(max_length=50, default='default code')
     name = models.CharField(max_length=40, default='default name')
     description = models.TextField(default="")
-    date_create = models.DateField(default=django.utils.timezone.now(), blank=True)
+    date_create = models.DateField(blank=True, auto_now=True)
     is_activate = models.BooleanField(default=True)
 
     def __str__(self):
-        return str(self.type_id)
+        return str(self.name)
 
     class Meta:
         verbose_name = "Type"
@@ -93,7 +93,7 @@ class Employee(models.Model):
     is_activate = models.BooleanField(default=True)
 
     def __str__(self):
-        return str(self.employee_id)
+        return str(self.user.first_name) + " " + str(self.user.last_name)
 
     class Meta:
         verbose_name = "Employee"
@@ -106,21 +106,21 @@ class Task(models.Model):
     code = models.CharField(max_length=50, default="default code")
     name = models.CharField(max_length=50, default="default name")
     description = models.TextField(default="description of the task", blank=True)
-    responsible = models.OneToOneField('Employee', on_delete=models.CASCADE, related_name="r")  # This is a
+    responsible = models.ForeignKey('Employee', on_delete=models.CASCADE, related_name="r")  # This is a
     # person who must work
-    initiator = models.OneToOneField('Employee', on_delete=models.CASCADE, related_name="rr")  # A person, who
+    initiator = models.ForeignKey('Employee', on_delete=models.CASCADE, related_name="rr")  # A person, who
     # assign the responsible
-    state = models.OneToOneField(State, on_delete=models.CASCADE, related_name="rrr")
-    priority = models.OneToOneField(Priority, on_delete=models.CASCADE, related_name="rrrr")
-    type = models.OneToOneField(TypeTask, on_delete=models.CASCADE, related_name="rrrrr")
-    project = models.OneToOneField(Project, on_delete=models.CASCADE, related_name="rrrrrr")
+    state = models.ForeignKey(State, on_delete=models.CASCADE, related_name="rrr")
+    priority = models.ForeignKey(Priority, on_delete=models.CASCADE, related_name="rrrr")
+    type = models.ForeignKey(TypeTask, on_delete=models.CASCADE, related_name="rrrrr")
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="rrrrrr")
     date_create = models.DateField(default=django.utils.timezone.now(), blank=True)  # This date you cannot change
     date_change = models.DateField(default=django.utils.timezone.now(), blank=True)  # This date you can change
     date_deadline = models.DateField(default=django.utils.timezone.now(), blank=True)
     is_activate = models.BooleanField(default=True)
 
     def __str__(self):
-        return str(self.task_id)
+        return str(self.name)
 
     class Meta:
         verbose_name = "Task"

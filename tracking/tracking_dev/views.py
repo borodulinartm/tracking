@@ -238,21 +238,22 @@ def task_description(request, task_id):
     raw_data = Task.objects.raw(
         raw_query=f"select tdt.task_id, tdt.code, tdt.name, tdt.description, au.first_name  as init_name,"
                   f"au.last_name as init_surname, au2.last_name as resp_surname,"
-                    f"au2.first_name  as resp_name, tds.name as state_name, tdp.name as project_name, "
-                    f"tdp2.name as priority_name, tdt2.name as type_task_name from tracking_dev_task tdt  "
-                    f"join tracking_dev_employee tde on tde.employee_id = tdt.initiator_id join tracking_dev_state tds "
-                    f"on tds.state_id = tdt.state_id join tracking_dev_project tdp on tdp.project_id = tdt.project_id "
-                    f"join tracking_dev_priority tdp2 on tdp2.priority_id = tdt.priority_id join tracking_dev_employee "
-                    f"tde2 on tde2.employee_id = tdt.responsible_id join tracking_dev_typetask tdt2 "
-                    f"on tdt2.type_id = tdt.type_id join auth_user au on au.id = tde.user_id "
-                    f"join auth_user au2 on au2.id = tde2.user_id WHERE tdt.task_id = {task_id} and tdt.is_activate=True;"
+                  f"au2.first_name  as resp_name, tds.name as state_name, tdp.name as project_name, "
+                  f"tdp2.name as priority_name, tdt2.name as type_task_name from tracking_dev_task tdt  "
+                  f"join tracking_dev_employee tde on tde.employee_id = tdt.initiator_id join tracking_dev_state tds "
+                  f"on tds.state_id = tdt.state_id join tracking_dev_project tdp on tdp.project_id = tdt.project_id "
+                  f"join tracking_dev_priority tdp2 on tdp2.priority_id = tdt.priority_id join tracking_dev_employee "
+                  f"tde2 on tde2.employee_id = tdt.responsible_id join tracking_dev_typetask tdt2 "
+                  f"on tdt2.type_id = tdt.type_id join auth_user au on au.id = tde.user_id "
+                  f"join auth_user au2 on au2.id = tde2.user_id WHERE tdt.task_id = {task_id} and tdt.is_activate=True;"
     )
 
     data = Task.objects.raw(
         raw_query=f"SELECT * FROM tracking_dev_task where is_activate=True"
     )
 
-    head = ["ID", "Код", "Название", "Описание", "Инициатор", "Ответственный", "Состояние", "Проект", "Приоритет", "Тип"]
+    head = ["ID", "Код", "Название", "Описание", "Инициатор", "Ответственный", "Состояние", "Проект", "Приоритет",
+            "Тип"]
     return render(request, "include/description/task.html", {
         'title_page': 'Сведения о задаче',
         'head': head,
@@ -271,28 +272,28 @@ def project_remove(request, project_id):
     #     raw_query=f"select * from tracking_dev_task tdt where tdt.project_id = {project_id};"
     # )
 
-    Project.objects.filter(project_id=project_id).update(is_activate=False)
+    Project.objects.filter(project_id=project_id).delete()
     return redirect(reverse('projects'))
 
 
 # This view allows you remove the task
 def task_remove(request, task_id):
     # TODO: Add the authorize condition
-    Task.objects.filter(task_id=task_id).update(is_activate=False)
+    Task.objects.filter(task_id=task_id).delete()
     return redirect(reverse('tasks'))
 
 
 # This view allows you remove the priority
 def priority_remove(request, priority_id):
     # TODO Add the authorize condition
-    Priority.objects.filter(priority_id=priority_id).update(is_activate=False)
+    Priority.objects.filter(priority_id=priority_id).delete()
     return redirect(reverse('priorities'))
 
 
 # This view allows you to remove the employee
 def employee_remove(request, employee_id):
     # TODO Add the authorize condition
-    Employee.objects.filter(employee_id=employee_id).update(is_activate=False)
+    Employee.objects.filter(employee_id=employee_id).delete()
     return redirect(reverse('employees'))
 
 
@@ -495,4 +496,75 @@ def edit_priority(request, priority_id):
         'show_list_group': 1,
         'data_group': data,
         'what_open': 3
+    })
+
+
+def create_type_task(request):
+    if request.method == "POST":
+        creation_form = CreateTypeTaskForm(data=request.POST)
+        if creation_form.is_valid():
+            creation_form.save()
+            return redirect(reverse('types'))
+    else:
+        creation_form = CreateTypeTaskForm()
+
+    raw_data = TypeTask.objects.raw(
+        raw_query="SELECT * FROM tracking_dev_typetask where is_activate=True"
+    )
+
+    return render(request, 'include/base_form.html', {
+        'title_page': 'Форма создания нового типа задачи',
+        'form': creation_form,
+        'text_button': 'Добавить форму',
+        'show_list_group': 1,
+        'data_group': raw_data,
+        'what_open': 4
+    })
+
+
+def edit_type_task(request, type_id):
+    instance = get_object_or_404(TypeTask, type_id=type_id)
+    form = CreateTypeTaskForm(request.POST or None, instance=instance)
+
+    if form.is_valid():
+        form.save()
+        return redirect(reverse('types'))
+
+    raw_data = TypeTask.objects.raw(
+        raw_query="SELECT * FROM tracking_dev_typetask where is_activate=True"
+    )
+
+    return render(request, 'include/base_form.html', {
+        'title_page': 'Форма редактирования типа задачи',
+        'form': form,
+        'text_button': 'Сохранить изменения',
+        'show_list_group': 1,
+        'data_group': raw_data,
+        'what_open': 4
+    })
+
+
+def create_task(request):
+    if request.method == "POST":
+        creation_form = CreateTaskForm(data=request.POST)
+        if creation_form.is_valid():
+            creation_form.save()
+            return redirect(reverse('tasks'))
+    else:
+        creation_form = CreateTaskForm()
+
+    raw_data = Task.objects.raw(
+        raw_query="SELECT * FROM tracking_dev_task where is_activate=True"
+    )
+
+    data = Priority.objects.filter(is_activate=True)
+    print(data)
+
+    return render(request, 'include/base_form.html', {
+        'title_page': 'Форма создания новой задачи',
+        'form': creation_form,
+        'text_button': 'Добавить данные',
+        'show_list_group': 1,
+        'data_group': raw_data,
+        'what_open': 6
     })
