@@ -23,14 +23,15 @@ urlpatterns = [
     path('main_page', index, name="main_page"),
 
     path('main_page/projects', get_list_projects, name="projects"),
-    path('main_page/projects/<int:project_id>', project_description, name="project_description"),
+    path('main_page/projects/<int:project_id>', show_extra_functions, name="project_extra_function"),
+    path('main_page/projects/<int:project_id>/description', project_description, name="project_description"),
     path('main_page/projects/<int:project_id>/delete', project_remove, name="project_delete"),
     path('main_page/projects<int:project_id>/collobarators', get_list_collobarators_to_project, name="collabs"),
     path('main_page/projects/<int:project_id>/collobarators/<int:employee_id>/delete', remove_user_from_current_project,
          name="delete_employee_from_project"),
     path('main_page/projects/<int:project_id>/collobarators/remove_all', remove_all_users_from_current_project,
          name="delete_all_employee_from_project"),
-    path('main_page/projects/<int:project_id>/tasks', get_all_tasks_by_project, name="tasks_for_project"),
+    path('main_page/projects/<int:project_id>/tasks', show_list_tasks_for_project, name="tasks_for_project"),
     path('main_page/projects/create', create_project, name="create_project"),
     path('main_page/projects/<int:project_id>/edit', edit_project, name="edit_project"),
 
@@ -56,8 +57,8 @@ urlpatterns = [
     path('main_page/employees<int:employee_id>/delete', employee_remove, name="employee_delete"),
 
     path('main_page/tasks', task_list, name="tasks"),
-    path('main_page/tasks/<int:task_id>', task_description, name="task_description"),
-    path('main_page/tasks/<int:task_id>/delete', task_remove, name="task_delete"),
-    path('main_page/tasks/create', create_task, name="task_create")
+    path('main_page/projects/<int:project_id>/tasks/<int:task_id>', task_description, name="task_description"),
+    path('main_page/projects/<int:project_id>/tasks/<int:task_id>/delete', task_remove, name="task_delete"),
+    path('main_page/projects/<int:project_id>/tasks/create', create_task, name="task_create"),
+    path('main_page/projects<int:project_id>/tasks/<int:task_id>/edit', edit_task, name="edit_task")
 ]
-

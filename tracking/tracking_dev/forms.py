@@ -72,7 +72,7 @@ class CreateTypeTaskForm(forms.ModelForm):
 class CreateTaskForm(forms.ModelForm):
     class Meta:
         model = Task
-        fields = ['code', 'name', 'description', 'responsible', 'initiator', 'priority', 'type', 'state', 'project',
+        fields = ['code', 'name', 'description', 'responsible', 'initiator', 'priority', 'type', 'state',
                   'date_deadline']
 
     def __init__(self, *args, **kwargs):
@@ -104,10 +104,10 @@ class CreateTaskForm(forms.ModelForm):
         self.fields['priority'].queryset = Priority.objects.filter(is_activate=True)
         self.fields['type'].queryset = TypeTask.objects.filter(is_activate=True)
         self.fields['state'].queryset = State.objects.filter(is_activate=True)
-        self.fields['project'].queryset = Project.objects.filter(is_activate=True)
+        #self.fields['project'].queryset = Project.objects.filter(is_activate=True)
 
         self.fields['date_deadline'] = forms.CharField(widget=forms.DateInput(attrs={
             'placeholder': 'Deadline',
             'style': 'margin-bottom: 20px'
         }))
-        
+

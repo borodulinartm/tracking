@@ -22,13 +22,28 @@
                         <li><a class="dropdown-item" href="{% url 'projects' %}">Проекты</a></li>
                         <li><a class="dropdown-item" href="{% url 'states' %}">Состояния</a></li>
                         <li><a class="dropdown-item" href="{% url 'tasks' %}">Задачи</a></li>
-
-{#                        <li>#}
-{#                            <hr class="dropdown-divider">#}
-{#                        </li>#}
-{#                        <li><a class="dropdown-item" href="#">Something else here</a></li>#}
                     </ul>
                 </li>
+
+                {% if show_choose_project == 1 %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown_2" role="button"
+                           data-bs-toggle="dropdown" aria-expanded="false">
+                            Выбрать проект
+                        </a>
+
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown_2">
+                            {% for project in list_projects %}
+                                <li>
+                                    <a class="dropdown-item"
+                                       href="{% url 'project_extra_function' project_id=project.project_id %}">
+                                        {{ project.name }}
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                {% endif %}
             </ul>
             <form class="d-flex">
                 <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">

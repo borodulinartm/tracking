@@ -11,9 +11,50 @@ from .forms import *
 
 # This view provides a main page.
 def index(request):
+    raw_data = Project.objects.raw(
+        raw_query=f"SELECT * FROM tracking_dev_project WHERE is_activate=True"
+    )
+
     return render(request, 'include/main_page.html', {
         'title_page': 'Привет, мир',
-        'show_list_group': 0
+        'show_list_group': 0,
+        'show_choose_project': 1,
+        'list_projects': raw_data
+    })
+
+
+# This view allows admin show and create tasks
+def show_extra_functions(request, project_id):
+    raw_data = Project.objects.raw(
+        raw_query=f"SELECT * FROM tracking_dev_project WHERE is_activate=True"
+    )
+
+    return render(request, "include/project_list_functions.html", {
+        'show_list_group': 0,
+        'show_choose_project': 1,
+        'list_project': raw_data,
+        'project_id': project_id
+    })
+
+
+# This view allows admin show tasks for current project
+def show_list_tasks_for_project(request, project_id):
+    tasks_list = Task.objects.raw(
+        raw_query=f"select * from tracking_dev_task tdt where tdt.project_id = {project_id} and tdt.is_activate;"
+    )
+
+    raw_data = Project.objects.raw(
+        raw_query=f"SELECT * FROM tracking_dev_project WHERE is_activate=True"
+    )
+
+    return render(request, "include/list.html", {
+        'title_page': 'Выберите задачу для просмотра',
+        'show_list_group': 1,
+        'data_group': tasks_list,
+        'show_choose_project': 1,
+        'list_project': raw_data,
+        'project_id': project_id,
+        'what_open': 6
     })
 
 
@@ -234,7 +275,7 @@ def task_list(request):
     })
 
 
-def task_description(request, task_id):
+def task_description(request, project_id, task_id):
     raw_data = Task.objects.raw(
         raw_query=f"select tdt.task_id, tdt.code, tdt.name, tdt.description, au.first_name  as init_name,"
                   f"au.last_name as init_surname, au2.last_name as resp_surname,"
@@ -249,7 +290,7 @@ def task_description(request, task_id):
     )
 
     data = Task.objects.raw(
-        raw_query=f"SELECT * FROM tracking_dev_task where is_activate=True"
+        raw_query=f"SELECT * FROM tracking_dev_task where is_activate=True and project_id={project_id}"
     )
 
     head = ["ID", "Код", "Название", "Описание", "Инициатор", "Ответственный", "Состояние", "Проект", "Приоритет",
@@ -260,6 +301,8 @@ def task_description(request, task_id):
         'table': raw_data,
         'show_list_group': 1,
         'data_group': data,
+        'project_id': project_id,
+        'show_choose_project': 0,
         'what_open': 6
     })
 
@@ -272,28 +315,28 @@ def project_remove(request, project_id):
     #     raw_query=f"select * from tracking_dev_task tdt where tdt.project_id = {project_id};"
     # )
 
-    Project.objects.filter(project_id=project_id).delete()
+    Project.objects.filter(project_id=project_id).update(is_activate=False)
     return redirect(reverse('projects'))
 
 
 # This view allows you remove the task
-def task_remove(request, task_id):
+def task_remove(request, project_id, task_id):
     # TODO: Add the authorize condition
-    Task.objects.filter(task_id=task_id).delete()
-    return redirect(reverse('tasks'))
+    Task.objects.filter(task_id=task_id).update(is_activate=False)
+    return redirect(reverse('tasks_for_project', kwargs={"project_id": project_id}))
 
 
 # This view allows you remove the priority
 def priority_remove(request, priority_id):
     # TODO Add the authorize condition
-    Priority.objects.filter(priority_id=priority_id).delete()
+    Priority.objects.filter(priority_id=priority_id).update(is_activate=False)
     return redirect(reverse('priorities'))
 
 
 # This view allows you to remove the employee
 def employee_remove(request, employee_id):
     # TODO Add the authorize condition
-    Employee.objects.filter(employee_id=employee_id).delete()
+    Employee.objects.filter(employee_id=employee_id).update(is_activate=False)
     return redirect(reverse('employees'))
 
 
@@ -544,27 +587,71 @@ def edit_type_task(request, type_id):
     })
 
 
-def create_task(request):
+# This view provides task creation form
+def create_task(request, project_id):
+    raw_data = Project.objects.filter(project_id=project_id)
+
+    arr = None
+    for data in raw_data:
+        arr = data
+
     if request.method == "POST":
         creation_form = CreateTaskForm(data=request.POST)
         if creation_form.is_valid():
-            creation_form.save()
-            return redirect(reverse('tasks'))
+            code = creation_form.cleaned_data['code']
+            name = creation_form.cleaned_data['name']
+            description = creation_form.cleaned_data['description']
+            responsible = creation_form.cleaned_data['responsible']
+            initiator = creation_form.cleaned_data['initiator']
+            state = creation_form.cleaned_data['state']
+            priority = creation_form.cleaned_data['priority']
+            type_task = creation_form.cleaned_data['type']
+            date_deadline = creation_form.cleaned_data['date_deadline']
+
+            task = Task(code=code, name=name, description=description, responsible=responsible, initiator=initiator,
+                        state=state, priority=priority, type=type_task, date_deadline=date_deadline, project=arr)
+            task.save()
+
+            return redirect(reverse('tasks_for_project', kwargs={"project_id": project_id}))
     else:
         creation_form = CreateTaskForm()
 
     raw_data = Task.objects.raw(
-        raw_query="SELECT * FROM tracking_dev_task where is_activate=True"
+        raw_query=f"SELECT * FROM tracking_dev_task where is_activate=True and project_id={project_id}"
     )
-
-    data = Priority.objects.filter(is_activate=True)
-    print(data)
 
     return render(request, 'include/base_form.html', {
         'title_page': 'Форма создания новой задачи',
         'form': creation_form,
         'text_button': 'Добавить данные',
         'show_list_group': 1,
+        'show_choose_project': 0,
         'data_group': raw_data,
+        'project_id': project_id,
+        'what_open': 6
+    })
+
+
+# This view allows user edit your task (only for administrators)
+def edit_task(request, project_id, task_id):
+    instance = get_object_or_404(Task, task_id=task_id)
+    form = CreateTaskForm(request.POST or None, instance=instance)
+
+    if form.is_valid():
+        form.save()
+        return redirect(reverse('tasks_for_project', kwargs={"project_id": project_id}))
+
+    raw_data = Task.objects.raw(
+        raw_query=f"SELECT * FROM tracking_dev_task where is_activate=True and project_id={project_id}"
+    )
+
+    return render(request, 'include/base_form.html', {
+        'title_page': 'Форма редактирования задачи',
+        'form': form,
+        'text_button': 'Сохранить изменения',
+        'show_list_group': 1,
+        'show_choose_project': 0,
+        'data_group': raw_data,
+        'project_id': project_id,
         'what_open': 6
     })
