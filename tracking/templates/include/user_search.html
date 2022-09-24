@@ -1,0 +1,24 @@
+{% extends 'include/base.html' %}
+{% load static %}
+
+{% block title %}
+    <div class="block_title">
+        <h2 class="title">{{ title_page }}</h2>
+    </div>
+{% endblock title %}
+
+{% block content %}
+    <div class="list_button_block">
+        {% for participant in participants %}
+            <a href="{% url 'add_user' project_id=project_id employee_id=participant.employee_id %}"
+               class="list-group-item list-group-item-action" aria-current="true" style="margin-top: 50px">
+                <div>
+                    <p class="text_button position_block">
+                        <span class="fw-bolder">{{ participant.first_name }} {{ participant.last_name }}</span>,
+                        <span class="fw-normal">{{ participant.post }}</span>
+                    </p>
+                </div>
+            </a>
+        {% endfor %}
+    </div>
+{% endblock content %}
