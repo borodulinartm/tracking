@@ -29,7 +29,7 @@ def show_extra_functions(request, project_id):
         raw_query=f"SELECT * FROM tracking_dev_project WHERE is_activate=True"
     )
 
-    return render(request, "include/project_list_functions.html", {
+    return render(request, "include/list_data/project_list_functions.html", {
         'show_list_group': 0,
         'show_choose_project': 1,
         'list_projects': raw_data,
@@ -47,14 +47,13 @@ def show_list_tasks_for_project(request, project_id):
         raw_query=f"SELECT * FROM tracking_dev_project WHERE is_activate=True"
     )
 
-    return render(request, "include/list.html", {
+    return render(request, "include/list_data/tasks_list.html", {
         'title_page': 'Выберите задачу для просмотра',
-        'show_list_group': 1,
+        'show_list_group': 0,
         'data_group': tasks_list,
         'show_choose_project': 1,
         'list_projects': raw_data,
         'project_id': project_id,
-        'what_open': 6
     })
 
 
@@ -64,13 +63,12 @@ def get_list_projects(request):
         raw_query="SELECT * FROM tracking_dev_project WHERE is_activate=True"
     )
 
-    return render(request, 'include/list.html', {
+    return render(request, 'include/list_data/project_list.html', {
         'title_page': 'Выберите проект для его просмотра или удаления',
-        'show_list_group': 1,
+        'show_list_group': 0,
         'show_choose_project': 1,
         'list_projects': raw_data,
         'data_group': raw_data,
-        'what_open': 1
     })
 
 
@@ -125,11 +123,10 @@ def get_state_list(request):
         raw_query="SELECT * FROM tracking_dev_project WHERE is_activate=True"
     )
 
-    return render(request, "include/list.html", {
+    return render(request, "include/list_data/state_list.html", {
         'title_page': "Выберите состояние задачи для его просмотра или удаления",
-        'show_list_group': 1,
+        'show_list_group': 0,
         'data_group': raw_data,
-        'what_open': 2,
         'show_choose_project': 1,
         'list_projects': all_projects
     })
@@ -171,11 +168,10 @@ def get_priority_list(request):
         raw_query="SELECT * FROM tracking_dev_project WHERE is_activate=True"
     )
 
-    return render(request, "include/list.html", {
+    return render(request, "include/list_data/priority_list.html", {
         'title_page': "Выберите приоритет задачи для его просмотра или удаления",
-        'show_list_group': 1,
+        'show_list_group': 0,
         'data_group': raw_data,
-        'what_open': 3,
         'show_choose_project': 1,
         'list_projects': all_projects
     })
@@ -207,7 +203,6 @@ def priority_description(request, priority_id):
         'show_list_group': 1,
         'count_tasks': len(list(count_tasks)),
         'data_group': data,
-        'what_open': 3,
         'show_choose_project': 1,
         'list_projects': all_projects
     })
@@ -223,11 +218,10 @@ def type_task_list(request):
         raw_query="SELECT * FROM tracking_dev_project WHERE is_activate=True"
     )
 
-    return render(request, "include/list.html", {
+    return render(request, "include/list_data/type_task_list.html", {
         'title_page': 'Выберите тип задачи для его просмотра или удаления',
-        'show_list_group': 1,
+        'show_list_group': 0,
         'data_group': raw_data,
-        'what_open': 4,
         'show_choose_project': 1,
         'list_projects': all_projects
     })
@@ -278,11 +272,10 @@ def employee_list(request):
         raw_query="SELECT * FROM tracking_dev_project WHERE is_activate=True"
     )
 
-    return render(request, "include/list.html", {
+    return render(request, "include/list_data/employee_list.html", {
         'title_page': 'Выберите сотрудника для его просмотра или удаления',
-        'show_list_group': 1,
+        'show_list_group': 0,
         'data_group': raw_data,
-        'what_open': 5,
         'show_choose_project': 1,
         'list_projects': all_projects
     })
@@ -314,20 +307,6 @@ def employee_description(request, employee_id):
         'what_open': 5,
         'show_choose_project': 1,
         'list_projects': all_projects
-    })
-
-
-# This view provides a list of the tasks
-def task_list(request):
-    raw_data = Task.objects.raw(
-        raw_query="SELECT * FROM tracking_dev_task where is_activate=True"
-    )
-
-    return render(request, "include/list.html", {
-        'title_page': "Выберите задачу для его просмотра или удаления",
-        'show_list_group': 1,
-        'data_group': raw_data,
-        'what_open': 6
     })
 
 
@@ -422,10 +401,11 @@ def get_list_collobarators_to_project(request, project_id):
         'title_page': 'Участники проекта',
         'head': head,
         'table': participants,
-        'show_list_group': 1,
+        'show_list_group': 0,
         'current_project': project_id,
+        'show_choose_project': 1,
+        'list_projects': data,
         'data_group': data,
-        'what_open': 1
     })
 
 
@@ -449,78 +429,6 @@ def remove_all_users_from_current_project(request, project_id):
 
     # Redirect to the website with project
     return redirect(reverse('projects'))
-
-
-# This view provides list of the task by current project
-def get_all_tasks_by_project(request, project_id):
-    raw_data = Task.objects.raw(
-        raw_query=f"select * from tracking_dev_task tdt where tdt.project_id = {project_id} and is_activate=True;"
-    )
-
-    project_name = Project.objects.raw(
-        raw_query=f"SELECT * FROM tracking_dev_project WHERE project_id={project_id}"
-    )
-
-    all_projects = Project.objects.raw(
-        raw_query="SELECT * FROM tracking_dev_project WHERE is_activate=True"
-    )
-
-    return render(request, "include/list.html", {
-        'title_page': f"Выберите задачи, относящиеся к проекту '{list(project_name)[0].name}'",
-        'show_list_group': 1,
-        'data_group': raw_data,
-        'what_open': 6,
-        'show_choose_project': 1,
-        'list_projects': all_projects
-    })
-
-
-# This view provides list of the task by current priority
-def get_all_tasks_by_priority(request, priority_id):
-    raw_data = Task.objects.raw(
-        raw_query=f"select * from tracking_dev_task tdt where tdt.priority_id = {priority_id} and is_activate=True;"
-    )
-
-    priority_name = Priority.objects.raw(
-        raw_query=f"SELECT * FROM tracking_dev_priority WHERE priority_id={priority_id}"
-    )
-
-    all_projects = Project.objects.raw(
-        raw_query="SELECT * FROM tracking_dev_project WHERE is_activate=True"
-    )
-
-    return render(request, "include/list.html", {
-        'title_page': f"Выберите задачи, относящиеся с приоритетом '{list(priority_name)[0].name}'",
-        'show_list_group': 1,
-        'data_group': raw_data,
-        'what_open': 6,
-        'show_choose_project': 1,
-        'list_projects': all_projects
-    })
-
-
-# This view provides list of the task by current type
-def get_all_tasks_by_type(request, type_id):
-    raw_data = Task.objects.raw(
-        raw_query=f"select * from tracking_dev_task tdt where tdt.type_id = {type_id} and is_activate=True;"
-    )
-
-    type_name = TypeTask.objects.raw(
-        raw_query=f"SELECT * FROM tracking_dev_typetask WHERE type_id={type_id}"
-    )
-
-    all_projects = Project.objects.raw(
-        raw_query="SELECT * FROM tracking_dev_project WHERE is_activate=True"
-    )
-
-    return render(request, "include/list.html", {
-        'title_page': f"Выберите задачи, относящиеся с типом задачи '{list(type_name)[0].name}'",
-        'show_list_group': 1,
-        'data_group': raw_data,
-        'what_open': 6,
-        'show_choose_project': 1,
-        'list_projects': all_projects
-    })
 
 
 # This view provides a creation form of the project
@@ -760,9 +668,13 @@ def search(request, project_id):
     })
 
 
+# This method adds new users to the project
 def add_employee_to_project(request, project_id, employee_id):
-    with connection.cursor() as cursor:
-        cursor.execute(f"insert into tracking_dev_employee_projects(employee_id, project_id, is_activate) "
-                       f"values ({employee_id}, {project_id}, True)")
-
-    return redirect(reverse("collabs", kwargs={'project_id': project_id}))
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(f"insert into tracking_dev_employee_projects(employee_id, project_id, is_activate) "
+                           f"values ({employee_id}, {project_id}, True)")
+    except:
+        print("Can not add the participant")
+    finally:
+        return redirect(reverse("collabs", kwargs={'project_id': project_id}))

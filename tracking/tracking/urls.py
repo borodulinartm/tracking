@@ -41,14 +41,12 @@ urlpatterns = [
     path('main_page/priorities', get_priority_list, name="priorities"),
     path('main_page/priorities/<int:priority_id>', priority_description, name="priority_description"),
     path('main_page/priorities/<int:priority_id>/delete', priority_remove, name="priority_delete"),
-    path('main_page/priorities/<int:priority_id>/tasks', get_all_tasks_by_priority, name="tasks_for_priority"),
     path('main_page/priorities/create', create_priority, name="create_priority"),
     path('main_page/priorities<int:priority_id>/edit', edit_priority, name="edit_priority"),
 
     path('main_page/types', type_task_list, name="types"),
     path('main_page/types/<int:type_id>', type_task_description, name="type_description"),
     path('main_page/types<int:type_id>/delete', type_remove, name="type_remove"),
-    path('main_page/types<int:type_id>/tasks', get_all_tasks_by_type, name="tasks_for_type"),
     path('main_page/types/create', create_type_task, name="create_type_task"),
     path('main_page/types/<int:type_id>/edit', edit_type_task, name="edit_type_task"),
 
@@ -56,7 +54,6 @@ urlpatterns = [
     path('main_page/employees/<int:employee_id>', employee_description, name="employee_description"),
     path('main_page/employees<int:employee_id>/delete', employee_remove, name="employee_delete"),
 
-    path('main_page/tasks', task_list, name="tasks"),
     path('main_page/projects/<int:project_id>/tasks/<int:task_id>', task_description, name="task_description"),
     path('main_page/projects/<int:project_id>/tasks/<int:task_id>/delete', task_remove, name="task_delete"),
     path('main_page/projects/<int:project_id>/tasks/create', create_task, name="task_create"),

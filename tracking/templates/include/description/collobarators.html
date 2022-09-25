@@ -110,30 +110,6 @@
                            href="{% url 'delete_employee_from_project' project_id=content_list.project_id employee_id=content_list.employee_id %}"
                            class="btn btn-outline-danger text_button">Удалить</a>
                     </div>
-
-                    <!-- Modal -->
-{#                    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"#}
-{#                         aria-hidden="true">#}
-{#                        <div class="modal-dialog">#}
-{#                            <div class="modal-content">#}
-{#                                <div class="modal-header">#}
-{#                                    <h5 class="modal-title" id="exampleModalLabel">Внимание</h5>#}
-{#                                    <button type="button" class="btn-close" data-bs-dismiss="modal"#}
-{#                                            aria-label="Close"></button>#}
-{#                                </div>#}
-{#                                <div class="modal-body text_button">#}
-{#                                    Вы действительно хотите удалить сотрудника "{{ content_list.first_name }}#}
-{#                                    {{ content_list.last_name }}"?#}
-{#                                </div>#}
-{#                                <div class="modal-footer">#}
-{#                                    <a type="button" class="btn btn-primary" data-bs-dismiss="modal">Отмена</a>#}
-{#                                    <a type="button"#}
-{#                                       href="{% url 'delete_employee_from_project' project_id=content_list.project_id employee_id=content_list.employee_id %}"#}
-{#                                       class="btn btn-danger">Подтвердить удаление</a>#}
-{#                                </div>#}
-{#                            </div>#}
-{#                        </div>#}
-{#                    </div>#}
                 </div>
             </div>
         {% endfor %}

@@ -1,0 +1,27 @@
+{% extends 'include/base.html' %}
+{% load static %}
+
+{% block title %}
+    <div class="block_title">
+        <h2 class="title">{{ title_page }}</h2>
+    </div>
+{% endblock title %}
+
+{% block content %}
+    <div class="container-fluid">
+        <div class="row">
+            <a class="text_button list-group-item list-group-item-action" aria-current="true"
+                href="{% url 'tasks_for_project' project_id=project_id %}">
+                <div class="col-lg-12 text_button">Задачи</div>
+            </a>
+        </div>
+
+        <div class="row">
+            <a class="text_button list-group-item list-group-item-action" aria-current="true"
+                 href="{% url 'collabs' project_id=project_id %}">
+                <div class="col-lg-12 text_button">Участники</div>
+            </a>
+        </div>
+    </div>
+
+{% endblock content %}

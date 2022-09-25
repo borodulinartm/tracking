@@ -38,30 +38,6 @@
                 <span class="fw-bolder text_button">Дата создания:</span>
                 <span class="fw-normal text_button">{{ content_list.date_create }}</span>
             </div>
-
-            <a href="#" class="btn btn-primary text_button">Редактировать</a>
-            <a href="#" class="btn btn-danger text_button" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                Удалить
-            </a>
-
-            <!-- Modal -->
-            <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
-                 aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="exampleModalLabel">Внимание</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body text_button">Вы действительно хотите удалить сотрудника?</div>
-                        <div class="modal-footer">
-                            <a type="button" class="btn btn-primary" data-bs-dismiss="modal">Отмена</a>
-                            <a type="button" href="{% url 'employee_delete' employee_id=content_list.employee_id %}"
-                               class="btn btn-danger">Подтвердить удаление</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
         {% endfor %}
 
     </div>

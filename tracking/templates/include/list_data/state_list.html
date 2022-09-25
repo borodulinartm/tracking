@@ -1,0 +1,25 @@
+{% extends 'include/base.html' %}
+{% load static %}
+
+{% block title %}
+    <div class="block_title">
+        <h2 class="title" style="margin-bottom: 50px">{{ title_page }}</h2>
+    </div>
+{% endblock title %}
+
+{% block content %}
+    <div class="container-fluid">
+        {% for data in data_group %}
+            <div class="row">
+                <a href="{% url 'state_description' state_id=data.state_id %}"
+                   class="list-group-item list-group-item-action text_button" aria-current="true">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h3 class="mb-1">{{ data.code|truncatechars:30 }}</h3>
+                        <small>{{ data.date_create }}</small>
+                    </div>
+                    <p class="mb-1">{{ data.description|truncatechars:100 }}</p>
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock content %}
