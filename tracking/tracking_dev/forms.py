@@ -1,4 +1,5 @@
 from django import forms
+from django.contrib.auth.forms import UserCreationForm
 
 from .models import *
 
@@ -59,7 +60,7 @@ class CreateTypeTaskForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['name'] = forms.CharField(widget=forms.TextInput(attrs={
             'placeholder': 'Your type task name',
-            'style': 'margin bottom: 20px'}))
+            'style': 'margin-bottom: 20px'}))
         self.fields['description'] = forms.CharField(widget=forms.Textarea(attrs={
             'placeholder': 'Description type of the task',
             'rows': '3',
@@ -67,6 +68,25 @@ class CreateTypeTaskForm(forms.ModelForm):
         self.fields['code'] = forms.CharField(widget=forms.TextInput(attrs={
             'placeholder': 'Code of the task',
             'style': 'margin-bottom: 20px'}))
+
+
+# Login Form
+class LoginForm(forms.Form):
+    username = forms.CharField(widget=forms.TextInput(attrs={
+        'placeholder': 'Your login',
+        'style': 'margin-bottom: 20px'
+    }))
+    password = forms.CharField(widget=forms.PasswordInput(attrs={
+        'placeholder': 'Your password',
+        'style': 'margin-bottom: 20px'
+    }))
+
+
+# Register form
+class UserRegistrationForm(UserCreationForm):
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'username', 'email', 'password1', 'password2', 'is_staff']
 
 
 class CreateTaskForm(forms.ModelForm):
@@ -93,10 +113,10 @@ class CreateTaskForm(forms.ModelForm):
             'style': 'margin-bottom: 20px'
         }))
 
-        self.fields['description'] = forms.CharField(widget=forms.Textarea(attrs={
-            'placeholder': 'Your description task',
-            'style': 'margin-bottom: 20px'
-        }))
+        # self.fields['description'] = forms.CharField(widget=forms.Textarea(attrs={
+        #     'placeholder': 'Your description task',
+        #     'style': 'margin-bottom: 20px'
+        # }))
 
         # This line is correct for the modelChoiceField
         self.fields['responsible'].queryset = Employee.objects.filter(is_activate=True)
@@ -104,10 +124,29 @@ class CreateTaskForm(forms.ModelForm):
         self.fields['priority'].queryset = Priority.objects.filter(is_activate=True)
         self.fields['type'].queryset = TypeTask.objects.filter(is_activate=True)
         self.fields['state'].queryset = State.objects.filter(is_activate=True)
-        #self.fields['project'].queryset = Project.objects.filter(is_activate=True)
+        # self.fields['project'].queryset = Project.objects.filter(is_activate=True)
 
         self.fields['date_deadline'] = forms.CharField(widget=forms.DateInput(attrs={
             'placeholder': 'Deadline',
             'style': 'margin-bottom: 20px'
         }))
 
+
+# This form provides employee creation
+class CreateEmployeeForm(forms.ModelForm):
+    class Meta:
+        model = Employee
+        fields = ['post', 'description']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields['post'] = forms.CharField(widget=forms.TextInput(attrs={
+            'placeholder': 'Your post',
+            'style': 'margin-bottom: 20px'
+        }))
+
+        self.fields['description'] = forms.CharField(widget=forms.Textarea(attrs={
+            'placeholder': 'Bio',
+            'style': 'margin-bottom: 20px'
+        }))

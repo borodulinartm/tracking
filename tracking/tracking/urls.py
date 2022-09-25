@@ -61,5 +61,10 @@ urlpatterns = [
 
     path('main_page/projects<int:project_id>/collobarators/search', search, name="search"),
     path('main_page/projects/<int:project_id>/collobarators/add/<int:employee_id>', add_employee_to_project,
-         name="add_user")
+         name="add_user"),
+
+    path('login/', login, name="login"),
+    path('logout/', logout, name="logout"),
+    path('signup/', signup, name="signup"),
+    path('main_page/employee/create', create_employee, name="create_employee")
 ]

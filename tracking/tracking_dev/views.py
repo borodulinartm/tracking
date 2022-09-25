@@ -25,6 +25,9 @@ def index(request):
 
 # This view allows admin show and create tasks
 def show_extra_functions(request, project_id):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
     raw_data = Project.objects.raw(
         raw_query=f"SELECT * FROM tracking_dev_project WHERE is_activate=True"
     )
@@ -39,6 +42,9 @@ def show_extra_functions(request, project_id):
 
 # This view allows admin show tasks for current project
 def show_list_tasks_for_project(request, project_id):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
     tasks_list = Task.objects.raw(
         raw_query=f"select * from tracking_dev_task tdt where tdt.project_id = {project_id} and tdt.is_activate;"
     )
@@ -59,6 +65,9 @@ def show_list_tasks_for_project(request, project_id):
 
 # This view provides a list of the projects (displayed by the table)
 def get_list_projects(request):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
     raw_data = Project.objects.raw(
         raw_query="SELECT * FROM tracking_dev_project WHERE is_activate=True"
     )
@@ -74,6 +83,9 @@ def get_list_projects(request):
 
 # This is the view, which provide description about this project
 def project_description(request, project_id):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
     raw_data = Project.objects.raw(
         raw_query=f"SELECT * FROM tracking_dev_project WHERE project_id = {project_id} and is_activate=True"
     )
@@ -115,6 +127,13 @@ def project_description(request, project_id):
 
 # This view provides list of the states
 def get_state_list(request):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    # The settings are disable for the developer
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+
     raw_data = State.objects.raw(
         raw_query="SELECT * FROM tracking_dev_state where is_activate=True"
     )
@@ -133,6 +152,9 @@ def get_state_list(request):
 
 
 def state_description(request, state_id):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
     raw_data = State.objects.raw(
         raw_query=f"SELECT * FROM tracking_dev_state WHERE state_id = {state_id} and is_activate=True"
     )
@@ -160,6 +182,9 @@ def state_description(request, state_id):
 
 # This view provides a list of the task priority table
 def get_priority_list(request):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
     raw_data = Priority.objects.raw(
         raw_query="SELECT * FROM tracking_dev_priority where is_activate=True"
     )
@@ -179,6 +204,9 @@ def get_priority_list(request):
 
 # This view provides a description of the file
 def priority_description(request, priority_id):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
     raw_data = Priority.objects.raw(
         raw_query=f"SELECT * FROM tracking_dev_priority WHERE priority_id = {priority_id} and is_activate=True"
     )
@@ -210,6 +238,9 @@ def priority_description(request, priority_id):
 
 # This view provides a list of the types tasks (like new feature, test, task or bug)
 def type_task_list(request):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
     raw_data = TypeTask.objects.raw(
         raw_query="SELECT * FROM tracking_dev_typetask where is_activate=True"
     )
@@ -229,6 +260,9 @@ def type_task_list(request):
 
 # This view provides a description of the type task
 def type_task_description(request, type_id):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
     # Select the task by ID
     raw_data = TypeTask.objects.raw(
         raw_query=f"SELECT * FROM tracking_dev_typetask WHERE type_id = {type_id} and is_activate=True"
@@ -263,6 +297,9 @@ def type_task_description(request, type_id):
 
 # This employee provides an employee list
 def employee_list(request):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
     raw_data = Employee.objects.raw(
         raw_query="select au.first_name, au.last_name, tde.employee_id, tde.post, tde.description, tde.date_create "
                   "from tracking_dev_employee tde join auth_user au on au.id = tde.user_id where tde.is_activate=True;"
@@ -283,6 +320,9 @@ def employee_list(request):
 
 # This employee provides a description of the employee
 def employee_description(request, employee_id):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
     raw_data = Employee.objects.raw(
         raw_query=f"select * from tracking_dev_employee tde join auth_user au on au.id = tde.user_id "
                   f"where employee_id = {employee_id} and is_activate=True;"
@@ -311,6 +351,9 @@ def employee_description(request, employee_id):
 
 
 def task_description(request, project_id, task_id):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
     raw_data = Task.objects.raw(
         raw_query=f"select tdt.task_id, tdt.code, tdt.name, tdt.description, au.first_name  as init_name,"
                   f"au.last_name as init_surname, au2.last_name as resp_surname,"
@@ -344,11 +387,11 @@ def task_description(request, project_id, task_id):
 
 # This view allows you to remove project. But it cannot remove if the tasks linked to project exists.
 def project_remove(request, project_id):
-    # TODO: Add the authorize condition
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
 
-    # raw_query = Task.objects.raw(
-    #     raw_query=f"select * from tracking_dev_task tdt where tdt.project_id = {project_id};"
-    # )
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
 
     Project.objects.filter(project_id=project_id).update(is_activate=False)
     return redirect(reverse('projects'))
@@ -356,34 +399,57 @@ def project_remove(request, project_id):
 
 # This view allows you remove the task
 def task_remove(request, project_id, task_id):
-    # TODO: Add the authorize condition
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+
     Task.objects.filter(task_id=task_id).update(is_activate=False)
     return redirect(reverse('tasks_for_project', kwargs={"project_id": project_id}))
 
 
 # This view allows you remove the priority
 def priority_remove(request, priority_id):
-    # TODO Add the authorize condition
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+
     Priority.objects.filter(priority_id=priority_id).update(is_activate=False)
     return redirect(reverse('priorities'))
 
 
 # This view allows you to remove the employee
 def employee_remove(request, employee_id):
-    # TODO Add the authorize condition
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+
     Employee.objects.filter(employee_id=employee_id).update(is_activate=False)
     return redirect(reverse('employees'))
 
 
 # This view allows you to remove the type of task
 def type_remove(request, type_id):
-    # TODO Add the authorize condition
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+
     TypeTask.objects.filter(type_id=type_id).update(is_activate=False)
     return redirect(reverse('types'))
 
 
 # This view provides a list of the collaborators for current project.
 def get_list_collobarators_to_project(request, project_id):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
     participants = Project.objects.raw(
         raw_query=f"select au.first_name, au.last_name, tde.post,  tdep.project_id, tdep.employee_id , au.email "
                   f"from tracking_dev_employee_projects tdep "
@@ -411,6 +477,12 @@ def get_list_collobarators_to_project(request, project_id):
 
 # This view allows admin remove the user from current project
 def remove_user_from_current_project(request, project_id, employee_id):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+
     # Because the query contains UPDATE, we need use connection.cursor() instead of objects.raw
     with connection.cursor() as cursor:
         cursor.execute(f"delete from tracking_dev_employee_projects where "
@@ -423,6 +495,12 @@ def remove_user_from_current_project(request, project_id, employee_id):
 
 # This view allows admin remove all users from this project
 def remove_all_users_from_current_project(request, project_id):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+
     with connection.cursor() as cursor:
         cursor.execute(f"update tracking_dev_employee_projects set "
                        f"is_activate = false where project_id = {project_id}")
@@ -433,6 +511,12 @@ def remove_all_users_from_current_project(request, project_id):
 
 # This view provides a creation form of the project
 def create_project(request):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+
     if request.method == "POST":
         creation_form = CreateProjectForm(data=request.POST)
 
@@ -461,6 +545,12 @@ def create_project(request):
 
 # These methods provide edit project
 def edit_project(request, project_id):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+
     instance = get_object_or_404(Project, project_id=project_id)
     form = CreateProjectForm(request.POST or None, instance=instance)
     if form.is_valid():
@@ -483,6 +573,12 @@ def edit_project(request, project_id):
 
 
 def create_priority(request):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+
     if request.method == "POST":
         creation_form = CreatePriorityForm(data=request.POST)
 
@@ -508,6 +604,12 @@ def create_priority(request):
 
 
 def edit_priority(request, priority_id):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+
     instance = get_object_or_404(Priority, priority_id=priority_id)
     form = CreatePriorityForm(request.POST or None, instance=instance)
     if form.is_valid():
@@ -530,6 +632,12 @@ def edit_priority(request, priority_id):
 
 
 def create_type_task(request):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+
     if request.method == "POST":
         creation_form = CreateTypeTaskForm(data=request.POST)
         if creation_form.is_valid():
@@ -554,6 +662,12 @@ def create_type_task(request):
 
 
 def edit_type_task(request, type_id):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+
     instance = get_object_or_404(TypeTask, type_id=type_id)
     form = CreateTypeTaskForm(request.POST or None, instance=instance)
 
@@ -578,6 +692,12 @@ def edit_type_task(request, type_id):
 
 # This view provides task creation form
 def create_task(request, project_id):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+
     raw_data = Project.objects.filter(project_id=project_id)
 
     arr = None
@@ -623,6 +743,12 @@ def create_task(request, project_id):
 
 # This view allows user edit your task (only for administrators)
 def edit_task(request, project_id, task_id):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+
     instance = get_object_or_404(Task, task_id=task_id)
     form = CreateTaskForm(request.POST or None, instance=instance)
 
@@ -646,8 +772,40 @@ def edit_task(request, project_id, task_id):
     })
 
 
-# This method allows user search and add new participants to project
+# This method allows user to add the data
+def create_employee(request):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    if request.method == "POST":
+        creation_form = CreateEmployeeForm(data=request.POST)
+        if creation_form.is_valid():
+            post = creation_form.cleaned_data['post']
+            description = creation_form.cleaned_data['description']
+
+            employee = Employee(post=post, description=description, user_id=request.user.id)
+            employee.save()
+
+            return redirect(reverse('main_page'))
+    else:
+        creation_form = CreateEmployeeForm()
+
+    return render(request, "include/base_form_auth.html", {
+        'title_page': 'Форма заполнения данных о себе',
+        'show_choose_project': 0,
+        'form': creation_form,
+        'text_button': 'Сохранить информацию'
+    })
+
+
+# This method allows user search and add new participants to project.
 def search(request, project_id):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+
     results = []
     if request.method == "GET":
         query = request.GET.get('search')
@@ -670,6 +828,12 @@ def search(request, project_id):
 
 # This method adds new users to the project
 def add_employee_to_project(request, project_id, employee_id):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+
     try:
         with connection.cursor() as cursor:
             cursor.execute(f"insert into tracking_dev_employee_projects(employee_id, project_id, is_activate) "
@@ -678,3 +842,67 @@ def add_employee_to_project(request, project_id, employee_id):
         print("Can not add the participant")
     finally:
         return redirect(reverse("collabs", kwargs={'project_id': project_id}))
+
+
+# This method allows users login
+def login(request):
+    if request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    if request.method == "POST":
+        form = LoginForm(request.POST)
+        if form.is_valid():
+            user = auth.authenticate(request, **form.cleaned_data)
+            if user is not None:
+                auth.login(request, user)
+                return redirect(reverse('main_page'))
+            else:
+                messages.error(request, "Incorrect name or password")
+        else:
+            messages.error(request, "Error in the inputting login data")
+    else:
+        form = LoginForm()
+
+    return render(request, "include/base_form.html", {
+        'form': form,
+        'title_page': 'Форма авторизации',
+        'text_button': 'Авторизоваться'
+    })
+
+
+# This method allows user logout from system
+def logout(request):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    auth.logout(request)
+    return redirect(reverse('main_page'))
+
+
+# This method allows sign up to system
+def signup(request):
+    if request.method == "POST":
+        form = UserRegistrationForm(data=request.POST)
+        if form.is_valid():
+            mail = form.cleaned_data['email']
+            is_user_exists_with_mail = User.objects.filter(email=mail)
+
+            if is_user_exists_with_mail.exists():
+                messages.error(request, "Данная электронная почта существует. Пожалуйста, введите другую почту")
+            else:
+                new_user = form.save()
+                auth.login(request, new_user)
+
+                # Need to redirect to another form with employee create
+                return redirect(reverse('create_employee'))
+        else:
+            messages.error(request, "Ошибка в вводе данных")
+    else:
+        form = UserRegistrationForm()
+
+    return render(request, "include/base_form_auth.html", {
+        'form': form,
+        'title_page': 'Форма регистрации',
+        'text_button': 'Зарегистрироваться',
+        'step': 1
+    })

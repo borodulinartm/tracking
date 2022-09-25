@@ -44,6 +44,28 @@
                     </li>
                 {% endif %}
             </ul>
+
+            <div class="d-flex flex-row-reverse">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    {% if request.user.is_authenticated %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown_3" role="button"
+                               data-bs-toggle="dropdown" aria-expanded="false">
+                                {{ request.user.first_name }}
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="navbarDropdown_3">
+                                <li><a class="dropdown-item" href="{% url 'logout' %}">Выйти из системы</a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <div class="p-2">
+                            <a href="{% url 'login' %}" class="btn btn-outline-primary">Логин</a>
+                            <a href="{% url 'signup' %}" class="btn btn-outline-primary">Регистрация</a>
+                        </div>
+                    {% endif %}
+                </ul>
+            </div>
+
             <form class="d-flex">
                 <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
                 <button class="btn btn-outline-success" type="submit">Search</button>
