@@ -10,20 +10,22 @@
                 <li class="nav-item">
                     <a class="nav-link" href="#">Дашборды</a>
                 </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
-                       data-bs-toggle="dropdown" aria-expanded="false">
-                        Картотеки
-                    </a>
-                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        <li><a class="dropdown-item" href="{% url 'employees' %}">Сотрудники</a></li>
-                        <li><a class="dropdown-item" href="{% url 'types' %}">Типы задач</a></li>
-                        <li><a class="dropdown-item" href="{% url 'priorities' %}">Приоритетность</a></li>
-                        <li><a class="dropdown-item" href="{% url 'projects' %}">Проекты</a></li>
-                        <li><a class="dropdown-item" href="{% url 'states' %}">Состояния</a></li>
-                    </ul>
-                </li>
+                {% if request.user.is_staff %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
+                           data-bs-toggle="dropdown" aria-expanded="false">
+                            Картотеки
+                        </a>
+                            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                <li><a class="dropdown-item" href="{% url 'employees' %}">Сотрудники</a></li>
+                                <li><a class="dropdown-item" href="{% url 'types' %}">Типы задач</a></li>
+                                <li><a class="dropdown-item" href="{% url 'priorities' %}">Приоритетность</a></li>
+                                <li><a class="dropdown-item" href="{% url 'projects' %}">Проекты</a></li>
+                                <li><a class="dropdown-item" href="{% url 'states' %}">Состояния</a></li>
+                            </ul>
 
+                    </li>
+                {% endif %}
                 {% if show_choose_project == 1 %}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown_2" role="button"

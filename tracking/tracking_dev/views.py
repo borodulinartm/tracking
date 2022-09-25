@@ -11,9 +11,15 @@ from .forms import *
 
 # This view provides a main page.
 def index(request):
-    raw_data = Project.objects.raw(
-        raw_query=f"SELECT * FROM tracking_dev_project WHERE is_activate=True"
-    )
+    if request.user.is_authenticated:
+        raw_data = Project.objects.raw(
+            raw_query=f"select * from tracking_dev_employee_projects tdep "
+                      f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
+                      f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "
+                      f"where tde.user_id = {request.user.id};"
+        )
+    else:
+        raw_data = []
 
     return render(request, 'include/main_page.html', {
         'title_page': 'Привет, мир',
