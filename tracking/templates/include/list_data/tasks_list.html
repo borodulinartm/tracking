@@ -1,20 +1,16 @@
 {% extends 'include/base.html' %}
 {% load static %}
 
-{% block title %}
-    <div class="block_title">
-        <h2 class="title" style="margin-bottom: 50px">{{ title_page }}</h2>
-    </div>
-{% endblock title %}
-
 {% block content %}
     <div class="container-fluid">
-        <div class="d-flex flex-row">
-            <div class="p-2">
-                <a class="btn btn-primary d-flex align-items-center text-white text-decoration-none text_button"
-                    href="{% url 'task_create' project_id=project_id %}"> Добавить новые данные </a>
+        {% if is_admin %}
+            <div class="d-flex flex-row">
+                <div class="p-2">
+                    <a class="btn btn-primary d-flex align-items-center text-white text-decoration-none text_button"
+                        href="{% url 'task_create' project_id=project_id %}"> Добавить новые данные </a>
+                </div>
             </div>
-        </div>
+        {% endif %}
 
         <div class="block_title">
             <h2 class="title" style="margin-bottom: 50px">Ваши задачи</h2>

@@ -87,11 +87,18 @@
                     <div class="fw-bolder text_button">
                         <a class="align-items-center text-dark text_button text-decoration-none dropdown-toggle" href="#"
                            id="dropdown_menu_1" data-bs-toggle="dropdown">
-                            <span class="d-none d-sm-inline mx-1">
-                                {{ content_list.first_name }} {{ content_list.last_name }}
-                            </span>
+                            {% if content_list.id == id %}
+                                <span class="d-none d-sm-inline mx-1">
+                                    {{ content_list.first_name }} {{ content_list.last_name }} (Вы)
+                                </span>
+                            {% else %}
+                                <span class="d-none d-sm-inline mx-1">
+                                    {{ content_list.first_name }} {{ content_list.last_name }}
+                                </span>
+                            {% endif %}
                         </a>
 
+                        {# Small wiindow card info about participant #}
                         <div class="dropdown-menu dropdown-menu-end text-small shadow rounded-10"
                              aria-labelledby="dropdown_menu_1">
                             <p class="fw-bolder text_button position_block dropdown-item-text">
@@ -108,11 +115,13 @@
                     </div>
 
                     {% if is_admin_zone %}
-                        <div>
-                            <a type="button"
-                               href="{% url 'delete_employee_from_project' project_id=content_list.project_id employee_id=content_list.employee_id %}"
-                               class="btn btn-outline-danger text_button">Удалить</a>
-                        </div>
+                        {% if content_list.id != id %}
+                            <div>
+                                <a type="button"
+                                   href="{% url 'delete_employee_from_project' project_id=content_list.project_id employee_id=content_list.employee_id %}"
+                                   class="btn btn-outline-danger text_button">Удалить</a>
+                            </div>
+                        {% endif %}
                     {% endif %}
                 </div>
             </div>

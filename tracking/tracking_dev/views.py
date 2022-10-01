@@ -95,6 +95,7 @@ def show_list_tasks_for_project(request, project_id):
         'list_projects': raw_data,
         'tasks_personal': tasks_personal,
         'tasks_observer': tasks_observer,
+        'is_admin': request.user.is_staff,
         'project_id': project_id,
     })
 
@@ -103,6 +104,9 @@ def show_list_tasks_for_project(request, project_id):
 def get_list_projects(request):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
+
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
 
     raw_data = Project.objects.raw(
         raw_query=f"select * from tracking_dev_employee_projects tdep "
@@ -124,6 +128,9 @@ def get_list_projects(request):
 def project_description(request, project_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
+
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
 
     raw_data = Project.objects.raw(
         raw_query=f"SELECT * FROM tracking_dev_project WHERE project_id = {project_id} and is_activate=True"
@@ -168,6 +175,9 @@ def get_state_list(request):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
 
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+
     # The settings are disable for the developer
     if not request.user.is_staff:
         return HttpResponseForbidden()
@@ -195,6 +205,9 @@ def get_state_list(request):
 def state_description(request, state_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
+
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
 
     raw_data = State.objects.raw(
         raw_query=f"SELECT * FROM tracking_dev_state WHERE state_id = {state_id} and is_activate=True"
@@ -229,6 +242,9 @@ def get_priority_list(request):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
 
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+
     raw_data = Priority.objects.raw(
         raw_query="SELECT * FROM tracking_dev_priority where is_activate=True"
     )
@@ -253,6 +269,9 @@ def get_priority_list(request):
 def priority_description(request, priority_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
+
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
 
     raw_data = Priority.objects.raw(
         raw_query=f"SELECT * FROM tracking_dev_priority WHERE priority_id = {priority_id} and is_activate=True"
@@ -282,6 +301,7 @@ def priority_description(request, priority_id):
         'count_tasks': len(list(count_tasks)),
         'data_group': data,
         'show_choose_project': 1,
+        'what_open': 3,
         'list_projects': all_projects
     })
 
@@ -290,6 +310,9 @@ def priority_description(request, priority_id):
 def type_task_list(request):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
+
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
 
     raw_data = TypeTask.objects.raw(
         raw_query="SELECT * FROM tracking_dev_typetask where is_activate=True"
@@ -315,6 +338,9 @@ def type_task_list(request):
 def type_task_description(request, type_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
+
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
 
     # Select the task by ID
     raw_data = TypeTask.objects.raw(
@@ -354,6 +380,9 @@ def employee_list(request):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
 
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+
     raw_data = Employee.objects.raw(
         raw_query="select au.first_name, au.last_name, tde.employee_id, tde.post, tde.description, tde.date_create "
                   "from tracking_dev_employee tde join auth_user au on au.id = tde.user_id where tde.is_activate=True;"
@@ -380,6 +409,9 @@ def employee_description(request, employee_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
 
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+
     raw_data = Employee.objects.raw(
         raw_query=f"select * from tracking_dev_employee tde join auth_user au on au.id = tde.user_id "
                   f"where employee_id = {employee_id} and is_activate=True;"
@@ -397,14 +429,13 @@ def employee_description(request, employee_id):
                   f"where tde.user_id = {request.user.id};"
     )
 
-    head = ["Номер", "Должность", "Описание", "Дата"]
     return render(request, "include/description/employee.html", {
         'title_page': 'Сведения о сотруднике',
-        'head': head,
         'table': raw_data,
-        'show_list_group': 0,
+        'show_list_group': 1,
         'data_group': data,
         'show_choose_project': 1,
+        'what_open': 5,
         'list_projects': all_projects
     })
 
@@ -412,6 +443,9 @@ def employee_description(request, employee_id):
 def task_description(request, project_id, task_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
+
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
 
     raw_data = Task.objects.raw(
         raw_query=f"select tdt.task_id, tdt.code, tdt.name, tdt.description, au.first_name  as init_name, "
@@ -517,7 +551,7 @@ def get_list_collobarators_to_project(request, project_id):
         return HttpResponseNotFound()
 
     participants = Project.objects.raw(
-        raw_query=f"select au.first_name, au.last_name, tde.post,  tdep.project_id, tdep.employee_id , au.email "
+        raw_query=f"select au.first_name, au.last_name, au.id, tde.post, tdep.project_id, tdep.employee_id , au.email "
                   f"from tracking_dev_employee_projects tdep "
                   f"join tracking_dev_employee tde on tde.employee_id = tdep.employee_id "
                   f"join auth_user au on au.id = tde.user_id "
@@ -531,16 +565,15 @@ def get_list_collobarators_to_project(request, project_id):
                   f"where tde.user_id = {request.user.id};"
     )
 
-    head = ["Номер", "Код", "Название", "Описание", "Дата создания"]
     return render(request, "include/description/collobarators.html", {
         'title_page': 'Участники проекта',
-        'head': head,
         'table': participants,
         'show_list_group': 0,
         'current_project': project_id,
         'show_choose_project': 1,
         'list_projects': all_projects,
-        'is_admin_zone': request.user.is_staff
+        'is_admin_zone': request.user.is_staff,
+        'id': request.user.id
     })
 
 
@@ -583,32 +616,51 @@ def create_project(request):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
 
+    # Create something can only manager (or another admin)
     if not request.user.is_staff:
         return HttpResponseForbidden()
 
     if request.method == "POST":
         creation_form = CreateProjectForm(data=request.POST)
 
+        # If the form is valid, you should add the user to this project.
         if creation_form.is_valid():
             creation_form.save()
+
+            # Auto add manager to table
+            code = creation_form.cleaned_data['code']
+
+            new_project = Project.objects.raw(
+                raw_query=f"SELECT * FROM tracking_dev_project WHERE code='{code}'"
+            )
+            list_employees = Employee.objects.raw(
+                raw_query=f"SELECT * FROM tracking_dev_employee WHERE user_id={request.user.id}"
+            )
+
+            project_id = 0
+            employee_id = 0
+
+            for current_project in new_project:
+                project_id = current_project.project_id
+
+            for current_employee in list_employees:
+                employee_id = current_employee.employee_id
+
+            with connection.cursor() as cursor:
+                cursor.execute(f"insert into tracking_dev_employee_projects(employee_id, project_id, is_activate) "
+                               f"values ({employee_id}, {project_id}, True)")
+
             return redirect(reverse('projects'))
         else:
             messages.error(request, "Error")
     else:
         creation_form = CreateProjectForm()
 
-    data = Project.objects.raw(
-        raw_query=f"SELECT * FROM tracking_dev_project where is_activate=True"
-    )
-
     return render(request, 'include/base_form.html', {
         'title_page': 'Форма создания нового проекта',
         'form': creation_form,
         'text_button': 'Добавить форму',
-        'show_list_group': 1,
         'show_choose_project': 0,
-        'data_group': data,
-        'what_open': 1
     })
 
 
@@ -626,18 +678,11 @@ def edit_project(request, project_id):
         form.save()
         return redirect(reverse('projects'))
 
-    data = Project.objects.raw(
-        raw_query=f"SELECT * FROM tracking_dev_project where is_activate=True"
-    )
-
     return render(request, 'include/base_form.html', {
         'form': form,
         'title_page': 'Форма редактироваиня проекта',
         'text_button': 'Сохранить изменения',
-        'show_list_group': 1,
-        'data_group': data,
         'show_choose_project': 0,
-        'what_open': 1
     })
 
 
@@ -657,18 +702,11 @@ def create_priority(request):
     else:
         creation_form = CreateProjectForm()
 
-    data = Priority.objects.raw(
-        raw_query=f"SELECT * FROM tracking_dev_priority where is_activate=True"
-    )
-
     return render(request, 'include/base_form.html', {
         'title_page': 'Форма создания нового приоритета',
         'form': creation_form,
         'text_button': 'Добавить форму',
-        'show_list_group': 1,
-        'data_group': data,
         'show_choose_project': 0,
-        'what_open': 3
     })
 
 
@@ -685,18 +723,11 @@ def edit_priority(request, priority_id):
         form.save()
         return redirect(reverse('priorities'))
 
-    data = Priority.objects.raw(
-        raw_query=f"SELECT * FROM tracking_dev_priority where is_activate=True"
-    )
-
     return render(request, 'include/base_form.html', {
         'title_page': 'Форма редактирования приоритета',
         'form': form,
         'text_button': 'Применить изменения',
-        'show_list_group': 1,
-        'data_group': data,
         'show_choose_project': 0,
-        'what_open': 3
     })
 
 
@@ -715,18 +746,11 @@ def create_type_task(request):
     else:
         creation_form = CreateTypeTaskForm()
 
-    raw_data = TypeTask.objects.raw(
-        raw_query="SELECT * FROM tracking_dev_typetask where is_activate=True"
-    )
-
     return render(request, 'include/base_form.html', {
         'title_page': 'Форма создания нового типа задачи',
         'form': creation_form,
         'text_button': 'Добавить форму',
-        'show_list_group': 1,
-        'data_group': raw_data,
         'show_choose_project': 0,
-        'what_open': 4
     })
 
 
@@ -752,10 +776,7 @@ def edit_type_task(request, type_id):
         'title_page': 'Форма редактирования типа задачи',
         'form': form,
         'text_button': 'Сохранить изменения',
-        'show_list_group': 1,
-        'data_group': raw_data,
         'show_choose_project': 0,
-        'what_open': 4
     })
 
 
@@ -801,19 +822,12 @@ def create_task(request, project_id):
     else:
         creation_form = CreateTaskForm()
 
-    raw_data = Task.objects.raw(
-        raw_query=f"SELECT * FROM tracking_dev_task where is_activate=True and project_id={project_id}"
-    )
-
     return render(request, 'include/base_form.html', {
         'title_page': 'Форма создания новой задачи',
         'form': creation_form,
         'text_button': 'Добавить данные',
-        'show_list_group': 1,
         'show_choose_project': 0,
-        'data_group': raw_data,
         'project_id': project_id,
-        'what_open': 6
     })
 
 
@@ -840,11 +854,8 @@ def edit_task(request, project_id, task_id):
         'title_page': 'Форма редактирования задачи',
         'form': form,
         'text_button': 'Сохранить изменения',
-        'show_list_group': 1,
         'show_choose_project': 0,
-        'data_group': raw_data,
         'project_id': project_id,
-        'what_open': 6
     })
 
 
