@@ -53,23 +53,31 @@ def show_extra_functions(request, project_id):
 def show_list_tasks_for_project(request, project_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
-    
+
     # Tasks, which needs to complete (which user is responsible)
     tasks_personal = Task.objects.raw(
         raw_query=f"select * from tracking_dev_task tdt "
                   f"join tracking_dev_employee tde on tdt.responsible_id = tde.employee_id "
-                  f"where tde.user_id = {request.user.id} and tdt.project_id = {project_id} and tdt.is_activate;"
+                  f"join tracking_dev_state tds on tds.state_id = tdt.state_id "
+                  f"where tdt.is_activate and tds.\"isClosed\" = false and tde.user_id = {request.user.id} "
+                  f"and tdt.project_id = {project_id};"
     )
 
     # Tasks, in which current user is observer
     tasks_observer = Task.objects.raw(
         raw_query=f"select * from tracking_dev_task tdt "
                   f"join tracking_dev_employee tde on tdt.initiator_id = tde.employee_id "
-                  f"where tde.user_id = {request.user.id} and tdt.project_id = {project_id} and tdt.is_activate;"
+                  f"join tracking_dev_state tds on tds.state_id = tdt.state_id "
+                  f"where tde.user_id = {request.user.id} and tdt.project_id = {project_id} and tdt.is_activate "
+                  f"and tds.\"isClosed\" = false"
     )
 
+    # Another tasks
     tasks_list = Task.objects.raw(
-        raw_query=f"select * from tracking_dev_task tdt where tdt.project_id = {project_id} and tdt.is_activate;"
+        raw_query=f"select * from tracking_dev_task tdt "
+                  f"join tracking_dev_state tds on tds.state_id = tdt.state_id "
+                  f"where tdt.project_id = {project_id} and tdt.is_activate and "
+                  f"tds.\"isClosed\" = false"
     )
 
     raw_data = Project.objects.raw(
@@ -120,7 +128,7 @@ def project_description(request, project_id):
     raw_data = Project.objects.raw(
         raw_query=f"SELECT * FROM tracking_dev_project WHERE project_id = {project_id} and is_activate=True"
     )
-    
+
     participants = Project.objects.raw(
         raw_query=f"select au.first_name, au.last_name, tde.post,  tdep.project_id, tdep.employee_id , au.email "
                   f"from tracking_dev_employee_projects tdep "
@@ -329,10 +337,8 @@ def type_task_description(request, type_id):
                   f"where tde.user_id = {request.user.id};"
     )
 
-    head = ["Номер", "Код", "Название", "Описание", "Дата создания"]
     return render(request, "include/description/type.html", {
         'title_page': 'Сведения о типе задачи',
-        'head': head,
         'table': raw_data,
         'show_list_group': 1,
         'count_tasks': len(list(count_tasks)),
@@ -408,32 +414,39 @@ def task_description(request, project_id, task_id):
         return HttpResponseNotFound()
 
     raw_data = Task.objects.raw(
-        raw_query=f"select tdt.task_id, tdt.code, tdt.name, tdt.description, au.first_name  as init_name,"
-                  f"au.last_name as init_surname, au2.last_name as resp_surname,"
+        raw_query=f"select tdt.task_id, tdt.code, tdt.name, tdt.description, au.first_name  as init_name, "
+                  f"au.last_name as init_surname, au2.last_name as resp_surname, "
                   f"au2.first_name  as resp_name, tds.name as state_name, tdp.name as project_name, "
-                  f"tdp2.name as priority_name, tdt2.name as type_task_name from tracking_dev_task tdt  "
-                  f"join tracking_dev_employee tde on tde.employee_id = tdt.initiator_id join tracking_dev_state tds "
+                  f"tdp2.name as priority_name, tdt2.name as type_task_name, au3.first_name as manager_name, "
+                  f"au3.last_name as manager_last_name "
+                  f"from tracking_dev_task tdt  "
+                  f"join tracking_dev_employee tde on tde.employee_id = tdt.initiator_id  "
+                  f"join tracking_dev_state tds "
                   f"on tds.state_id = tdt.state_id join tracking_dev_project tdp on tdp.project_id = tdt.project_id "
+                  f"join tracking_dev_employee tde3 on tde3.employee_id = tdt.manager_id "
+                  f"join auth_user au3 on au3.id = tde3.user_id  "
                   f"join tracking_dev_priority tdp2 on tdp2.priority_id = tdt.priority_id join tracking_dev_employee "
                   f"tde2 on tde2.employee_id = tdt.responsible_id join tracking_dev_typetask tdt2 "
                   f"on tdt2.type_id = tdt.type_id join auth_user au on au.id = tde.user_id "
-                  f"join auth_user au2 on au2.id = tde2.user_id WHERE tdt.task_id = {task_id} and tdt.is_activate=True;"
+                  f"join auth_user au2 on au2.id = tde2.user_id "
+                  f"where tdt.is_activate=true and tdt.task_id = {task_id};"
     )
 
     data = Task.objects.raw(
-        raw_query=f"SELECT * FROM tracking_dev_task where is_activate=True and project_id={project_id}"
+        raw_query=f"select * from tracking_dev_task tdt "
+                  f"join tracking_dev_state tds on tds.state_id = tdt.state_id "
+                  f"where tdt.project_id = {project_id} and tdt.is_activate and "
+                  f"tds.\"isClosed\" = false"
     )
 
-    head = ["ID", "Код", "Название", "Описание", "Инициатор", "Ответственный", "Состояние", "Проект", "Приоритет",
-            "Тип"]
     return render(request, "include/description/task.html", {
         'title_page': 'Сведения о задаче',
-        'head': head,
         'table': raw_data,
         'show_list_group': 1,
         'data_group': data,
         'project_id': project_id,
         'show_choose_project': 0,
+        'is_admin': request.user.is_staff,
         'what_open': 6
     })
 
@@ -760,6 +773,12 @@ def create_task(request, project_id):
     for data in raw_data:
         arr = data
 
+    # This query provides an employee creation form
+    employee = Employee.objects.filter(user_id=request.user.id)
+    employee_arr = None
+    for data in employee:
+        employee_arr = data
+
     if request.method == "POST":
         creation_form = CreateTaskForm(data=request.POST)
         if creation_form.is_valid():
@@ -774,7 +793,8 @@ def create_task(request, project_id):
             date_deadline = creation_form.cleaned_data['date_deadline']
 
             task = Task(code=code, name=name, description=description, responsible=responsible, initiator=initiator,
-                        state=state, priority=priority, type=type_task, date_deadline=date_deadline, project=arr)
+                        state=state, priority=priority, type=type_task, date_deadline=date_deadline, project=arr,
+                        manager=employee_arr)
             task.save()
 
             return redirect(reverse('tasks_for_project', kwargs={"project_id": project_id}))
@@ -962,3 +982,16 @@ def signup(request):
         'text_button': 'Зарегистрироваться',
         'step': 1
     })
+
+
+# This method marks the task to complete
+def mark_as_completed(request, project_id, task_id):
+    # if the user ia not authenticated, then it cannot delete
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    with connection.cursor() as cursor:
+        cursor.execute(f"UPDATE tracking_dev_task SET state_id=5 WHERE "
+                       f"project_id={project_id} and task_id={task_id}")
+
+    return redirect(reverse('task_description', kwargs={'project_id': project_id, 'task_id': task_id}))

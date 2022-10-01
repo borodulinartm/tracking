@@ -113,11 +113,6 @@ class CreateTaskForm(forms.ModelForm):
             'style': 'margin-bottom: 20px'
         }))
 
-        # self.fields['description'] = forms.CharField(widget=forms.Textarea(attrs={
-        #     'placeholder': 'Your description task',
-        #     'style': 'margin-bottom: 20px'
-        # }))
-
         # This line is correct for the modelChoiceField
         self.fields['responsible'].queryset = Employee.objects.filter(is_activate=True)
         self.fields['initiator'].queryset = Employee.objects.filter(is_activate=True)

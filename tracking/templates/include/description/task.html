@@ -14,53 +14,77 @@
                 <span class="fw-bolder text_button">ID:</span>
                 <span class="fw-normal text_button">{{ content_list.task_id }}</span>
             </div>
+
             <div class="position_block">
                 <span class="fw-bolder text_button">Код</span>
                 <span class="fw-normal text_button">{{ content_list.code }}</span>
             </div>
+
             <div class="position_block">
                 <span class="fw-bolder text_button">Название</span>
                 <span class="fw-normal text_button">{{ content_list.name }}</span>
             </div>
+
             <div class="position_block">
                 <span class="fw-bolder text_button">Описание</span>
                 <span class="fw-normal text_button">{{ content_list.description }}</span>
             </div>
+
             <div class="position_block">
                 <span class="fw-bolder text_button">Инициатор</span>
+                <span class="fw-normal text_button">{{ content_list.manager_name }} {{ content_list.manager_last_name }}</span>
+            </div>
+
+            <div class="position_block">
+                <span class="fw-bolder text_button">Наблюдатель</span>
                 <span class="fw-normal text_button">{{ content_list.init_name }} {{ content_list.init_surname }}</span>
             </div>
+
             <div class="position_block">
                 <span class="fw-bolder text_button">Ответственный</span>
                 <span class="fw-normal text_button">{{ content_list.resp_name }} {{ content_list.resp_surname }}</span>
             </div>
+
             <div class="position_block">
                 <span class="fw-bolder text_button">Состояние</span>
                 <span class="fw-normal text_button">{{ content_list.state_name }}</span>
             </div>
+
             <div class="position_block">
                 <span class="fw-bolder text_button">Проект</span>
                 <span class="fw-normal text_button">{{ content_list.project_name }}</span>
             </div>
+
             <div class="position_block">
                 <span class="fw-bolder text_button">Приоритет</span>
                 <span class="fw-normal text_button">{{ content_list.priority_name }}</span>
             </div>
+
             <div class="position_block">
                 <span class="fw-bolder text_button">Тип</span>
                 <span class="fw-normal text_button">{{ content_list.type_task_name }}</span>
             </div>
 
-            <a
-                    href="{% url 'edit_task' project_id=content_list.project_id task_id=content_list.task_id %}"
-                    class="btn btn-primary text_button">Редактировать
-            </a>
-            <a href="#" class="btn btn-primary text_button">Пометить как выполненную</a>
+            {% if is_admin %}
+                <a href="{% url 'edit_task' project_id=content_list.project_id task_id=content_list.task_id %}"
+                        class="btn btn-primary text_button">Редактировать
+                </a>
+            {% endif %}
 
-            <a href="#" class="btn btn-danger text_button" type="button" data-bs-toggle="modal"
-               data-bs-target="#exampleModal">
-                Удалить
-            </a>
+            {% if is_admin %}
+                {% if content_list.state_id != 5 %}
+                    <a href="{% url 'mark_completed' project_id=content_list.project_id task_id=content_list.task_id %}"
+                       class="btn btn-primary text_button">Пометить как выполненную
+                    </a>
+                {% endif %}
+            {% endif %}
+
+            {% if is_admin %}
+                <a href="#" class="btn btn-danger text_button" type="button" data-bs-toggle="modal"
+                   data-bs-target="#exampleModal">
+                    Удалить
+                </a>
+            {% endif %}
 
             <!-- A modal window deleting -->
             <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"

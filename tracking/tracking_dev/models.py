@@ -109,7 +109,8 @@ class Task(models.Model):
     responsible = models.ForeignKey('Employee', on_delete=models.CASCADE, related_name="r")  # This is a
     # person who must work
     initiator = models.ForeignKey('Employee', on_delete=models.CASCADE, related_name="rr")  # A person, who
-    # assign the responsible
+    # view the work responsible
+    manager = models.ForeignKey('Employee', on_delete=models.CASCADE, related_name="rrrrrrr", null=True)
     state = models.ForeignKey(State, on_delete=models.CASCADE, related_name="rrr")
     priority = models.ForeignKey(Priority, on_delete=models.CASCADE, related_name="rrrr")
     type = models.ForeignKey(TypeTask, on_delete=models.CASCADE, related_name="rrrrr")

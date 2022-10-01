@@ -57,7 +57,9 @@ urlpatterns = [
     path('main_page/projects/<int:project_id>/tasks/<int:task_id>', task_description, name="task_description"),
     path('main_page/projects/<int:project_id>/tasks/<int:task_id>/delete', task_remove, name="task_delete"),
     path('main_page/projects/<int:project_id>/tasks/create', create_task, name="task_create"),
-    path('main_page/projects<int:project_id>/tasks/<int:task_id>/edit', edit_task, name="edit_task"),
+    path('main_page/projects/<int:project_id>/tasks/<int:task_id>/edit', edit_task, name="edit_task"),
+    path('main_page/projects/<int:project_id>/tasks/<int:task_id>/mark_as_read', mark_as_completed,
+         name="mark_completed"),
 
     path('main_page/projects<int:project_id>/collobarators/search', search, name="search"),
     path('main_page/projects/<int:project_id>/collobarators/add/<int:employee_id>', add_employee_to_project,
