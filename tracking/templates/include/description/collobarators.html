@@ -18,14 +18,16 @@
         <div class="position_block">
             <div class="d-flex justify-content-between bs-example">
                 <div>
-                    <a href="#"
-                       class="btn btn-primary text_button" data-bs-toggle="modal" data-bs-target="#exampleModal1">
-                        Добавить участников
-                    </a>
-                    <a href="{% url 'delete_all_employee_from_project' project_id=current_project %}"
-                       class="btn btn-danger text_button" data-bs-toggle="modal" data-bs-target="#exampleModal2">
-                        Удалить всех
-                    </a>
+                    {% if is_admin_zone %}
+                        <a href="#"
+                           class="btn btn-primary text_button" data-bs-toggle="modal" data-bs-target="#exampleModal1">
+                            Добавить участников
+                        </a>
+                        <a href="{% url 'delete_all_employee_from_project' project_id=current_project %}"
+                           class="btn btn-danger text_button" data-bs-toggle="modal" data-bs-target="#exampleModal2">
+                            Удалить всех
+                        </a>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -105,11 +107,13 @@
                         </div>
                     </div>
 
-                    <div>
-                        <a type="button"
-                           href="{% url 'delete_employee_from_project' project_id=content_list.project_id employee_id=content_list.employee_id %}"
-                           class="btn btn-outline-danger text_button">Удалить</a>
-                    </div>
+                    {% if is_admin_zone %}
+                        <div>
+                            <a type="button"
+                               href="{% url 'delete_employee_from_project' project_id=content_list.project_id employee_id=content_list.employee_id %}"
+                               class="btn btn-outline-danger text_button">Удалить</a>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         {% endfor %}
