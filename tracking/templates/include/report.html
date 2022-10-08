@@ -1,0 +1,188 @@
+{% extends 'include/base.html' %}
+{% load static %}
+
+{% block config %}
+    <!--Chart js-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js"
+            integrity="sha256-Uv9BNBucvCPipKQ2NS9wYpJmi8DTOEfTA/nH2aoJALw=" crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.css"
+          integrity="sha256-aa0xaJgmK/X74WM224KMQeNQC2xYKwlAt08oZqjeF0E=" crossorigin="anonymous"/>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+{% endblock config %}
+
+{% block script %}
+    <script>
+        $(document).ready(function () {
+            var ctx = document.getElementById('myChart').getContext('2d');
+            var ctx_2 = document.getElementById('myChart2').getContext('2d');
+            var ctx_3 = document.getElementById('myChart3').getContext('2d');
+
+            var myLineChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [
+                        {% for data in un_completed_tasks %}
+                            '{{ data.char_month }}{{ data.number_year }}',
+                        {% endfor %}
+                    ],
+                    datasets: [{
+                        label: "Невыполненные задачи",
+                        lineTension: 0.3,
+                        backgroundColor: "rgba(235, 23, 66, 0.1)",
+                        borderColor: "rgba(235, 23, 66, 1)",
+                        pointRadius: 3,
+                        pointBackgroundColor: "rgba(235, 23, 66, 1)",
+                        pointBorderColor: "rgba(235, 23, 66, 1)",
+                        pointHoverRadius: 3,
+                        pointHoverBackgroundColor: "rgba(235, 23, 66, 1)",
+                        pointHoverBorderColor: "rgba(235, 23, 66, 1)",
+                        pointHitRadius: 10,
+                        pointBorderWidth: 2,
+                        data: [{% for data in un_completed_tasks %}{{ data.count_tasks }}, {% endfor %}],
+                    }],
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    layout: {
+                        padding: {
+                            left: 10,
+                            right: 25,
+                            top: 25,
+                            bottom: 0
+                        }
+                    },
+                    scales: {
+                        xAxes: [{
+                            time: {
+                                unit: 'date'
+                            },
+                            gridLines: {
+                                display: false,
+                                drawBorder: false
+                            },
+                            ticks: {
+                                maxTicksLimit: 7
+                            }
+                        }],
+                    },
+                    legend: {
+                        display: false
+                    },
+                }
+            });
+
+            // This variable provides count completed tasks by months
+            var myLineChart2 = new Chart(ctx_2, {
+                type: 'line',
+                data: {
+                    labels: [
+                        {% for data in completed_tasks %}
+                            '{{ data.char_month }}{{ data.number_year }}',
+                        {% endfor %}
+                    ],
+                    datasets: [{
+                        label: "Закрытые задачи",
+                        lineTension: 0.3,
+                        backgroundColor: "rgba(56, 213, 63, 0.10)",
+                        borderColor: "rgba(56, 213, 63, 1)",
+                        pointRadius: 3,
+                        pointBackgroundColor: "rgba(56, 213, 63, 1)",
+                        pointBorderColor: "rgba(56, 213, 63, 1)",
+                        pointHoverRadius: 3,
+                        pointHoverBackgroundColor: "rgba(56, 213, 63, 1)",
+                        pointHoverBorderColor: "rgba(56, 213, 63, 1)",
+                        pointHitRadius: 10,
+                        pointBorderWidth: 2,
+                        data: [{% for data in completed_tasks %}{{ data.count_tasks }}, {% endfor %}],
+                    }],
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    layout: {
+                        padding: {
+                            left: 10,
+                            right: 25,
+                            top: 25,
+                            bottom: 0
+                        }
+                    },
+                    scales: {
+                        xAxes: [{
+                            time: {
+                                unit: 'date'
+                            },
+                            gridLines: {
+                                display: false,
+                                drawBorder: false
+                            },
+                            ticks: {
+                                maxTicksLimit: 7
+                            }
+                        }],
+                    },
+                    legend: {
+                        display: false
+                    },
+                }
+            });
+
+            var myChart3 = new Chart(ctx_3, {
+                type: 'doughnut',
+                data: {
+                    labels: [
+                        {% for data in count_tasks_by_states %}
+                            '{{ data.curr_state }}',
+                        {% endfor %}
+                    ],
+                    datasets: [{
+                        label: '# of users',
+                        data: [
+                            {% for data in  count_tasks_by_states %}
+                                {{ data.count_elems }},
+                            {% endfor %}
+                        ],
+                        backgroundColor: ["#3e95cd", "#8e5ea2"],
+                        borderColor: ["#3e95cd", "#8e5ea2"],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+{% endblock script %}
+
+{% block content %}
+    <div class="title_block">
+        <h2 class="title">Не закрытые задачи</h2>
+    </div>
+
+    <div style="height: 30%">
+        <canvas id="myChart" width="400" height="100"></canvas>
+    </div>
+
+    <div class="title_block">
+        <h2 class="title">Закрытые задачи</h2>
+    </div>
+
+    <div style="height: 30%">
+        <canvas id="myChart2" width="400" height="100"></canvas>
+    </div>
+
+    <div class="title_block">
+        <h2 class="title">Текущее состояние задач в проекте</h2>
+    </div>
+
+    <div style="height: 30%">
+        <canvas id="myChart3" width="400" height="100"></canvas>
+    </div>
+{% endblock content %}

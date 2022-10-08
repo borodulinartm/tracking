@@ -25,6 +25,7 @@ urlpatterns = [
     path('main_page/projects', get_list_projects, name="projects"),
     path('main_page/projects/<int:project_id>', show_extra_functions, name="project_extra_function"),
     path('main_page/projects/<int:project_id>/description', project_description, name="project_description"),
+    path('main_page/projects/<int:project_id>/report', calculate_report_tasks, name="project_report"),
     path('main_page/projects/<int:project_id>/delete', project_remove, name="project_delete"),
     path('main_page/projects<int:project_id>/collobarators', get_list_collobarators_to_project, name="collabs"),
     path('main_page/projects/<int:project_id>/collobarators/<int:employee_id>/delete', remove_user_from_current_project,

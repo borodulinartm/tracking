@@ -768,10 +768,6 @@ def edit_type_task(request, type_id):
         form.save()
         return redirect(reverse('types'))
 
-    raw_data = TypeTask.objects.raw(
-        raw_query="SELECT * FROM tracking_dev_typetask where is_activate=True"
-    )
-
     return render(request, 'include/base_form.html', {
         'title_page': 'Форма редактирования типа задачи',
         'form': form,
@@ -821,6 +817,10 @@ def create_task(request, project_id):
             return redirect(reverse('tasks_for_project', kwargs={"project_id": project_id}))
     else:
         creation_form = CreateTaskForm()
+
+        # Use a many-to-many query
+        creation_form.fields['responsible'].queryset = Employee.objects.filter(projects=project_id)
+        creation_form.fields['initiator'].queryset = Employee.objects.filter(projects=project_id)
 
     return render(request, 'include/base_form.html', {
         'title_page': 'Форма создания новой задачи',
@@ -1006,3 +1006,42 @@ def mark_as_completed(request, project_id, task_id):
                        f"project_id={project_id} and task_id={task_id}")
 
     return redirect(reverse('task_description', kwargs={'project_id': project_id, 'task_id': task_id}))
+
+
+# This view provides a report of the completed tasks by deadline dates
+def calculate_report_tasks(request, project_id):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    un_completed_tasks = Task.objects.raw(
+        raw_query=f"select 1 as task_id, to_char(date_deadline, 'Month') as char_month, extract(month from date_deadline) as number_month, "
+                  f"extract (year from date_deadline) as number_year, count(tdt.task_id) as count_tasks "
+                  f"from tracking_dev_task tdt "
+                  f"join tracking_dev_state tds on tdt.state_id = tds.state_id "
+                  f"where tds.\"isClosed\" = false and tdt.is_activate and tdt.project_id = {project_id} "
+                  f"group by number_month, number_year, char_month order by number_year, number_month "
+    )
+
+    completed_tasks = Task.objects.raw(
+        raw_query=f"select 1 as task_id, to_char(date_deadline, 'Month') as char_month, extract(month from date_deadline) as number_month, "
+                  f"extract (year from date_deadline) as number_year, count(tdt.task_id) as count_tasks "
+                  f"from tracking_dev_task tdt "
+                  f"join tracking_dev_state tds on tdt.state_id = tds.state_id "
+                  f"where tds.\"isClosed\" = true and tdt.is_activate and tdt.project_id = {project_id} "
+                  f"group by number_month, number_year, char_month order by number_year, number_month "
+    )
+
+    raw_query = f'select 1 as task_id, COUNT(tdt.task_id) as count_elems, tds."name" as curr_state ' \
+                f'from tracking_dev_task tdt join tracking_dev_state tds on tdt.state_id = tds.state_id ' \
+                f'where tdt.is_activate = true and tdt.project_id = {project_id} ' \
+                f'group by tds."name"'
+
+    count_tasks_by_states = Task.objects.raw(
+        raw_query=raw_query
+    )
+
+    return render(request, "include/report.html", {
+        'un_completed_tasks': un_completed_tasks,
+        'completed_tasks': completed_tasks,
+        'count_tasks_by_states': count_tasks_by_states
+    })
