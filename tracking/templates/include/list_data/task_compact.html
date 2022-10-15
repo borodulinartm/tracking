@@ -1,0 +1,23 @@
+{% extends 'include/base.html' %}
+{% load static %}
+
+{% block content %}
+    <div class="block_title">
+        <h2 class="title" style="margin-bottom: 50px">
+            Не выполненные задачи
+        </h2>
+    </div>
+
+    {% for task in count_tasks %}
+        <div class="row">
+            <a href="{% url 'task_description' project_id=project_id task_id=task.task_id %}"
+               class="list-group-item list-group-item-action text_button" aria-current="true">
+                <div class="d-flex w-100 justify-content-between">
+                    <h3 class="mb-1">{{ task.code }}</h3>
+                    <small>{{ task.date_create }}</small>
+                </div>
+                <p class="mb-1">{{ task.description|truncatechars:100 }}</p>
+            </a>
+        </div>
+    {% endfor %}
+{% endblock content %}

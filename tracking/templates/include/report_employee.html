@@ -31,7 +31,7 @@
                     datasets: [{
                         label: "Невыполненные задачи",
                         lineTension: 0.3,
-                        backgroundColor: "rgba(235, 23, 66, 0.1)",
+                        backgroundColor: "rgba(235, 23, 66, 0.2)",
                         borderColor: "rgba(235, 23, 66, 1)",
                         pointRadius: 3,
                         pointBackgroundColor: "rgba(235, 23, 66, 1)",
@@ -86,7 +86,7 @@
                     datasets: [{
                         label: "Закрытые задачи",
                         lineTension: 0.3,
-                        backgroundColor: "rgba(56, 213, 63, 0.10)",
+                        backgroundColor: "rgba(56, 213, 63, 0.20)",
                         borderColor: "rgba(56, 213, 63, 1)",
                         pointRadius: 3,
                         pointBackgroundColor: "rgba(56, 213, 63, 1)",
@@ -170,27 +170,91 @@
 {% endblock script %}
 
 {% block content %}
+    <div class="list_button_block">
+        <div class="title_block">
+            <h2 class="title">Сведения о сотруднике</h2>
+        </div>
+        <div class="position_block">
+            {% for data in user_info %}
+                <div class="position_block title">
+                    <span class="fw-normal">
+                        <img src="{% static 'img/user.svg' %}" alt="User" rel="icon">
+                    </span>
+                    <span class="text_button">{{ data.first_name }} {{ data.last_name }}</span>
+                </div>
+
+                <div class="position_block title">
+                    <span class="fw-normal">
+                        <img src="{% static 'img/email.svg' %}" alt="Email" rel="icon">
+                    </span>
+                    <span class="text_button">{{ data.email }}</span>
+                </div>
+
+                <div class="position_block title">
+                    <span class="fw-normal">
+                        <img src="{% static 'img/post.svg' %}" alt="Post" rel="icon">
+                    </span>
+                    <span class="text_button">{{ data.post }}</span>
+                </div>
+
+                <div class="position_block title">
+                    <span class="fw-normal">
+                        <img src="{% static 'img/calendar.svg' %}" alt="Date" rel="icon">
+                    </span>
+                    <span class="text_button">{{ data.date_joined }}</span>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
     <div class="title_block">
-        <h2 class="title">Не закрытые задачи</h2>
+        <h2 class="title">Не выполненные задачи</h2>
     </div>
 
-    <div style="height: 30%">
+    <div style="height: 25%">
         <canvas id="myChart" width="400" height="100"></canvas>
+    </div>
+
+    <div class="row">
+        <a href="{% url 'uncompleted_tasks_by_user' project_id=project_id employee_id=employee_id sort='uncompleted' %}"
+           class="list-group-item list-group-item-action text_button" aria-current="true">
+            <div class="d-flex w-100 justify-content-between">
+                <h3 class="mb-1">
+                    Подробнее
+                    <span class="fw-normal">
+                        <img src="{% static 'img/angle-right.svg' %}" alt="Right" rel="icon">
+                    </span>
+                </h3>
+            </div>
+        </a>
     </div>
 
     <div class="title_block">
         <h2 class="title">Закрытые задачи</h2>
     </div>
 
-    <div style="height: 30%">
+    <div style="height: 25%">
         <canvas id="myChart2" width="400" height="100"></canvas>
+    </div>
+
+    <div class="row">
+        <a href="{% url 'uncompleted_tasks_by_user' project_id=project_id employee_id=employee_id sort='completed' %}"
+           class="list-group-item list-group-item-action text_button" aria-current="true">
+            <div class="d-flex w-100 justify-content-between">
+                <h3 class="mb-1">
+                    Подробнее
+                    <span class="fw-normal">
+                        <img src="{% static 'img/angle-right.svg' %}" alt="Right" rel="icon">
+                    </span>
+                </h3>
+            </div>
+        </a>
     </div>
 
     <div class="title_block">
         <h2 class="title">Количество задач по состояниям</h2>
     </div>
 
-    <div style="height: 30%">
+    <div style="height: 25%">
         <canvas id="myChart3" width="400" height="100"></canvas>
     </div>
 {% endblock content %}

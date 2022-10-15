@@ -39,9 +39,9 @@
                 <span class="fw-bolder text_button">Закрыто:</span>
                 <span class="fw-normal text_button">
                     {% if content_list.isClosed %}
-                        <img src="{% static 'img/icon_ok.png' %}" alt="Yes" rel="icon" type="image/png" sizes="96x96">
+                        <img src="{% static 'img/completed.svg' %}" alt="Yes" rel="icon">
                     {% else %}
-                        <img src="{% static 'img/icon_cancel.png' %}" alt="No" rel="icon" type="image/png" sizes="96x96">
+                        <img src="{% static 'img/not_completed.svg' %}" alt="No" rel="icon">
                     {% endif %}
                 </span>
             </div>

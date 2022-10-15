@@ -27,6 +27,8 @@ urlpatterns = [
     path('main_page/projects/<int:project_id>/description', project_description, name="project_description"),
     path('main_page/projects/<int:project_id>/report', calculate_report_tasks, name="project_report"),
     path('main_page/projects/<int:project_id>/report_employee/<int:employee_id>', report_by_employee, name="employee_report"),
+    path('main_page/projects/<int:project_id>/employee/<int:employee_id>/tasks/<str:sort>',
+         show_uncompleted_tasks_by_user, name="uncompleted_tasks_by_user"),
     path('main_page/projects/<int:project_id>/delete', project_remove, name="project_delete"),
     path('main_page/projects<int:project_id>/collobarators', get_list_collobarators_to_project, name="collabs"),
     path('main_page/projects/<int:project_id>/collobarators/<int:employee_id>/delete', remove_user_from_current_project,
@@ -36,6 +38,7 @@ urlpatterns = [
     path('main_page/projects/<int:project_id>/tasks', show_list_tasks_for_project, name="tasks_for_project"),
     path('main_page/projects/create', create_project, name="create_project"),
     path('main_page/projects/<int:project_id>/edit', edit_project, name="edit_project"),
+    path('main_page/projects/<int:project_id>/kanban_viewer', kanban_board_manager, name="kanban_board"),
 
     path('main_page/states', get_state_list, name="states"),
     path('main_page/states/<int:state_id>', state_description, name="state_description"),

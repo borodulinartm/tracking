@@ -1056,10 +1056,7 @@ def calculate_report_tasks(request, project_id):
     })
 
 
-# This view provides list o
-def show_list_employee_to_report(project_id):
-    pass
-
+# This view provides the report of the user
 def report_by_employee(request, project_id, employee_id):
     # This report query provides list of the count tasks on the different states.
     count_tasks_by_states = Task.objects.raw(
@@ -1090,6 +1087,11 @@ def report_by_employee(request, project_id, employee_id):
                   f"group by number_month , number_year, char_month order by number_year , number_month ;"
     )
 
+    user_description = Employee.objects.raw(
+        raw_query=f"select * from tracking_dev_employee tde "
+                  f"join auth_user au ON tde.user_id = au.id where tde.employee_id = 2"
+    )
+
     random_colors_array = []
     r = lambda: random.randint(0, 255)
 
@@ -1100,5 +1102,52 @@ def report_by_employee(request, project_id, employee_id):
         'un_completed_tasks': count_uncompleted_tasks_by_month,
         'completed_tasks': count_completed_tasks_by_month,
         'count_tasks_by_states': count_tasks_by_states,
-        'colors': random_colors_array
+        'user_info': user_description,
+        'colors': random_colors_array,
+        'project_id': project_id,
+        'employee_id': employee_id
+    })
+
+
+# This view provides a list of the completed or uncompleted tasks
+def show_uncompleted_tasks_by_user(request, project_id, employee_id, sort):
+    query = f"select * from tracking_dev_task tdt join tracking_dev_state tds on tdt.state_id = tds.state_id " \
+            f"where tdt.project_id = {project_id} and tdt.responsible_id = {employee_id} "
+
+    if sort == "uncompleted":
+        query += "and tds.\"isClosed\" = false "
+    else:
+        query += "and tds.\"isClosed\" = true "
+
+    count_tasks = Task.objects.raw(raw_query=query)
+
+    return render(request, "include/list_data/task_compact.html", {
+        "count_tasks": count_tasks,
+        'project_id': project_id
+    })
+
+
+# This view provides a kanban board manager
+def kanban_board_manager(request, project_id):
+    data = State.objects.filter(is_activate=True)
+    tasks_by_state = []
+    for elem in data:
+        tasks_query = Task.objects.raw(
+            raw_query=f"select * from tracking_dev_task tdt "
+                      f"join tracking_dev_employee tde on tde.employee_id = tdt.responsible_id "
+                      f"join auth_user au on au.id = tde.user_id "
+                      f"where tdt.state_id = {elem.state_id} and tdt.project_id = {project_id} and tdt.is_activate = true;"
+        )
+
+        my_dict = {
+            "state": elem.name,
+            "description": elem.description,
+            "tasks": tasks_query
+        }
+
+        tasks_by_state.append(my_dict)
+
+    return render(request, "include/kanban.html", {
+        'list_states': data,
+        'tasks_by_state': tasks_by_state
     })
