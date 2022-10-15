@@ -8,6 +8,8 @@ from django.db import connection
 from .models import *
 from .forms import *
 
+import random
+
 
 # This view provides a main page.
 def index(request):
@@ -1036,6 +1038,12 @@ def calculate_report_tasks(request, project_id):
                 f'where tdt.is_activate = true and tdt.project_id = {project_id} ' \
                 f'group by tds."name"'
 
+    random_colors_array = []
+    r = lambda: random.randint(0, 255)
+
+    for data in raw_query:
+        random_colors_array.append('#%02X%02X%02X' % (r(), r(), r()))
+
     count_tasks_by_states = Task.objects.raw(
         raw_query=raw_query
     )
@@ -1043,5 +1051,54 @@ def calculate_report_tasks(request, project_id):
     return render(request, "include/report.html", {
         'un_completed_tasks': un_completed_tasks,
         'completed_tasks': completed_tasks,
-        'count_tasks_by_states': count_tasks_by_states
+        'count_tasks_by_states': count_tasks_by_states,
+        'colors': random_colors_array
+    })
+
+
+# This view provides list o
+def show_list_employee_to_report(project_id):
+    pass
+
+def report_by_employee(request, project_id, employee_id):
+    # This report query provides list of the count tasks on the different states.
+    count_tasks_by_states = Task.objects.raw(
+        raw_query=f"select 1 as task_id, tds.\"name\" as name_state , COUNT(tdt.task_id) as count_tasks from tracking_dev_task tdt "
+                  f"join tracking_dev_state tds on tds.state_id = tdt.state_id "
+                  f"where tdt.project_id = {project_id} and tdt.responsible_id = {employee_id} "
+                  f"and tdt.is_activate = true "
+                  f"group by tds.\"name\""
+    )
+
+    # This report query provides count completed tasks by month
+    count_completed_tasks_by_month = Task.objects.raw(
+        raw_query=f"select 1 as task_id, to_char(date_deadline, 'Month') as char_month, extract(month from date_deadline) as number_month, "
+                  f"extract (year from date_deadline) as number_year, count(tdt.task_id) as count_tasks from tracking_dev_task tdt "
+                  f"join tracking_dev_state tds on tds.state_id = tdt.state_id "
+                  f"where tdt.responsible_id = {employee_id} and tdt.project_id = {project_id} "
+                  f"and tds.\"isClosed\" = true and tdt.is_activate = true "
+                  f"group by number_month , number_year, char_month order by number_year , number_month ;"
+    )
+
+    # This report query provides not completed tasks by month
+    count_uncompleted_tasks_by_month = Task.objects.raw(
+        raw_query=f"select 1 as task_id, to_char(date_deadline, 'Month') as char_month, extract(month from date_deadline) as number_month, "
+                  f"extract (year from date_deadline) as number_year, count(tdt.task_id) as count_tasks from tracking_dev_task tdt "
+                  f"join tracking_dev_state tds on tds.state_id = tdt.state_id "
+                  f"where tdt.responsible_id = {employee_id} and tdt.project_id = {project_id} "
+                  f"and tds.\"isClosed\" = false and tdt.is_activate = true "
+                  f"group by number_month , number_year, char_month order by number_year , number_month ;"
+    )
+
+    random_colors_array = []
+    r = lambda: random.randint(0, 255)
+
+    for data in count_tasks_by_states:
+        random_colors_array.append('#%02X%02X%02X' % (r(), r(), r()))
+
+    return render(request, "include/report_employee.html", {
+        'un_completed_tasks': count_uncompleted_tasks_by_month,
+        'completed_tasks': count_completed_tasks_by_month,
+        'count_tasks_by_states': count_tasks_by_states,
+        'colors': random_colors_array
     })

@@ -134,14 +134,14 @@
                 data: {
                     labels: [
                         {% for data in count_tasks_by_states %}
-                            '{{ data.curr_state }}',
+                            '{{ data.name_state }}',
                         {% endfor %}
                     ],
                     datasets: [{
                         label: '# of users',
                         data: [
-                            {% for data in  count_tasks_by_states %}
-                                {{ data.count_elems }},
+                            {% for data in count_tasks_by_states %}
+                                {{ data.count_tasks }},
                             {% endfor %}
                         ],
                         backgroundColor: [
@@ -187,7 +187,7 @@
     </div>
 
     <div class="title_block">
-        <h2 class="title">Текущее состояние задач в проекте</h2>
+        <h2 class="title">Количество задач по состояниям</h2>
     </div>
 
     <div style="height: 30%">
