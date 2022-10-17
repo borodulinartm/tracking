@@ -45,6 +45,60 @@
                     {% endif %}
                 </span>
             </div>
+
+            <a href="{% url 'state_edit' state_id=content_list.state_id %}"
+               class="btn btn-primary text_button">Редактировать
+            </a>
+
+            {% if count_tasks == 0 %}
+                <a type="button" data-bs-toggle="modal" data-bs-target="#exampleModal" href="#"
+                   class="btn btn-danger text_button"> Удалить
+                </a>
+            {% else %}
+                <a type="button" data-bs-toggle="modal" data-bs-target="#errorModal" href="#"
+                   class="btn btn-danger text_button"> Удалить
+                </a>
+            {% endif %}
+
+            <!-- Remove modal window -->
+            <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+                 aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Внимание</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body text_button">Вы действительно хотите удалить состояние?</div>
+                        <div class="modal-footer">
+                            <a type="button" class="btn btn-primary" data-bs-dismiss="modal">Отмена</a>
+                            <a type="button" href="{% url 'state_remove' state_id=content_list.state_id %}"
+                               class="btn btn-danger">Подтвердить удаление</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+                 aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title text-danger" id="exampleModalLabel">Ошибка</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+
+                        <div class="modal-body text_button">К сожалению, состояние нельзя  удалить, так как есть задачи
+                            , относящиеся к данному состоянию. Для удаления необходимо полностью (в том числе из
+                             корзины) удалить все задачи, относящиеся к данному состоянию, а затем попробовать снова.
+                        </div>
+
+                        <div class="modal-footer">
+                            <a type="button" class="btn btn-primary" data-bs-dismiss="modal">Ок</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         {% endfor %}
     </div>
 {% endblock content %}

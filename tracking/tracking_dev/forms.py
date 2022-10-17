@@ -50,6 +50,42 @@ class CreatePriorityForm(forms.ModelForm):
         self.fields['code'].label = "Код"
 
 
+# This class allows users create a states form
+class CreateStateForm(forms.ModelForm):
+    class Meta:
+        model = State
+        fields = ['code', 'name', 'description', 'isClosed']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # The view elements is a
+        self.fields['code'] = forms.CharField(widget=forms.TextInput(attrs={
+            'placeholder': 'Введите код',
+            'style': 'margin-bottom: 20px'
+        }))
+
+        self.fields['name'] = forms.CharField(widget=forms.TextInput(attrs={
+            'placeholder': 'Введите код',
+            'style': 'margin-bottom: 20px'
+        }))
+
+        self.fields['description'] = forms.CharField(widget=forms.Textarea(attrs={
+            'placeholder': 'Введите код',
+            'style': 'margin-bottom: 20px'
+        }))
+
+        self.fields['isClosed'] = forms.BooleanField(required=False, widget=forms.CheckboxInput(attrs={
+            'style': 'margin-bottom: 20px'
+        }))
+
+        # Enter the label of the fields
+        self.fields['code'].label = "Код"
+        self.fields['name'].label = "Название"
+        self.fields['description'].label = "Описание"
+        self.fields['isClosed'].label = "Задача выполнена?"
+
+
 # This form provides enter the types of the task form
 class CreateTypeTaskForm(forms.ModelForm):
     class Meta:

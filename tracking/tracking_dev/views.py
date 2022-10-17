@@ -228,6 +228,8 @@ def state_description(request, state_id):
                   f"where tde.user_id = {request.user.id};"
     )
 
+    tasks_with_current_state_id = Task.objects.filter(state_id=state_id).count()
+
     head = ["Номер", "Код", "Название", "Описание", "Дата создания"]
     return render(request, "include/description/state.html", {
         'title_page': 'Сведения о состоянии задачи',
@@ -236,6 +238,7 @@ def state_description(request, state_id):
         'show_list_group': 1,
         'data_group': data,
         'what_open': 2,
+        'count_tasks': tasks_with_current_state_id,
         'show_choose_project': 1,
         'list_projects': all_projects
     })
@@ -534,6 +537,19 @@ def priority_remove(request, priority_id):
     return redirect(reverse('priorities'))
 
 
+# This view allows user remove the state from the project
+# But in the project all tasks with the current state_id must be wiped out from the system due to errors.
+def state_remove(request, state_id):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+
+    State.objects.filter(state_id=state_id).update(is_activate=False)
+    return redirect(reverse('states'))
+
+
 # This view allows you to remove the employee
 def employee_remove(request, employee_id):
     if not request.user.is_authenticated:
@@ -742,6 +758,78 @@ def edit_priority(request, priority_id):
         'form': form,
         'text_button': 'Применить изменения',
         'show_choose_project': 0,
+    })
+
+
+# This view allows admin create states for project
+def create_state(request):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+
+    if request.method == "POST":
+        creation_form = CreateStateForm(data=request.POST)
+
+        # If the form is valid, then we need to check if the isClosed states exists.
+        if creation_form.is_valid():
+            is_ticked_checkbox = creation_form.cleaned_data['isClosed']
+            if is_ticked_checkbox:
+                count_closed_states = State.objects.filter(isClosed=True).count()
+                if count_closed_states == 0:
+                    creation_form.save()
+                    return redirect(reverse('states'))
+                else:
+                    messages.error(request, "Состояние закрытой задачи уже существует в системе")
+            else:
+                creation_form.save()
+                return redirect(reverse('states'))
+        else:
+            messages.error(request, "Произошла ошибка при вводе данных. Убедитесь, что информация введена верно")
+    else:
+        creation_form = CreateStateForm()
+
+    return render(request, 'include/base_form.html', {
+        'title_page': 'Форма создания нового состояния задачи',
+        'form': creation_form,
+        'text_button': 'Добавить данные',
+        'show_create_project': 0
+    })
+
+
+# This view allows to edit priority
+def edit_states(request, state_id):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+
+    instance = get_object_or_404(State, state_id=state_id)
+    form = CreateStateForm(request.POST or None, instance=instance)
+
+    if form.is_valid():
+        is_checkbox_ticked = form.cleaned_data['isClosed']
+
+        # The condition of the count closed tasks can be if the checkbox has ticked.
+        if is_checkbox_ticked:
+            count_another_closed_tasks = State.objects.filter(Q(isClosed=True) & ~Q(state_id=state_id)).count()
+
+            if count_another_closed_tasks == 0:
+                form.save()
+                return redirect(reverse('states'))
+            else:
+                messages.error(request, "В базе данных уже имеется состояние, при котором задача может считаться закрытой")
+        else:
+            form.save()
+            return redirect(reverse('states'))
+
+    return render(request, "include/base_form.html", {
+        'title_page': 'Форма рредактирования текущего состояния',
+        'form': form,
+        'text_button': 'Применить изменения',
+        'show_choose_project': 0
     })
 
 
