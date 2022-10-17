@@ -45,6 +45,36 @@
                         </ul>
                     </li>
                 {% endif %}
+
+                {% if is_project_zone == 1 %}
+                    {% for current_project in list_projects %}
+                        {% if current_project.project_id == project_id %}
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown_3" role="button"
+                                data-bs-toggle="dropdown" aria-expanded="false">
+                                    {{ current_project.name }}
+                                </a>
+
+                                <ul class="dropdown-menu" aria-labelledby="navbarDropdown_3">
+                                    <li>
+                                        <a class="dropdown-item"
+                                           href="{% url 'tasks_for_project' project_id=project_id %}">
+                                            Список текущих задач
+                                        </a>
+                                        <a class="dropdown-item"
+                                           href="{% url 'collabs' project_id=project_id %}">
+                                            Список участников
+                                        </a>
+                                        <a class="dropdown-item"
+                                           href="{% url 'kanban_board' project_id=project_id %}">
+                                            Канбан-доска
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
             </ul>
 
             <div class="d-flex flex-row-reverse">

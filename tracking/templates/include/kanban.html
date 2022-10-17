@@ -23,11 +23,13 @@
                                             <p>{{ task.description|truncatechars:200 }} </p>
                                             <p>{{ task.first_name }} {{ task.last_name }}</p>
                                             <p>{{ task.date_change }}</p>
-                                            <a class="btn btn-outline-primary" href="#">Сведения</a>
+                                            <a class="btn btn-outline-primary"
+                                               href="{% url 'task_description' project_id=project_id task_id=task.task_id %}">Сведения
+                                            </a>
                                         </div>
                                     </div>
                                 {% endfor %}
-{#                                <a href="#" class="btn btn-primary btn-block text_button">Добавить новую задачу</a>#}
+                                {#                                <a href="#" class="btn btn-primary btn-block text_button">Добавить новую задачу</a>#}
                             </div>
                         </div>
                     </div>

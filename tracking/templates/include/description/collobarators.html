@@ -23,7 +23,7 @@
                            class="btn btn-primary text_button" data-bs-toggle="modal" data-bs-target="#exampleModal1">
                             Добавить участников
                         </a>
-                        <a href="{% url 'delete_all_employee_from_project' project_id=current_project %}"
+                        <a href="{% url 'delete_all_employee_from_project' project_id=project_id %}"
                            class="btn btn-danger text_button" data-bs-toggle="modal" data-bs-target="#exampleModal2">
                             Удалить всех
                         </a>
@@ -45,7 +45,7 @@
                     </div>
                     <div class="modal-body text_button">
                         Поиск
-                        <form action="{% url 'search' project_id=current_project %}" class="form-inline" method="get">
+                        <form action="{% url 'search' project_id=project_id %}" class="form-inline" method="get">
                             <div class="form-group mx-sm-3 mb-2">
                                 <label for="" class="sr-only text_button"></label>
                                 <input name="search" type="" class="form-control" id="" placeholder="keyword">
@@ -74,7 +74,7 @@
                     <div class="modal-footer">
                         <a type="button" class="btn btn-primary" data-bs-dismiss="modal">Отмена</a>
                         <a type="button"
-                           href="{% url 'delete_all_employee_from_project' project_id=current_project %}"
+                           href="{% url 'delete_all_employee_from_project' project_id=project_id %}"
                            class="btn btn-danger">Подтвердить удаление</a>
                     </div>
                 </div>
@@ -112,7 +112,7 @@
                                 Подробнее
                             </a>
                             <a class="btn btn-primary position_block"
-                               href="{% url 'employee_report' project_id=current_project employee_id=content_list.employee_id %}">
+                               href="{% url 'employee_report' project_id=project_id employee_id=content_list.employee_id %}">
                                 Отчёт по сотруднику
                             </a>
                         </div>

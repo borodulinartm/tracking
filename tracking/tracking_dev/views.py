@@ -46,6 +46,7 @@ def show_extra_functions(request, project_id):
     return render(request, "include/list_data/project_list_functions.html", {
         'show_list_group': 0,
         'show_choose_project': 1,
+        'is_project_zone': 1,
         'list_projects': raw_data,
         'project_id': project_id
     })
@@ -94,6 +95,7 @@ def show_list_tasks_for_project(request, project_id):
         'show_list_group': 0,
         'data_group': tasks_list,
         'show_choose_project': 1,
+        'is_project_zone': 1,
         'list_projects': raw_data,
         'tasks_personal': tasks_personal,
         'tasks_observer': tasks_observer,
@@ -475,13 +477,22 @@ def task_description(request, project_id, task_id):
                   f"tds.\"isClosed\" = false"
     )
 
+    list_projects = Project.objects.raw(
+        raw_query=f"select * from tracking_dev_employee_projects tdep "
+                  f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
+                  f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "
+                  f"where tde.user_id = {request.user.id};"
+    )
+
     return render(request, "include/description/task.html", {
         'title_page': 'Сведения о задаче',
         'table': raw_data,
         'show_list_group': 1,
         'data_group': data,
         'project_id': project_id,
+        'is_project_zone': 1,
         'show_choose_project': 0,
+        'list_projects': list_projects,
         'is_admin': request.user.is_staff,
         'what_open': 6
     })
@@ -571,8 +582,9 @@ def get_list_collobarators_to_project(request, project_id):
         'title_page': 'Участники проекта',
         'table': participants,
         'show_list_group': 0,
-        'current_project': project_id,
+        'project_id': project_id,
         'show_choose_project': 1,
+        'is_project_zone': 1,
         'list_projects': all_projects,
         'is_admin_zone': request.user.is_staff,
         'id': request.user.id
@@ -906,11 +918,20 @@ def search(request, project_id):
                       f"on tde.user_id = au.id where tde.is_activate and au.username='{query}';"
         )
 
+    raw_data = Project.objects.raw(
+        raw_query=f"select * from tracking_dev_employee_projects tdep "
+                  f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
+                  f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "
+                  f"where tde.user_id = {request.user.id};"
+    )
+
     return render(request, 'include/user_search.html', {
         'title_page': 'Найденные сотрудники',
         'participants': results,
         'show_choose_project': 0,
+        'list_projects': raw_data,
         'show_list_group': 0,
+        'is_project_zone': 1,
         'project_id': project_id
     })
 
@@ -1048,10 +1069,19 @@ def calculate_report_tasks(request, project_id):
         raw_query=raw_query
     )
 
+    raw_data = Project.objects.raw(
+        raw_query=f"select * from tracking_dev_employee_projects tdep "
+                  f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
+                  f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "
+                  f"where tde.user_id = {request.user.id};"
+    )
+
     return render(request, "include/report.html", {
         'un_completed_tasks': un_completed_tasks,
         'completed_tasks': completed_tasks,
         'count_tasks_by_states': count_tasks_by_states,
+        'is_project_zone': 1,
+        'list_projects': raw_data,
         'colors': random_colors_array
     })
 
@@ -1098,11 +1128,20 @@ def report_by_employee(request, project_id, employee_id):
     for data in count_tasks_by_states:
         random_colors_array.append('#%02X%02X%02X' % (r(), r(), r()))
 
+    raw_data = Project.objects.raw(
+        raw_query=f"select * from tracking_dev_employee_projects tdep "
+                  f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
+                  f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "
+                  f"where tde.user_id = {request.user.id};"
+    )
+
     return render(request, "include/report_employee.html", {
         'un_completed_tasks': count_uncompleted_tasks_by_month,
         'completed_tasks': count_completed_tasks_by_month,
         'count_tasks_by_states': count_tasks_by_states,
         'user_info': user_description,
+        'list_projects': raw_data,
+        'is_project_zone': 1,
         'colors': random_colors_array,
         'project_id': project_id,
         'employee_id': employee_id
@@ -1121,15 +1160,24 @@ def show_uncompleted_tasks_by_user(request, project_id, employee_id, sort):
 
     count_tasks = Task.objects.raw(raw_query=query)
 
+    raw_data = Project.objects.raw(
+        raw_query=f"select * from tracking_dev_employee_projects tdep "
+                  f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
+                  f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "
+                  f"where tde.user_id = {request.user.id};"
+    )
+
     return render(request, "include/list_data/task_compact.html", {
         "count_tasks": count_tasks,
+        'is_project_zone': 1,
+        'list_projects': raw_data,
         'project_id': project_id
     })
 
 
 # This view provides a kanban board manager
 def kanban_board_manager(request, project_id):
-    data = State.objects.filter(is_activate=True)
+    data = State.objects.filter(is_activate=True).order_by('isClosed')
     tasks_by_state = []
     for elem in data:
         tasks_query = Task.objects.raw(
@@ -1147,7 +1195,18 @@ def kanban_board_manager(request, project_id):
 
         tasks_by_state.append(my_dict)
 
+    raw_data = Project.objects.raw(
+        raw_query=f"select * from tracking_dev_employee_projects tdep "
+                  f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
+                  f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "
+                  f"where tde.user_id = {request.user.id};"
+    )
+
     return render(request, "include/kanban.html", {
         'list_states': data,
-        'tasks_by_state': tasks_by_state
+        'tasks_by_state': tasks_by_state,
+        'project_id': project_id,
+        # The project zone variable can implement fast access to functions of the project.
+        'is_project_zone': 1,
+        'list_projects': raw_data
     })
