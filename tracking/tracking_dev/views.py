@@ -1,7 +1,7 @@
 from django.db.models import Q
 from django.utils.timezone import now
 from django.contrib import auth, messages
-from django.http import HttpResponseNotFound, HttpResponseForbidden
+from django.http import HttpResponseNotFound, HttpResponseForbidden, HttpResponseRedirect
 from django.shortcuts import render, redirect, reverse, get_object_or_404
 from django.db import connection
 
@@ -680,7 +680,8 @@ def create_project(request):
                 cursor.execute(f"insert into tracking_dev_employee_projects(employee_id, project_id, is_activate) "
                                f"values ({employee_id}, {project_id}, True)")
 
-            return redirect(reverse('projects'))
+            next = request.POST.get('next', '/')
+            return HttpResponseRedirect(next)
         else:
             messages.error(request, "Error")
     else:
@@ -706,7 +707,9 @@ def edit_project(request, project_id):
     form = CreateProjectForm(request.POST or None, instance=instance)
     if form.is_valid():
         form.save()
-        return redirect(reverse('projects'))
+
+        next = request.POST.get('next', '/')
+        return HttpResponseRedirect(next)
 
     return render(request, 'include/base_form.html', {
         'form': form,
@@ -728,7 +731,9 @@ def create_priority(request):
 
         if creation_form.is_valid():
             creation_form.save()
-            return redirect(reverse('priorities'))
+
+            next = request.POST.get('next', '/')
+            return HttpResponseRedirect(next)
     else:
         creation_form = CreateProjectForm()
 
@@ -751,7 +756,9 @@ def edit_priority(request, priority_id):
     form = CreatePriorityForm(request.POST or None, instance=instance)
     if form.is_valid():
         form.save()
-        return redirect(reverse('priorities'))
+
+        next = request.POST.get('next', '/')
+        return HttpResponseRedirect(next)
 
     return render(request, 'include/base_form.html', {
         'title_page': 'Форма редактирования приоритета',
@@ -775,16 +782,20 @@ def create_state(request):
         # If the form is valid, then we need to check if the isClosed states exists.
         if creation_form.is_valid():
             is_ticked_checkbox = creation_form.cleaned_data['isClosed']
+            next = request.POST.get('next', '/')
+
             if is_ticked_checkbox:
                 count_closed_states = State.objects.filter(isClosed=True).count()
                 if count_closed_states == 0:
                     creation_form.save()
-                    return redirect(reverse('states'))
+
+                    return HttpResponseRedirect(next)
                 else:
                     messages.error(request, "Состояние закрытой задачи уже существует в системе")
             else:
                 creation_form.save()
-                return redirect(reverse('states'))
+
+                return HttpResponseRedirect(next)
         else:
             messages.error(request, "Произошла ошибка при вводе данных. Убедитесь, что информация введена верно")
     else:
@@ -812,18 +823,20 @@ def edit_states(request, state_id):
     if form.is_valid():
         is_checkbox_ticked = form.cleaned_data['isClosed']
 
+        next = request.POST.get('next', '/')
+
         # The condition of the count closed tasks can be if the checkbox has ticked.
         if is_checkbox_ticked:
             count_another_closed_tasks = State.objects.filter(Q(isClosed=True) & ~Q(state_id=state_id)).count()
 
             if count_another_closed_tasks == 0:
                 form.save()
-                return redirect(reverse('states'))
+                return HttpResponseRedirect(next)
             else:
                 messages.error(request, "В базе данных уже имеется состояние, при котором задача может считаться закрытой")
         else:
             form.save()
-            return redirect(reverse('states'))
+            return HttpResponseRedirect(next)
 
     return render(request, "include/base_form.html", {
         'title_page': 'Форма рредактирования текущего состояния',
@@ -844,7 +857,9 @@ def create_type_task(request):
         creation_form = CreateTypeTaskForm(data=request.POST)
         if creation_form.is_valid():
             creation_form.save()
-            return redirect(reverse('types'))
+
+            next = request.POST.get('next', '/')
+            return HttpResponseRedirect(next)
     else:
         creation_form = CreateTypeTaskForm()
 
@@ -868,7 +883,9 @@ def edit_type_task(request, type_id):
 
     if form.is_valid():
         form.save()
-        return redirect(reverse('types'))
+
+        next = request.POST.get('next', '/')
+        return HttpResponseRedirect(next)
 
     return render(request, 'include/base_form.html', {
         'title_page': 'Форма редактирования типа задачи',
@@ -916,7 +933,8 @@ def create_task(request, project_id):
                         manager=employee_arr)
             task.save()
 
-            return redirect(reverse('tasks_for_project', kwargs={"project_id": project_id}))
+            next = request.POST.get('next', '/')
+            return HttpResponseRedirect(next)
     else:
         creation_form = CreateTaskForm()
 
@@ -946,7 +964,9 @@ def edit_task(request, project_id, task_id):
 
     if form.is_valid():
         form.save()
-        return redirect(reverse('tasks_for_project', kwargs={"project_id": project_id}))
+
+        next = request.POST.get('next', '/')
+        return HttpResponseRedirect(next)
 
     raw_data = Task.objects.raw(
         raw_query=f"SELECT * FROM tracking_dev_task where is_activate=True and project_id={project_id}"

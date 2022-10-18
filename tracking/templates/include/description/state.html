@@ -46,7 +46,7 @@
                 </span>
             </div>
 
-            <a href="{% url 'state_edit' state_id=content_list.state_id %}"
+            <a href="{% url 'state_edit' state_id=content_list.state_id %}?next={{ request.path|urlencode }}"
                class="btn btn-primary text_button">Редактировать
             </a>
 

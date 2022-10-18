@@ -66,7 +66,7 @@
             </div>
 
             {% if is_admin %}
-                <a href="{% url 'edit_task' project_id=content_list.project_id task_id=content_list.task_id %}"
+                <a href="{% url 'edit_task' project_id=content_list.project_id task_id=content_list.task_id %}?next={{ request.path|urlencode }}"
                         class="btn btn-primary text_button">Редактировать
                 </a>
             {% endif %}

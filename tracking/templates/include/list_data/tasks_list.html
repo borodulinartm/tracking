@@ -7,7 +7,7 @@
             <div class="d-flex flex-row">
                 <div class="p-2">
                     <a class="btn btn-primary d-flex align-items-center text-white text-decoration-none text_button"
-                        href="{% url 'task_create' project_id=project_id %}"> Добавить новые данные </a>
+                        href="{% url 'task_create' project_id=project_id %}?next={{ request.path|urlencode }}"> Добавить новые данные </a>
                 </div>
             </div>
         {% endif %}

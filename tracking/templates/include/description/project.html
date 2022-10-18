@@ -39,7 +39,7 @@
                 <a class="align-items-center text-dark fw-bolder text_button text-decoration-none dropdown-toggle"
                    data-bs-toggle="collapse" href="#collapseExample" role="button"
                    aria-expanded="false" aria-controls="collapseExample">
-                    Участники движа
+                    Участники проекта
                 </a>
 
                 {% for participant in participants %}
@@ -58,7 +58,7 @@
                 {% endfor %}
             </div>
 
-            <a href="{% url 'edit_project' project_id=content_list.project_id %}"
+            <a href="{% url 'edit_project' project_id=content_list.project_id %}?next={{ request.path|urlencode }}"
                class="btn btn-primary text_button"> Редактировать</a>
             <a href="{% url 'collabs' project_id=content_list.project_id %}"
                class="btn btn-primary text_button">Участники</a>

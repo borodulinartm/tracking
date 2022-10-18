@@ -35,7 +35,7 @@
                 <span class="fw-normal text_button">{{ content_list.date_create }}</span>
             </div>
 
-            <a href="{% url 'edit_type_task' type_id=content_list.type_id %}"
+            <a href="{% url 'edit_type_task' type_id=content_list.type_id %}?next={{ request.path|urlencode }}"
                class="btn btn-primary text_button"> Редактировать
             </a>
 

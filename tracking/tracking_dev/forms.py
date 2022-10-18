@@ -83,7 +83,7 @@ class CreateStateForm(forms.ModelForm):
         self.fields['code'].label = "Код"
         self.fields['name'].label = "Название"
         self.fields['description'].label = "Описание"
-        self.fields['isClosed'].label = "Задача выполнена?"
+        self.fields['isClosed'].label = "Состояние является конечным"
 
 
 # This form provides enter the types of the task form
