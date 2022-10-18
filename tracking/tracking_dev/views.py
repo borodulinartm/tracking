@@ -690,7 +690,7 @@ def create_project(request):
     return render(request, 'include/base_form.html', {
         'title_page': 'Форма создания нового проекта',
         'form': creation_form,
-        'text_button': 'Добавить форму',
+        'text_button': 'Создать проект',
         'show_choose_project': 0,
     })
 
@@ -740,7 +740,7 @@ def create_priority(request):
     return render(request, 'include/base_form.html', {
         'title_page': 'Форма создания нового приоритета',
         'form': creation_form,
-        'text_button': 'Добавить форму',
+        'text_button': 'Создать приоритет',
         'show_choose_project': 0,
     })
 
@@ -804,7 +804,7 @@ def create_state(request):
     return render(request, 'include/base_form.html', {
         'title_page': 'Форма создания нового состояния задачи',
         'form': creation_form,
-        'text_button': 'Добавить данные',
+        'text_button': 'Создать состояние',
         'show_create_project': 0
     })
 
@@ -866,7 +866,7 @@ def create_type_task(request):
     return render(request, 'include/base_form.html', {
         'title_page': 'Форма создания нового типа задачи',
         'form': creation_form,
-        'text_button': 'Добавить форму',
+        'text_button': 'Создать тип задачи',
         'show_choose_project': 0,
     })
 
@@ -945,7 +945,7 @@ def create_task(request, project_id):
     return render(request, 'include/base_form.html', {
         'title_page': 'Форма создания новой задачи',
         'form': creation_form,
-        'text_button': 'Добавить данные',
+        'text_button': 'Создать задачу',
         'show_choose_project': 0,
         'project_id': project_id,
     })
@@ -1003,7 +1003,7 @@ def create_employee(request):
         'title_page': 'Форма заполнения данных о себе',
         'show_choose_project': 0,
         'form': creation_form,
-        'text_button': 'Сохранить информацию'
+        'text_button': 'Создать сотрудника'
     })
 
 

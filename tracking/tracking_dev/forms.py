@@ -8,18 +8,18 @@ from .models import *
 class CreateProjectForm(forms.ModelForm):
     class Meta:
         model = Project
-        fields = ['name', 'description', 'code']
+        fields = ['code', 'name', 'description']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields['name'] = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'Your project name',
+        self.fields['name'] = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'Введите название',
                                                                             'style': 'margin-bottom: 20px'}))
         self.fields['description'] = forms.CharField(widget=forms.Textarea(attrs=
-                                                                           {'placeholder': 'Your description',
+                                                                           {'placeholder': 'Введите описание',
                                                                             'rows': '3',
                                                                             'style': 'margin-bottom: 20px'}))
-        self.fields['code'] = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'your code',
+        self.fields['code'] = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'Введите код',
                                                                             'style': 'margin-bottom: 20px'}))
 
         self.fields['name'].label = "Название"
@@ -31,18 +31,18 @@ class CreateProjectForm(forms.ModelForm):
 class CreatePriorityForm(forms.ModelForm):
     class Meta:
         model = Priority
-        fields = ['name', 'description', 'code']
+        fields = ['code', 'name', 'description']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields['name'] = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'Your project name',
+        self.fields['name'] = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'Введите название',
                                                                             'style': 'margin-bottom: 20px'}))
         self.fields['description'] = forms.CharField(widget=forms.Textarea(attrs=
-                                                                           {'placeholder': 'Your description',
+                                                                           {'placeholder': 'Введите описание',
                                                                             'rows': '3',
                                                                             'style': 'margin-bottom: 20px'}))
-        self.fields['code'] = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'your code',
+        self.fields['code'] = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'Введите код',
                                                                             'style': 'margin-bottom: 20px'}))
 
         self.fields['name'].label = "Название"
@@ -66,12 +66,12 @@ class CreateStateForm(forms.ModelForm):
         }))
 
         self.fields['name'] = forms.CharField(widget=forms.TextInput(attrs={
-            'placeholder': 'Введите код',
+            'placeholder': 'Введите название',
             'style': 'margin-bottom: 20px'
         }))
 
         self.fields['description'] = forms.CharField(widget=forms.Textarea(attrs={
-            'placeholder': 'Введите код',
+            'placeholder': 'Введите описание',
             'style': 'margin-bottom: 20px'
         }))
 
@@ -90,30 +90,35 @@ class CreateStateForm(forms.ModelForm):
 class CreateTypeTaskForm(forms.ModelForm):
     class Meta:
         model = TypeTask
-        fields = ['name', 'description', 'code']
+        fields = ['code', 'name', 'description']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['name'] = forms.CharField(widget=forms.TextInput(attrs={
-            'placeholder': 'Your type task name',
+            'placeholder': 'Введите название',
             'style': 'margin-bottom: 20px'}))
         self.fields['description'] = forms.CharField(widget=forms.Textarea(attrs={
-            'placeholder': 'Description type of the task',
+            'placeholder': 'Введите описание',
             'rows': '3',
             'style': 'margin-bottom: 20px'}))
         self.fields['code'] = forms.CharField(widget=forms.TextInput(attrs={
-            'placeholder': 'Code of the task',
+            'placeholder': 'Введите код',
             'style': 'margin-bottom: 20px'}))
+
+        # Enter the label of the fields
+        self.fields['code'].label = "Код"
+        self.fields['name'].label = "Название"
+        self.fields['description'].label = "Описание"
 
 
 # Login Form
 class LoginForm(forms.Form):
     username = forms.CharField(widget=forms.TextInput(attrs={
-        'placeholder': 'Your login',
+        'placeholder': 'Ваш логин',
         'style': 'margin-bottom: 20px'
     }))
     password = forms.CharField(widget=forms.PasswordInput(attrs={
-        'placeholder': 'Your password',
+        'placeholder': 'Ваш пароль',
         'style': 'margin-bottom: 20px'
     }))
 
@@ -122,7 +127,7 @@ class LoginForm(forms.Form):
 class UserRegistrationForm(UserCreationForm):
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'username', 'email', 'password1', 'password2', 'is_staff']
+        fields = ['username', 'first_name', 'last_name', 'email', 'password1', 'password2', 'is_staff']
 
 
 class CreateTaskForm(forms.ModelForm):
@@ -135,17 +140,17 @@ class CreateTaskForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         self.fields['code'] = forms.CharField(widget=forms.TextInput(attrs={
-            'placeholder': 'Your code',
+            'placeholder': 'Введите код',
             'style': 'margin-bottom: 20px'
         }))
 
         self.fields['name'] = forms.CharField(widget=forms.TextInput(attrs={
-            'placeholder': 'Your task name',
+            'placeholder': 'Введите название',
             'style': 'margin-bottom: 20px'
         }))
 
         self.fields['description'] = forms.CharField(widget=forms.Textarea(attrs={
-            'placeholder': 'Your description',
+            'placeholder': 'Введите описание',
             'style': 'margin-bottom: 20px'
         }))
 
@@ -157,10 +162,36 @@ class CreateTaskForm(forms.ModelForm):
         self.fields['state'].queryset = State.objects.filter(is_activate=True)
         # self.fields['project'].queryset = Project.objects.filter(is_activate=True)
 
-        self.fields['date_deadline'] = forms.CharField(widget=forms.DateInput(attrs={
-            'placeholder': 'Deadline',
-            'style': 'margin-bottom: 20px'
+        self.fields['responsible'].widget.attrs = {
+            "style": "margin-bottom: 20px"
+        }
+        self.fields['initiator'].widget.attrs = {
+            "style": "margin-bottom: 20px"
+        }
+        self.fields['priority'].widget.attrs = {
+            "style": "margin-bottom: 20px"
+        }
+        self.fields['type'].widget.attrs = {
+            "style": "margin-bottom: 20px"
+        }
+        self.fields['state'].widget.attrs = {
+            "style": "margin-bottom: 20px"
+        }
+
+        self.fields['date_deadline'] = forms.DateField(widget=forms.SelectDateWidget(attrs={
+            "style": "margin-bottom: 20px"
         }))
+
+        # Enter the label to the all tasks
+        self.fields['code'].label = "Код"
+        self.fields['name'].label = "Название"
+        self.fields['description'].label = "Описание задачи"
+        self.fields['responsible'].label = "Отвественный"
+        self.fields['initiator'].label = "Наблюдатель"
+        self.fields['priority'].label = "Приоритет задачи"
+        self.fields['type'].label = "Тип задачи"
+        self.fields['state'].label = "Текущее состояние задачи"
+        self.fields['date_deadline'].label = "Дата выполнения задания"
 
 
 # This form provides employee creation
@@ -173,11 +204,11 @@ class CreateEmployeeForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         self.fields['post'] = forms.CharField(widget=forms.TextInput(attrs={
-            'placeholder': 'Your post',
+            'placeholder': 'Ваша должность',
             'style': 'margin-bottom: 20px'
         }))
 
         self.fields['description'] = forms.CharField(widget=forms.Textarea(attrs={
-            'placeholder': 'Bio',
+            'placeholder': 'Расскажите о себе',
             'style': 'margin-bottom: 20px'
         }))
