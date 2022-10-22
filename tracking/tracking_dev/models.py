@@ -14,7 +14,9 @@ class Project(models.Model):
     name = models.CharField(max_length=50, default="hello_world")
     description = models.TextField(default='description of the project')
     # This field needs to add by default
-    date_create = models.DateField(auto_now=True, blank=True)
+    date_create = models.DateTimeField(blank=True, default=django.utils.timezone.now())
+    # This field will be use when the field is updated
+    date_change = models.DateTimeField(auto_now=True)
     code = models.CharField(max_length=50, default="default code")
     # This field uses for deleting information from a database
     is_activate = models.BooleanField(default=True)
@@ -31,7 +33,8 @@ class Project(models.Model):
 class State(models.Model):
     state_id = models.AutoField(primary_key=True)
     code = models.CharField(max_length=50, default="default code")
-    date_create = models.DateField(default=django.utils.timezone.now(), blank=True)
+    date_create = models.DateTimeField(default=django.utils.timezone.now(), blank=True)
+    date_change = models.DateTimeField(auto_now=True)
     name = models.CharField(max_length=50, default="hello_world")
     isClosed = models.BooleanField(default=False)
     description = models.TextField(default="")
@@ -51,7 +54,8 @@ class Priority(models.Model):
     code = models.CharField(max_length=50, default='default code')
     name = models.CharField(max_length=40, default='default name')
     description = models.TextField(default="")
-    date_create = models.DateField(blank=True, auto_now=True)
+    date_create = models.DateField(blank=True, default=django.utils.timezone.now())
+    date_change = models.DateTimeField(auto_now=True)
     is_activate = models.BooleanField(default=True)
 
     def __str__(self):
@@ -68,7 +72,8 @@ class TypeTask(models.Model):
     code = models.CharField(max_length=50, default='default code')
     name = models.CharField(max_length=40, default='default name')
     description = models.TextField(default="")
-    date_create = models.DateField(blank=True, auto_now=True)
+    date_create = models.DateTimeField(blank=True, default=django.utils.timezone.now())
+    date_change = models.DateTimeField(auto_now=True)
     is_activate = models.BooleanField(default=True)
 
     def __str__(self):
@@ -87,7 +92,8 @@ class Employee(models.Model):
     post = models.CharField(max_length=50, default="default post")
     description = models.TextField(default="the description of the post")
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    date_create = models.DateField(default=django.utils.timezone.now(), blank=True)
+    date_create = models.DateTimeField(default=django.utils.timezone.now(), blank=True)
+    date_change = models.DateTimeField(auto_now=True)
     # Add Many-to-many relationship
     projects = models.ManyToManyField(Project, related_name="employee_projects")
     is_activate = models.BooleanField(default=True)
@@ -115,8 +121,8 @@ class Task(models.Model):
     priority = models.ForeignKey(Priority, on_delete=models.CASCADE, related_name="rrrr")
     type = models.ForeignKey(TypeTask, on_delete=models.CASCADE, related_name="rrrrr")
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="rrrrrr")
-    date_create = models.DateField(default=django.utils.timezone.now(), blank=True)  # This date you cannot change
-    date_change = models.DateField(default=django.utils.timezone.now(), blank=True)  # This date you can change
+    date_create = models.DateTimeField(default=django.utils.timezone.now(), blank=True)  # This date you cannot change
+    date_change = models.DateTimeField(auto_now=True)  # This date you can change
     date_deadline = models.DateField(default=django.utils.timezone.now(), blank=True)
     is_activate = models.BooleanField(default=True)
 

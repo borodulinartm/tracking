@@ -31,8 +31,13 @@
             </div>
 
             <div class="position_block">
-                <span class="fw-bolder text_button">Дата создания:</span>
+                <span class="fw-bolder text_button">Создано:</span>
                 <span class="fw-normal text_button">{{ content_list.date_create }}</span>
+            </div>
+
+            <div class="position_block">
+                <span class="fw-bolder text_button">Изменено:</span>
+                <span class="fw-normal text_button">{{ content_list.date_change }}</span>
             </div>
 
             <a href="{% url 'edit_type_task' type_id=content_list.type_id %}?next={{ request.path|urlencode }}"
