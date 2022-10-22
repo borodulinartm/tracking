@@ -78,9 +78,12 @@ def show_list_tasks_for_project(request, project_id):
     # Another tasks
     tasks_list = Task.objects.raw(
         raw_query=f"select * from tracking_dev_task tdt "
+                  f"join tracking_dev_employee tde on tdt.initiator_id = tde.employee_id "
+                  f"join tracking_dev_employee tde2 on tdt.responsible_id = tde2.employee_id "
                   f"join tracking_dev_state tds on tds.state_id = tdt.state_id "
-                  f"where tdt.project_id = {project_id} and tdt.is_activate and "
-                  f"tds.\"isClosed\" = false"
+                  f"where tde.user_id != {request.user.id} and tdt.project_id = {project_id} "
+                  f"and tde2.user_id != {request.user.id} and tdt.is_activate "
+                  f"and tds.\"isClosed\" = false"
     )
 
     raw_data = Project.objects.raw(
@@ -100,6 +103,9 @@ def show_list_tasks_for_project(request, project_id):
         'tasks_personal': tasks_personal,
         'tasks_observer': tasks_observer,
         'is_admin': request.user.is_staff,
+        'count_personal_tasks': len(list(tasks_personal)),
+        'count_observer_tasks': len(list(tasks_observer)),
+        'count_tasks_list': len(list(tasks_list)),
         'project_id': project_id,
     })
 

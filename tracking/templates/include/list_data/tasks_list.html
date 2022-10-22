@@ -7,60 +7,79 @@
             <div class="d-flex flex-row">
                 <div class="p-2">
                     <a class="btn btn-primary d-flex align-items-center text-white text-decoration-none text_button"
-                        href="{% url 'task_create' project_id=project_id %}?next={{ request.path|urlencode }}"> Добавить новые данные </a>
+                       href="{% url 'task_create' project_id=project_id %}?next={{ request.path|urlencode }}"> Добавить
+                        новые данные </a>
                 </div>
             </div>
         {% endif %}
 
-        <div class="block_title">
-            <h2 class="title" style="margin-bottom: 50px">Ваши задачи</h2>
-        </div>
-
-        {% for task in tasks_personal %}
-            <div class="row">
-                <a href="{% url 'task_description' project_id=project_id task_id=task.task_id %}"
-                   class="list-group-item list-group-item-action text_button" aria-current="true">
-                    <div class="d-flex w-100 justify-content-between">
-                        <h3 class="mb-1">{{ task.code}}</h3>
-                        <small>{{ task.date_create }}</small>
-                    </div>
-                    <p class="mb-1">{{ task.description|truncatechars:100 }}</p>
+        {% if count_personal_tasks > 0 %}
+            <div class="position_block">
+                <a class="text-dark fw-bolder text_button text-decoration-none dropdown-toggle"
+                   data-bs-toggle="collapse" href="#collapseExample_personal" role="button"
+                   aria-expanded="false" aria-controls="collapseExample_personal">
+                    Задачи, в которых вы ответственный ({{ count_personal_tasks }})
                 </a>
             </div>
-        {% endfor %}
 
-        <div class="block_title">
-            <h2 class="title" style="margin-bottom: 50px">Задачи, в которых вы наблюдатель</h2>
-        </div>
+            {% for task in tasks_personal %}
+                <div class="row collapse rounded-2" id="collapseExample_personal">
+                    <a href="{% url 'task_description' project_id=project_id task_id=task.task_id %}"
+                       class="list-group-item list-group-item-action text_button" aria-current="true">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h3 class="mb-1">{{ task.code }}</h3>
+                            <small>{{ task.date_create }}</small>
+                        </div>
+                        <p class="mb-1">{{ task.description|truncatechars:100 }}</p>
+                    </a>
+                </div>
+            {% endfor %}
+        {% endif %}
 
-        {% for task in tasks_observer %}
-            <div class="row">
-                <a href="{% url 'task_description' project_id=project_id task_id=task.task_id %}"
-                   class="list-group-item list-group-item-action text_button" aria-current="true">
-                    <div class="d-flex w-100 justify-content-between">
-                        <h3 class="mb-1">{{ task.code}}</h3>
-                        <small>{{ task.date_create }}</small>
-                    </div>
-                    <p class="mb-1">{{ task.description|truncatechars:100 }}</p>
+        {% if count_observer_tasks > 0 %}
+            <div class="position_block">
+                <a class="text-dark fw-bolder text_button text-decoration-none dropdown-toggle"
+                   data-bs-toggle="collapse" href="#collapseExample_observer" role="button"
+                   aria-expanded="false" aria-controls="collapseExample_observer">
+                    Задачи, в которых вы наблюдатель ({{ count_observer_tasks }})
                 </a>
             </div>
-        {% endfor %}
 
-        <div class="block_title">
-            <h2 class="title" style="margin-bottom: 50px">Все задачи</h2>
-        </div>
+            {% for task in tasks_observer %}
+                <div class="collapse row rounded-2" id="collapseExample_observer">
+                    <a href="{% url 'task_description' project_id=project_id task_id=task.task_id %}"
+                       class="list-group-item list-group-item-action text_button" aria-current="true">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h3 class="mb-1">{{ task.code }}</h3>
+                            <small>{{ task.date_create }}</small>
+                        </div>
+                        <p class="mb-1">{{ task.description|truncatechars:100 }}</p>
+                    </a>
+                </div>
+            {% endfor %}
+        {% endif %}
 
-        {% for data in data_group %}
-            <div class="row">
-                <a href="{% url 'task_description' project_id=project_id task_id=data.task_id %}"
-                   class="list-group-item list-group-item-action text_button" aria-current="true">
-                    <div class="d-flex w-100 justify-content-between">
-                        <h3 class="mb-1">{{ data.code}}</h3>
-                        <small>{{ data.date_create }}</small>
-                    </div>
-                    <p class="mb-1">{{ data.description|truncatechars:100 }}</p>
+        {% if count_tasks_list > 0 %}
+            <div class="position_block">
+                <a class="text-dark fw-bolder text_button text-decoration-none dropdown-toggle"
+                   data-bs-toggle="collapse" href="#collapseExample_all" role="button"
+                   aria-expanded="false" aria-controls="collapseExample_all">
+                    Остальные задачи ({{ count_tasks_list }})
                 </a>
             </div>
-        {% endfor %}
+
+            {% for data in data_group %}
+                <div class="collapse row rounded-2" id="collapseExample_all">
+                    <a href="{% url 'task_description' project_id=project_id task_id=data.task_id %}"
+                       class="list-group-item list-group-item-action text_button" aria-current="true">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h3 class="mb-1">{{ data.code }}</h3>
+                            <small>{{ data.date_create }}</small>
+                        </div>
+                        <p class="mb-1">{{ data.description|truncatechars:100 }}</p>
+                    </a>
+                </div>
+            {% endfor %}
+        {% endif %}
     </div>
 {% endblock content %}
