@@ -113,7 +113,7 @@ def get_list_projects(request):
         return HttpResponseForbidden()
 
     raw_data = Project.objects.raw(
-        raw_query=f"select * from tracking_dev_employee_projects tdep "
+        raw_query=f"select tdp.project_id, tdp.\"name\", tdp.description, tdp.date_create, tdp.code  from tracking_dev_employee_projects tdep "
                   f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
                   f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "
                   f"where tde.user_id = {request.user.id};"
@@ -633,12 +633,16 @@ def remove_all_users_from_current_project(request, project_id):
     if not request.user.is_staff:
         return HttpResponseForbidden()
 
+    # We should delete entirely from the database
     with connection.cursor() as cursor:
-        cursor.execute(f"update tracking_dev_employee_projects set "
-                       f"is_activate = false where project_id = {project_id}")
+        cursor.execute(f"update tracking_dev_employee_projects tdep "
+                       f"set is_activate = false "
+                       f"from tracking_dev_employee tde "
+                       f"where tde.employee_id = tdep.employee_id and tde.user_id != {request.user.id} "
+                       f"and tdep.project_id = {project_id}")
 
     # Redirect to the website with project
-    return redirect(reverse('projects'))
+    return redirect(reverse('collabs', kwargs={"project_id": project_id}))
 
 
 # This view provides a creation form of the project
@@ -1227,7 +1231,7 @@ def report_by_employee(request, project_id, employee_id):
 
     user_description = Employee.objects.raw(
         raw_query=f"select * from tracking_dev_employee tde "
-                  f"join auth_user au ON tde.user_id = au.id where tde.employee_id = 2"
+                  f"join auth_user au ON tde.user_id = au.id where tde.employee_id = {employee_id}"
     )
 
     random_colors_array = []

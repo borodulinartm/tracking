@@ -129,6 +129,45 @@ class UserRegistrationForm(UserCreationForm):
         model = User
         fields = ['username', 'first_name', 'last_name', 'email', 'password1', 'password2', 'is_staff']
 
+    def __init__(self, *args, **kwargs):
+        super(UserRegistrationForm, self).__init__(*args, **kwargs)
+
+        self.fields['first_name'].widget.attrs = {
+            "style": "margin-bottom: 20px"
+        }
+
+        self.fields['last_name'].widget.attrs = {
+            "style": "margin-bottom: 20px"
+        }
+
+        self.fields['email'].widget.attrs = {
+            "style": "margin-bottom: 20px"
+        }
+
+        self.fields['username'].label = "Ник-нейм"
+        self.fields['username'].help_text = "<p style='margin-bottom: 20px'>Обязательное поле. Длина ник-нейма " \
+                                            "не больше 150 символов. " \
+                                            "Допустимо использовать буквы, цифры, а также символы @/./+/-/_ </p>"
+
+        self.fields['first_name'].label = "Имя"
+        self.fields['last_name'].label = "Фамилия"
+        self.fields['email'].label = "Электронная почта"
+
+        self.fields['password1'].label = "Пароль"
+        self.fields['password1'].help_text = "<ul style='margin-bottom: 20px'><li>Ваш пароль не должен " \
+                                             "совпадать с другой персональной информацией " \
+                                             ".</li><li>Ваш пароль должен состоять минимум из 8 символов." \
+                                             "</li><li>Нельзя использовать часто используемые пароли." \
+                                             "</li><li>Ваш пароль должен содержать цифры, буквы.</li></ul>"
+
+        self.fields['password2'].label = "Подтверждение пароля"
+        self.fields['password2'].help_text = "<p style='margin-bottom: 20px'>Подтвердите Ваш " \
+                                             "пароль для верификации в системе</p>"
+
+        self.fields['is_staff'].label = "Является администратором"
+        self.fields['is_staff'].help_text = "<p style='margin-bottom: 20px'>Администратору доступен расширенный " \
+                                            "функционал системы, не доступный обычному пользователю</p>"
+
 
 class CreateTaskForm(forms.ModelForm):
     class Meta:
