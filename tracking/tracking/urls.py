@@ -70,6 +70,7 @@ urlpatterns = [
          name="mark_completed"),
 
     path('main_page/projects<int:project_id>/collobarators/search', search, name="search"),
+    path('main_page/finded_projects', project_search, name="project_search"),
     path('main_page/projects/<int:project_id>/collobarators/add/<int:employee_id>', add_employee_to_project,
          name="add_user"),
 

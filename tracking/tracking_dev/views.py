@@ -118,8 +118,14 @@ def get_list_projects(request):
     if not request.user.is_staff:
         return HttpResponseForbidden()
 
+    print(f"select tdp.project_id, tdp.\"name\", tdp.description, tdp.date_create, tdp.code, 1 as project_exists "
+          f"from tracking_dev_employee_projects tdep "
+          f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
+          f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "
+          f"where tde.user_id = {request.user.id};")
     raw_data = Project.objects.raw(
-        raw_query=f"select tdp.project_id, tdp.\"name\", tdp.description, tdp.date_create, tdp.code  from tracking_dev_employee_projects tdep "
+        raw_query=f"select tdp.project_id, tdp.\"name\", tdp.description, tdp.date_create, tdp.code, 1 as project_exists "
+                  f"from tracking_dev_employee_projects tdep "
                   f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
                   f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "
                   f"where tde.user_id = {request.user.id};"
@@ -843,7 +849,8 @@ def edit_states(request, state_id):
                 form.save()
                 return HttpResponseRedirect(next)
             else:
-                messages.error(request, "В базе данных уже имеется состояние, при котором задача может считаться закрытой")
+                messages.error(request,
+                               "В базе данных уже имеется состояние, при котором задача может считаться закрытой")
         else:
             form.save()
             return HttpResponseRedirect(next)
@@ -1051,6 +1058,33 @@ def search(request, project_id):
         'show_list_group': 0,
         'is_project_zone': 1,
         'project_id': project_id
+    })
+
+
+# This view allows user search projects in the list of projects.
+def project_search(request):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+
+    results = []
+    if request.method == "GET":
+        query = request.GET.get('search')
+        if query == '':
+            query = 'None'
+
+        # print(query)
+
+        results = Project.objects.raw(
+            raw_query=f"select tdp.project_id, tdp.\"name\",  strpos(tdp.\"name\", '{query}') as project_exists "
+                      f"from tracking_dev_project tdp"
+        )
+
+    return render(request, "include/list_data/project_list.html", {
+        'data_group': results,
+        'title_page': 'Выберите проект для его просмотра или удаления'
     })
 
 
