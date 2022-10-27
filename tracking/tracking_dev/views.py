@@ -137,6 +137,7 @@ def get_list_projects(request):
         'show_choose_project': 1,
         'list_projects': raw_data,
         'data_group': raw_data,
+        'value_in_the_search_form': ''
     })
 
 
@@ -199,7 +200,7 @@ def get_state_list(request):
         return HttpResponseForbidden()
 
     raw_data = State.objects.raw(
-        raw_query="SELECT * FROM tracking_dev_state where is_activate=True"
+        raw_query="SELECT *, 1 as state_exists FROM tracking_dev_state where is_activate=True"
     )
 
     all_projects = Project.objects.raw(
@@ -265,7 +266,7 @@ def get_priority_list(request):
         return HttpResponseForbidden()
 
     raw_data = Priority.objects.raw(
-        raw_query="SELECT * FROM tracking_dev_priority where is_activate=True"
+        raw_query="SELECT *, 1 as code_exists FROM tracking_dev_priority where is_activate=True"
     )
 
     all_projects = Project.objects.raw(
@@ -334,7 +335,7 @@ def type_task_list(request):
         return HttpResponseForbidden()
 
     raw_data = TypeTask.objects.raw(
-        raw_query="SELECT * FROM tracking_dev_typetask where is_activate=True"
+        raw_query="SELECT *, 1 as code_exists FROM tracking_dev_typetask where is_activate=True"
     )
 
     all_projects = Project.objects.raw(
@@ -403,7 +404,8 @@ def employee_list(request):
         return HttpResponseForbidden()
 
     raw_data = Employee.objects.raw(
-        raw_query="select au.first_name, au.last_name, tde.employee_id, tde.post, tde.description, tde.date_create "
+        raw_query="select au.first_name, au.last_name, tde.employee_id, tde.post, tde.description, tde.date_create, "
+                  "1 as name_exists "
                   "from tracking_dev_employee tde join auth_user au on au.id = tde.user_id where tde.is_activate=True;"
     )
 
@@ -1070,21 +1072,159 @@ def project_search(request):
         return HttpResponseForbidden()
 
     results = []
+    query = None
+
     if request.method == "GET":
         query = request.GET.get('search')
         if query == '':
-            query = 'None'
-
-        # print(query)
-
-        results = Project.objects.raw(
-            raw_query=f"select tdp.project_id, tdp.\"name\",  strpos(tdp.\"name\", '{query}') as project_exists "
-                      f"from tracking_dev_project tdp"
-        )
+            results = Project.objects.raw(
+                raw_query=f"select tdp.project_id, tdp.\"name\", tdp.description, tdp.date_create, "
+                          f"tdp.code, 1 as project_exists "
+                          f"from tracking_dev_employee_projects tdep "
+                          f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
+                          f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "
+                          f"where tde.user_id = {request.user.id};"
+            )
+        else:
+            results = Project.objects.raw(
+                raw_query=f"select tdp.project_id, tdp.\"name\",  strpos(tdp.code, '{query}') "
+                          f"as project_exists, strpos(tdp.code, '{query}') as code_exists, "
+                          f"strpos(tdp.description, '{query}') as description_exists "
+                          f"from tracking_dev_project tdp"
+            )
 
     return render(request, "include/list_data/project_list.html", {
         'data_group': results,
-        'title_page': 'Выберите проект для его просмотра или удаления'
+        'title_page': 'Выберите проект для его просмотра или удаления',
+        'value_in_the_search_form': query
+    })
+
+
+# This method allows users search the states
+def state_search(request):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+
+    results = []
+    query = None
+
+    if request.method == "GET":
+        query = request.GET.get("search")
+        if query == '':
+            results = State.objects.raw(
+                raw_query="SELECT *, 1 as state_exists FROM tracking_dev_state where is_activate=True"
+            )
+        else:
+            results = State.objects.raw(
+                raw_query=f"select tds.state_id, tds.\"name\",  strpos(tds.\"name\", '{query}') as state_exists, "
+                          f"strpos(tds.code, '{query}') as code_exists, "
+                          f"strpos(tds.description, '{query}') as description_exists "
+                          f"from tracking_dev_state tds"
+            )
+
+    return render(request, "include/list_data/state_list.html", {
+        'data_group': results,
+        'title_page': 'Выберите состояние для его просмотра или удаления',
+        'value_in_the_search_form': query
+    })
+
+
+# This view allows user search employee
+def employee_search(request):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+
+    results = []
+    query = None
+
+    if request.method == "GET":
+        query = request.GET.get('search')
+        if query == '':
+            results = Employee.objects.raw(
+                raw_query="select au.first_name, au.last_name, tde.employee_id, tde.post, tde.description, "
+                          "tde.date_create, 1 as name_exists "
+                          "from tracking_dev_employee tde join auth_user au on au.id = tde.user_id where tde.is_activate=True;"
+            )
+        else:
+            results = Employee.objects.raw(
+                raw_query=f"select au.first_name, au.last_name, tde.employee_id, tde.post, tde.description, tde.date_create, "
+                          f"strpos(au.first_name, '{query}') as name_exists, strpos(au.last_name, '{query}') as surname_exists, "
+                          f"strpos(au.username, '{query}') as username_exists, strpos(tde.post, '{query}'), "
+                          f"strpos(tde.description, '{query}') as description_exists "
+                          f"from tracking_dev_employee tde join auth_user au on au.id = tde.user_id where tde.is_activate=True;"
+            )
+
+    return render(request, "include/list_data/employee_list.html", {
+        'data_group': results,
+        'title_page': 'Картотека сотрудников',
+        'value_in_the_search_form': query
+    })
+
+
+def priority_search(request):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+
+    results = []
+    query = None
+
+    if request.method == "GET":
+        query = request.GET.get('search')
+        if query == '':
+            results = Priority.objects.raw(
+                raw_query=f"select *, 1 as code_exists from tracking_dev_priority tdp "
+            )
+        else:
+            results = Priority.objects.raw(
+                raw_query=f"select *, strpos(tdp.code, '{query}') as code_exists, "
+                          f"strpos(tdp.\"name\", '{query}') as name_exists, strpos(tdp.description, '{query}') "
+                          f"as description_exists from tracking_dev_priority tdp "
+            )
+
+    return render(request, "include/list_data/priority_list.html", {
+        'data_group': results,
+        'title_page': 'Картотека приоритетов',
+        'value_in_the_search_form': query
+    })
+
+
+# This view provides type tasks search form
+def type_search(request):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+
+    results = []
+    query = None
+
+    if request.method == "GET":
+        query = request.GET.get('search')
+        if query == '':
+            results = TypeTask.objects.raw(
+                raw_query=f"select *, 1 as code_exists from tracking_dev_typetask tdp "
+            )
+        else:
+            results = TypeTask.objects.raw(
+                raw_query=f"select *, strpos(tdp.code, '{query}') as code_exists, "
+                          f"strpos(tdp.\"name\", '{query}') as name_exists, strpos(tdp.description, '{query}') "
+                          f"as description_exists from tracking_dev_typetask tdp "
+            )
+
+    return render(request, "include/list_data/type_task_list.html", {
+        'data_group': results,
+        'title_page': 'Картотека типов задач',
+        'value_in_the_search_form': query
     })
 
 
