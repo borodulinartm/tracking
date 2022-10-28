@@ -1,7 +1,7 @@
 from django.db.models import Q
 from django.utils.timezone import now
 from django.contrib import auth, messages
-from django.http import HttpResponseNotFound, HttpResponseForbidden, HttpResponseRedirect
+from django.http import HttpResponseNotFound, HttpResponseForbidden, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, redirect, reverse, get_object_or_404
 from django.db import connection
 
@@ -118,11 +118,6 @@ def get_list_projects(request):
     if not request.user.is_staff:
         return HttpResponseForbidden()
 
-    print(f"select tdp.project_id, tdp.\"name\", tdp.description, tdp.date_create, tdp.code, 1 as project_exists "
-          f"from tracking_dev_employee_projects tdep "
-          f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
-          f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "
-          f"where tde.user_id = {request.user.id};")
     raw_data = Project.objects.raw(
         raw_query=f"select tdp.project_id, tdp.\"name\", tdp.description, tdp.date_create, tdp.code, 1 as project_exists "
                   f"from tracking_dev_employee_projects tdep "
@@ -1071,33 +1066,46 @@ def project_search(request):
     if not request.user.is_staff:
         return HttpResponseForbidden()
 
-    results = []
-    query = None
-
     if request.method == "GET":
-        query = request.GET.get('search')
-        if query == '':
-            results = Project.objects.raw(
-                raw_query=f"select tdp.project_id, tdp.\"name\", tdp.description, tdp.date_create, "
-                          f"tdp.code, 1 as project_exists "
-                          f"from tracking_dev_employee_projects tdep "
-                          f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
-                          f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "
-                          f"where tde.user_id = {request.user.id};"
-            )
-        else:
-            results = Project.objects.raw(
-                raw_query=f"select tdp.project_id, tdp.\"name\",  strpos(tdp.code, '{query}') "
-                          f"as project_exists, strpos(tdp.code, '{query}') as code_exists, "
-                          f"strpos(tdp.description, '{query}') as description_exists "
-                          f"from tracking_dev_project tdp"
-            )
+        # If the type is GET, we need check if request is ajax.
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        if is_ajax:
+            series = request.GET.get('series')
+            if series != '':
+                query_se = Project.objects.raw(
+                    raw_query=f"select tdp.project_id, tdp.\"name\",  strpos(tdp.code, '{series}') "
+                              f"as project_exists, strpos(tdp.code, '{series}') as code_exists, "
+                              f"strpos(tdp.description, '{series}') as description_exists "
+                              f"from tracking_dev_project tdp"
+                )
+            else:
+                query_se = Project.objects.raw(
+                    raw_query=f"select tdp.project_id, tdp.\"name\", 1 "
+                              f"as project_exists, 1 as code_exists, "
+                              f"1 as description_exists "
+                              f"from tracking_dev_project tdp"
+                )
 
-    return render(request, "include/list_data/project_list.html", {
-        'data_group': results,
-        'title_page': 'Выберите проект для его просмотра или удаления',
-        'value_in_the_search_form': query
-    })
+            if len(query_se) > 0:
+                data = []
+                for position in query_se:
+                    item = {
+                        "project_id": position.project_id,
+                        "code": position.code,
+                        "date_create": position.date_create,
+                        "description": position.description,
+                        "code_exists": position.code_exists,
+                        "project_exists": position.project_exists,
+                        "description_exists": position.description_exists
+                    }
+
+                    data.append(item)
+                res = data
+            else:
+                res = []
+
+            return JsonResponse({'data': res})
+    return JsonResponse({'data': []})
 
 
 # This method allows users search the states

@@ -8,6 +8,8 @@
     <link href="{% static 'css/base.css' %}" rel="stylesheet">
     <link href="{% static 'css/kanban.css' %}" rel="stylesheet">
 
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+
     {% block config %}
     {% endblock config %}
 </head>
@@ -49,11 +51,11 @@
                 {% block title %}
                 {% endblock title %}
 
-                {% block script %}
-                {% endblock script %}
-
                 {% block content %}
                 {% endblock content %}
+
+                {% block script %}
+                {% endblock script %}
             </div>
         </div>
     </div>
