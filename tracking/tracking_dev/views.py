@@ -1116,28 +1116,44 @@ def state_search(request):
     if not request.user.is_staff:
         return HttpResponseForbidden()
 
-    results = []
-    query = None
-
     if request.method == "GET":
-        query = request.GET.get("search")
-        if query == '':
-            results = State.objects.raw(
-                raw_query="SELECT *, 1 as state_exists FROM tracking_dev_state where is_activate=True"
-            )
-        else:
-            results = State.objects.raw(
-                raw_query=f"select tds.state_id, tds.\"name\",  strpos(tds.\"name\", '{query}') as state_exists, "
-                          f"strpos(tds.code, '{query}') as code_exists, "
-                          f"strpos(tds.description, '{query}') as description_exists "
-                          f"from tracking_dev_state tds"
-            )
+        # If the type is GET, we need check if request is ajax.
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        if is_ajax:
+            series = request.GET.get('series')
+            if series != '':
+                query_se = State.objects.raw(
+                    raw_query=f"select tds.state_id, tds.\"name\",  strpos(tds.\"name\", '{series}') as state_exists, "
+                              f"strpos(tds.code, '{series}') as code_exists, "
+                              f"strpos(tds.description, '{series}') as description_exists "
+                              f"from tracking_dev_state tds"
+                )
+            else:
+                query_se = State.objects.raw(
+                    raw_query=f"select tds.state_id, tds.\"name\", 1 as state_exists, "
+                              f"1 as code_exists, 1 as description_exists from tracking_dev_state tds"
+                )
 
-    return render(request, "include/list_data/state_list.html", {
-        'data_group': results,
-        'title_page': 'Выберите состояние для его просмотра или удаления',
-        'value_in_the_search_form': query
-    })
+            if len(query_se) > 0:
+                data = []
+                for position in query_se:
+                    item = {
+                        "state_id": position.state_id,
+                        "code": position.code,
+                        "date_create": position.date_create,
+                        "description": position.description,
+                        "code_exists": position.code_exists,
+                        "state_exists": position.state_exists,
+                        "description_exists": position.description_exists
+                    }
+
+                    data.append(item)
+                res = data
+            else:
+                res = []
+
+            return JsonResponse({'data': res})
+    return JsonResponse({'data': []})
 
 
 # This view allows user search employee
@@ -1148,31 +1164,51 @@ def employee_search(request):
     if not request.user.is_staff:
         return HttpResponseForbidden()
 
-    results = []
-    query = None
-
     if request.method == "GET":
-        query = request.GET.get('search')
-        if query == '':
-            results = Employee.objects.raw(
-                raw_query="select au.first_name, au.last_name, tde.employee_id, tde.post, tde.description, "
-                          "tde.date_create, 1 as name_exists "
-                          "from tracking_dev_employee tde join auth_user au on au.id = tde.user_id where tde.is_activate=True;"
-            )
-        else:
-            results = Employee.objects.raw(
-                raw_query=f"select au.first_name, au.last_name, tde.employee_id, tde.post, tde.description, tde.date_create, "
-                          f"strpos(au.first_name, '{query}') as name_exists, strpos(au.last_name, '{query}') as surname_exists, "
-                          f"strpos(au.username, '{query}') as username_exists, strpos(tde.post, '{query}'), "
-                          f"strpos(tde.description, '{query}') as description_exists "
-                          f"from tracking_dev_employee tde join auth_user au on au.id = tde.user_id where tde.is_activate=True;"
-            )
+        # If the type is GET, we need check if request is ajax.
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        if is_ajax:
+            series = request.GET.get('series')
+            if series != '':
+                query_se = Employee.objects.raw(
+                    raw_query=f"select au.first_name, au.last_name, tde.employee_id, tde.post, tde.description, tde.date_create, "
+                              f"strpos(au.first_name, '{series}') as name_exists, "
+                              f"strpos(au.last_name, '{series}') as surname_exists, "
+                              f"strpos(au.username, '{series}') as username_exists, strpos(tde.post, '{series}'), "
+                              f"strpos(tde.description, '{series}') as description_exists "
+                              f"from tracking_dev_employee tde join auth_user au on au.id = tde.user_id "
+                              f"where tde.is_activate=True;"
+                )
+            else:
+                query_se = Employee.objects.raw(
+                    raw_query=f"select au.first_name, au.last_name, tde.employee_id, tde.post, "
+                              f"tde.description, tde.date_create, "
+                              f"1 as name_exists, 1 as surname_exists, 1 as username_exists, strpos(tde.post, '{series}'), "
+                              f"1 as description_exists from tracking_dev_employee tde join auth_user au "
+                              f"on au.id = tde.user_id where tde.is_activate=True;"
+                )
 
-    return render(request, "include/list_data/employee_list.html", {
-        'data_group': results,
-        'title_page': 'Картотека сотрудников',
-        'value_in_the_search_form': query
-    })
+            if len(query_se) > 0:
+                data = []
+                for position in query_se:
+                    item = {
+                        "employee_id": position.employee_id,
+                        "first_name": position.first_name,
+                        "date_create": position.date_create,
+                        "last_name": position.last_name,
+                        "description": position.description,
+                        "name_exists": position.name_exists,
+                        "surname_exists": position.surname_exists,
+                        "description_exists": position.description_exists
+                    }
+
+                    data.append(item)
+                res = data
+            else:
+                res = []
+
+            return JsonResponse({'data': res})
+    return JsonResponse({'data': []})
 
 
 def priority_search(request):
@@ -1182,27 +1218,44 @@ def priority_search(request):
     if not request.user.is_staff:
         return HttpResponseForbidden()
 
-    results = []
-    query = None
-
     if request.method == "GET":
-        query = request.GET.get('search')
-        if query == '':
-            results = Priority.objects.raw(
-                raw_query=f"select *, 1 as code_exists from tracking_dev_priority tdp "
-            )
-        else:
-            results = Priority.objects.raw(
-                raw_query=f"select *, strpos(tdp.code, '{query}') as code_exists, "
-                          f"strpos(tdp.\"name\", '{query}') as name_exists, strpos(tdp.description, '{query}') "
-                          f"as description_exists from tracking_dev_priority tdp "
-            )
+        # If the type is GET, we need check if request is ajax.
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        if is_ajax:
+            series = request.GET.get('series')
+            if series != '':
+                query_se = Priority.objects.raw(
+                    raw_query=f"select *, strpos(tdp.code, '{series}') as code_exists, "
+                              f"strpos(tdp.\"name\", '{series}') as name_exists, strpos(tdp.description, '{series}') "
+                              f"as description_exists from tracking_dev_priority tdp "
+                )
+            else:
+                query_se = Priority.objects.raw(
+                    raw_query=f"select *, 1 as code_exists, 1 as name_exists, 1 as description_exists "
+                              f"from tracking_dev_priority tdp "
+                )
 
-    return render(request, "include/list_data/priority_list.html", {
-        'data_group': results,
-        'title_page': 'Картотека приоритетов',
-        'value_in_the_search_form': query
-    })
+            if len(query_se) > 0:
+                data = []
+                for position in query_se:
+                    item = {
+                        "priority_id": position.priority_id,
+                        "code": position.code,
+                        "name": position.name,
+                        "date_create": position.date_create,
+                        "description": position.description,
+                        "code_exists": position.code_exists,
+                        "name_exists": position.name_exists,
+                        "description_exists": position.description_exists
+                    }
+
+                    data.append(item)
+                res = data
+            else:
+                res = []
+
+            return JsonResponse({'data': res})
+    return JsonResponse({'data': []})
 
 
 # This view provides type tasks search form
@@ -1213,27 +1266,44 @@ def type_search(request):
     if not request.user.is_staff:
         return HttpResponseForbidden()
 
-    results = []
-    query = None
-
     if request.method == "GET":
-        query = request.GET.get('search')
-        if query == '':
-            results = TypeTask.objects.raw(
-                raw_query=f"select *, 1 as code_exists from tracking_dev_typetask tdp "
-            )
-        else:
-            results = TypeTask.objects.raw(
-                raw_query=f"select *, strpos(tdp.code, '{query}') as code_exists, "
-                          f"strpos(tdp.\"name\", '{query}') as name_exists, strpos(tdp.description, '{query}') "
-                          f"as description_exists from tracking_dev_typetask tdp "
-            )
+        # If the type is GET, we need check if request is ajax.
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        if is_ajax:
+            series = request.GET.get('series')
+            if series != '':
+                query_se = TypeTask.objects.raw(
+                    raw_query=f"select *, strpos(tdp.code, '{series}') as code_exists, "
+                              f"strpos(tdp.\"name\", '{series}') as name_exists, strpos(tdp.description, '{series}') "
+                              f"as description_exists from tracking_dev_typetask tdp "
+                )
+            else:
+                query_se = TypeTask.objects.raw(
+                    raw_query=f"select *, 1 as code_exists, "
+                              f"1 as name_exists, 1 as description_exists from tracking_dev_typetask tdp "
+                )
 
-    return render(request, "include/list_data/type_task_list.html", {
-        'data_group': results,
-        'title_page': 'Картотека типов задач',
-        'value_in_the_search_form': query
-    })
+            if len(query_se) > 0:
+                data = []
+                for position in query_se:
+                    item = {
+                        "type_id": position.type_id,
+                        "code": position.code,
+                        "name": position.name,
+                        "date_create": position.date_create,
+                        "description": position.description,
+                        "code_exists": position.code_exists,
+                        "name_exists": position.name_exists,
+                        "description_exists": position.description_exists
+                    }
+
+                    data.append(item)
+                res = data
+            else:
+                res = []
+
+            return JsonResponse({'data': res})
+    return JsonResponse({'data': []})
 
 
 # This method adds new users to the project

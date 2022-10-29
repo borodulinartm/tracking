@@ -12,10 +12,9 @@
         <div class="d-flex flex-row">
             <form action="{% url 'type_search' %}" class="form-inline" method="get">
                 <div class="d-flex">
-                    <label for="" class="sr-only text_button"></label>
-                    <input name="search" class="form-control me-2" id="" placeholder="Введите текст для поиска"
-                           value="{{ value_in_the_search_form }}">
-                    <button type="submit" class="btn btn-primary">Найти</button>
+                    <label for="search-input" class="sr-only text_button"></label>
+                    <input name="search" class="form-control me-2" id="search-input"
+                           placeholder="Введите текст для поиска" value="{{ value_in_the_search_form }}">
                 </div>
             </form>
         </div>
@@ -27,19 +26,62 @@
             </div>
         </div>
 
-        {% for data in data_group %}
-            {% if data.code_exists > 0 or data.name_exists > 0 or data.description_exists > 0 %}
-                <div class="row">
-                    <a href="{% url 'type_description' type_id=data.type_id %}"
-                       class="list-group-item list-group-item-action text_button" aria-current="true">
-                        <div class="d-flex w-100 justify-content-between">
-                            <h3 class="mb-1">{{ data.code }}</h3>
-                            <small>{{ data.date_create }}</small>
-                        </div>
-                        <p class="mb-1">{{ data.description|truncatechars:100 }}</p>
-                    </a>
-                </div>
-            {% endif %}
-        {% endfor %}
+        <div class="row" id="my_row"></div>
+
     </div>
 {% endblock content %}
+
+{% block script %}
+    <script>
+        const search_data = (series) => {
+            $.ajax({
+                type: 'GET',
+                url: '{% url "type_search" %}',
+                data: {
+                    'series': series
+                },
+                success: function (response) {
+                    $("#my_row").empty()
+
+                    let temp = ""
+                    let data = response.data;
+
+                    data.forEach(element => {
+                        console.log(element);
+                        if (element.code_exists > 0 || element.name_exists > 0 || element.description_exists > 0) {
+                            const django_url = "/main_page/types/" + element.type_id;
+
+                            temp += `
+                                <div>
+                                    <a href="` + django_url + `"
+                                       class="list-group-item list-group-item-action text_button" aria-current="true">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <h3 class="mb-1">${element.code}</h3>
+                                            <small>${element.date_create}</small>
+                                        </div>
+                                        <p class="mb-1">${element.description}</p>
+                                    </a>
+                                </div>
+                           `
+
+                            $("#my_row").append(temp)
+                            temp = ""
+                        }
+                    });
+                },
+                error: function (error) {
+                    console.log(error)
+                }
+            });
+        }
+
+        // By default, we should set this value to default to display all projects.
+        search_data('')
+
+        const search_input = document.getElementById("search-input")
+        search_input.addEventListener('keyup', e => {
+            console.log(e.target.value)
+            search_data(e.target.value)
+        })
+    </script>
+{% endblock script %}

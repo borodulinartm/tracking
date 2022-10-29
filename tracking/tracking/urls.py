@@ -60,7 +60,7 @@ urlpatterns = [
 
     path('main_page/employees', employee_list, name="employees"),
     path('main_page/employees/<int:employee_id>', employee_description, name="employee_description"),
-    path('main_page/employees<int:employee_id>/delete', employee_remove, name="employee_delete"),
+    path('main_page/employees/<int:employee_id>/delete', employee_remove, name="employee_delete"),
 
     path('main_page/projects/<int:project_id>/tasks/<int:task_id>', task_description, name="task_description"),
     path('main_page/projects/<int:project_id>/tasks/<int:task_id>/delete', task_remove, name="task_delete"),
