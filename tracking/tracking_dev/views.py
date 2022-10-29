@@ -1422,6 +1422,62 @@ def search_tasks(request, project_id):
     return JsonResponse({'data': [], 'project_id': project_id})
 
 
+def search_collabarators(request, project_id):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+
+    if request.method == "GET":
+        # If the type is GET, we need check if request is ajax.
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        if is_ajax:
+            series = request.GET.get('series')
+            if series != '':
+                query_se = Project.objects.raw(
+                    raw_query=f"select *, au.id as user_id, strpos(au.first_name, '{series}') as name_exists, "
+                              f"strpos(au.last_name, '{series}') as last_name_exists "
+                              f"from tracking_dev_employee_projects tdep "
+                              f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
+                              f"join auth_user au on tde.user_id = au.id "
+                              f"where tdep.project_id={project_id} and tdep.is_activate=True"
+                )
+            else:
+                query_se = Project.objects.raw(
+                    raw_query=f"select *, au.id as user_id, 1 as name_exists, 1 as last_name_exists "
+                              f"from tracking_dev_employee_projects tdep "
+                              f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
+                              f"join auth_user au on tde.user_id = au.id "
+                              f"where tdep.project_id={project_id} and tdep.is_activate=True"
+                )
+
+            if len(query_se) > 0:
+                data = []
+                for position in query_se:
+                    item = {
+                        "employee_id": position.employee_id,
+                        "project_id": position.project_id,
+                        "user_id": position.user_id,
+                        "first_name": position.first_name,
+                        "last_name": position.last_name,
+                        "email": position.email,
+                        "post": position.post,
+                        "name_exists": position.name_exists,
+                        "last_name_exists": position.last_name_exists
+                    }
+
+                    data.append(item)
+                res = data
+            else:
+                res = []
+
+            return JsonResponse({'data': res, 'project_id': project_id, "user_id": request.user.id,
+                                 'is_admin_zone': request.user.is_staff})
+    return JsonResponse({'data': [], 'project_id': project_id, "user_id": request.user.id,
+                         'is_admin_zone': request.user.is_staff})
+
+
 # This method adds new users to the project
 def add_employee_to_project(request, project_id, employee_id):
     if not request.user.is_authenticated:

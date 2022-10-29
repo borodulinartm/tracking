@@ -15,6 +15,17 @@
     </style>
 
     <div class="list_button_block">
+        <div class="d-flex flex-row">
+            <form action="{% url 'collabs_search' project_id=project_id %}" class="form-inline search-form"
+                  method="get">
+                <div class="d-flex">
+                    <label for="search-input" class="sr-only text_button"></label>
+                    <input name="search" class="form-control me-2" id="search-input"
+                           placeholder="Введите текст для поиска" value="{{ value_in_the_search_form }}">
+                </div>
+            </form>
+        </div>
+
         <div class="position_block">
             <div class="d-flex justify-content-between bs-example">
                 <div>
@@ -81,54 +92,106 @@
             </div>
         </div>
 
-        {% for content_list in table %}
-            <div class="position_block">
-                <div class="d-flex justify-content-between bs-example">
-                    <div class="fw-bolder text_button">
-                        <a class="align-items-center text-dark text_button text-decoration-none dropdown-toggle" href="#"
-                           id="dropdown_menu_1" data-bs-toggle="dropdown">
-                            {% if content_list.id == id %}
-                                <span class="d-none d-sm-inline mx-1">
-                                    {{ content_list.first_name }} {{ content_list.last_name }} (Вы)
-                                </span>
-                            {% else %}
-                                <span class="d-none d-sm-inline mx-1">
-                                    {{ content_list.first_name }} {{ content_list.last_name }}
-                                </span>
-                            {% endif %}
-                        </a>
-
-                        {# Small window card info about participant #}
-                        <div class="dropdown-menu dropdown-menu-end text-small shadow rounded-10"
-                             aria-labelledby="dropdown_menu_1">
-                            <p class="fw-bolder text_button position_block dropdown-item-text">
-                                ФИО: {{ content_list.first_name }} {{ content_list.last_name }}
-                            </p>
-                            <p class="fw-normal dropdown-item-text text_button">
-                                Должность: {{ content_list.post }}</p>
-                            <p class="fw-normal dropdown-item-text text_button">Почта: {{ content_list.email }}</p>
-                            <a class="btn btn-primary position_block"
-                               href="{% url 'employee_description' employee_id=content_list.employee_id %}">
-                                Подробнее
-                            </a>
-                            <a class="btn btn-primary position_block"
-                               href="{% url 'employee_report' project_id=project_id employee_id=content_list.employee_id %}">
-                                Отчёт по сотруднику
-                            </a>
-                        </div>
-                    </div>
-
-                    {% if is_admin_zone %}
-                        {% if content_list.id != id %}
-                            <div>
-                                <a type="button"
-                                   href="{% url 'delete_employee_from_project' project_id=content_list.project_id employee_id=content_list.employee_id %}"
-                                   class="btn btn-outline-danger text_button">Удалить</a>
-                            </div>
-                        {% endif %}
-                    {% endif %}
-                </div>
-            </div>
-        {% endfor %}
+        <div class="position_block" id="my_row"></div>
+    
     </div>
 {% endblock content %}
+
+{% block script %}
+    <script>
+        const search_data = (series) => {
+            $.ajax({
+                type: 'GET',
+                url: '{% url "collabs_search" project_id=project_id %}',
+                data: {
+                    'series': series
+                },
+                success: function (response) {
+                    $("#my_row").empty()
+
+                    let temp = ""
+                    let data = response.data;
+
+                    data.forEach(element => {
+                        console.log(element)
+                        //console.log(element);
+                        if (element.name_exists > 0 || element.last_name_exists > 0) {
+                            temp += `
+                            <div class="position_block">
+                                <div class="d-flex justify-content-between bs-example">
+                                    <div class="fw-bolder text_button">
+                                        <a class="align-items-center text-dark text_button text-decoration-none dropdown-toggle" href="#"
+                                           id="dropdown_menu_1" data-bs-toggle="dropdown">`
+                            if (element.user_id === response.user_id) {
+                                temp += `
+                                            <span class="d-none d-sm-inline mx-1">
+                                                ${element.first_name} ${element.last_name} (Вы)
+                                            </span>`
+                            } else {
+                                temp += `
+                                            <span class="d-none d-sm-inline mx-1">
+                                                        ${element.first_name} ${element.last_name}
+                                            </span>`
+                            }
+
+                            let employee_url = '/main_page/employees/' + element.employee_id;
+                            let report_url = '/main_page/projects/' + element.project_id + '/report_employee/' +
+                                element.employee_id;
+                            let delete_employee_url = '/main_page/projects/' + element.project_id +
+                                '/collobarators/' + element.employee_id + '/delete'
+
+                            temp += `
+                                        </a>
+                                        <div class="dropdown-menu dropdown-menu-end text-small shadow rounded-10"
+                                             aria-labelledby="dropdown_menu_1">
+                                            <p class="fw-bolder text_button position_block dropdown-item-text">
+                                                ФИО: ${element.first_name} ${element.last_name}
+                                            </p>
+                                            <p class="fw-normal dropdown-item-text text_button">
+                                                Должность: ${element.post}</p>
+                                            <p class="fw-normal dropdown-item-text text_button">Почта: ${element.email}</p>
+                                            <a class="btn btn-primary position_block"
+                                               href="` + employee_url + `">
+                                                Подробнее
+                                            </a>
+                                            <a class="btn btn-primary position_block"
+                                               href="` + report_url + `">
+                                                Отчёт по сотруднику
+                                            </a>
+                                        </div>
+                                    </div>`
+                            if (response.is_admin_zone) {
+                                if (element.user_id !== response.user_id) {
+                                    temp += `
+                                            <div>
+                                                <a type="button"
+                                                   href="` + delete_employee_url + `"class="btn btn-outline-danger text_button">Удалить</a>
+                                            </div>`
+                                }
+                            }
+                            temp += `
+                                </div>
+                            </div>
+                            `
+
+                            $("#my_row").append(temp)
+                            temp = ""
+                        }
+                    });
+                },
+                error: function (error) {
+                    console.log(error)
+                }
+            });
+        }
+
+        // By default, we should set this value to default to display all projects.
+        search_data('')
+
+        const search_input = document.getElementById("search-input")
+        search_input.addEventListener('keyup', e => {
+            console.log(e.target.value)
+            search_data(e.target.value)
+        })
+    </script>
+{% endblock script %}
