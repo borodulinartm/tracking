@@ -4,7 +4,7 @@
 {% block content %}
     <div class="container-fluid">
         <div class="d-flex flex-row">
-            <form action="{% url 'project_search' %}" class="form-inline search-form" method="get">
+            <form action="{% url 'task_search' project_id=project_id %}" class="form-inline search-form" method="get">
                 <div class="d-flex">
                     <label for="search-input" class="sr-only text_button"></label>
                     <input name="search" class="form-control me-2" id="search-input"
@@ -70,10 +70,9 @@
                             `
 
                             for (let j = 2; j < data[i].length; ++j) {
-                                console.log("I am here")
                                 if (data[i][j].code_exists > 0 || data[i][j].name_exists > 0 ||
                                     data[i][j].description_exists > 0) {
-                                    const django_url = "main_page/projects/" + data[i][j].project_id + "/tasks/" +
+                                    const django_url = "/main_page/projects/" + data[i][j].project_id + "/tasks/" +
                                         data[i][j].task_id;
 
                                     temp += `

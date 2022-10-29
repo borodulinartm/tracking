@@ -1076,14 +1076,14 @@ def project_search(request):
                     raw_query=f"select tdp.project_id, tdp.\"name\",  strpos(tdp.code, '{series}') "
                               f"as project_exists, strpos(tdp.code, '{series}') as code_exists, "
                               f"strpos(tdp.description, '{series}') as description_exists "
-                              f"from tracking_dev_project tdp"
+                              f"from tracking_dev_project tdp WHERE tdp.is_activate=True"
                 )
             else:
                 query_se = Project.objects.raw(
                     raw_query=f"select tdp.project_id, tdp.\"name\", 1 "
                               f"as project_exists, 1 as code_exists, "
                               f"1 as description_exists "
-                              f"from tracking_dev_project tdp"
+                              f"from tracking_dev_project tdp WHERE tdp.is_activate=True"
                 )
 
             if len(query_se) > 0:
@@ -1126,12 +1126,13 @@ def state_search(request):
                     raw_query=f"select tds.state_id, tds.\"name\",  strpos(tds.\"name\", '{series}') as state_exists, "
                               f"strpos(tds.code, '{series}') as code_exists, "
                               f"strpos(tds.description, '{series}') as description_exists "
-                              f"from tracking_dev_state tds"
+                              f"from tracking_dev_state tds WHERE tds.is_activate=True"
                 )
             else:
                 query_se = State.objects.raw(
                     raw_query=f"select tds.state_id, tds.\"name\", 1 as state_exists, "
-                              f"1 as code_exists, 1 as description_exists from tracking_dev_state tds"
+                              f"1 as code_exists, 1 as description_exists from tracking_dev_state tds "
+                              f"WHERE tds.is_activate=True"
                 )
 
             if len(query_se) > 0:
@@ -1228,11 +1229,12 @@ def priority_search(request):
                     raw_query=f"select *, strpos(tdp.code, '{series}') as code_exists, "
                               f"strpos(tdp.\"name\", '{series}') as name_exists, strpos(tdp.description, '{series}') "
                               f"as description_exists from tracking_dev_priority tdp "
+                              f"WHERE tdp.is_activate=True"
                 )
             else:
                 query_se = Priority.objects.raw(
                     raw_query=f"select *, 1 as code_exists, 1 as name_exists, 1 as description_exists "
-                              f"from tracking_dev_priority tdp "
+                              f"from tracking_dev_priority tdp WHERE tdp.is_activate=True"
                 )
 
             if len(query_se) > 0:
@@ -1276,11 +1278,13 @@ def type_search(request):
                     raw_query=f"select *, strpos(tdp.code, '{series}') as code_exists, "
                               f"strpos(tdp.\"name\", '{series}') as name_exists, strpos(tdp.description, '{series}') "
                               f"as description_exists from tracking_dev_typetask tdp "
+                              f"WHERE tdp.is_activate=True"
                 )
             else:
                 query_se = TypeTask.objects.raw(
                     raw_query=f"select *, 1 as code_exists, "
                               f"1 as name_exists, 1 as description_exists from tracking_dev_typetask tdp "
+                              f"WHERE tdp.is_activate=True"
                 )
 
             if len(query_se) > 0:
@@ -1334,10 +1338,6 @@ def search_tasks(request, project_id):
     if not request.user.is_staff:
         return HttpResponseForbidden()
 
-    tasks_personal = None
-    tasks_observer = None
-    tasks_list = None
-
     if request.method == "GET":
         # If the type is GET, we need check if request is ajax.
         is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
@@ -1352,7 +1352,7 @@ def search_tasks(request, project_id):
                               f"join tracking_dev_employee tde on tdt.responsible_id = tde.employee_id "
                               f"join tracking_dev_state tds on tds.state_id = tdt.state_id "
                               f"where tdt.is_activate and tds.\"isClosed\" = false and tde.user_id = {request.user.id} "
-                              f"and tdt.project_id = {project_id};"
+                              f"and tdt.project_id = {project_id} and tdt.is_activate=True;"
                 )
 
                 # Tasks, in which current user is observer
@@ -1364,7 +1364,7 @@ def search_tasks(request, project_id):
                               f"join tracking_dev_employee tde on tdt.initiator_id = tde.employee_id "
                               f"join tracking_dev_state tds on tds.state_id = tdt.state_id "
                               f"where tde.user_id = {request.user.id} and tdt.project_id = {project_id} and tdt.is_activate "
-                              f"and tds.\"isClosed\" = false"
+                              f"and tds.\"isClosed\" = false and tdt.is_activate=True;"
                 )
 
                 # Another tasks
@@ -1378,7 +1378,7 @@ def search_tasks(request, project_id):
                               f"join tracking_dev_state tds on tds.state_id = tdt.state_id "
                               f"where tde.user_id != {request.user.id} and tdt.project_id = {project_id} "
                               f"and tde2.user_id != {request.user.id} and tdt.is_activate "
-                              f"and tds.\"isClosed\" = false"
+                              f"and tds.\"isClosed\" = false and tdt.is_activate=True;"
                 )
             else:
                 # Tasks, which needs to complete (which user is responsible)
@@ -1387,7 +1387,7 @@ def search_tasks(request, project_id):
                               f"join tracking_dev_employee tde on tdt.responsible_id = tde.employee_id "
                               f"join tracking_dev_state tds on tds.state_id = tdt.state_id "
                               f"where tdt.is_activate and tds.\"isClosed\" = false and tde.user_id = {request.user.id} "
-                              f"and tdt.project_id = {project_id};"
+                              f"and tdt.project_id = {project_id} and tdt.is_activate=True;;"
                 )
 
                 # Tasks, in which current user is observer
@@ -1396,7 +1396,7 @@ def search_tasks(request, project_id):
                               f"join tracking_dev_employee tde on tdt.initiator_id = tde.employee_id "
                               f"join tracking_dev_state tds on tds.state_id = tdt.state_id "
                               f"where tde.user_id = {request.user.id} and tdt.project_id = {project_id} and tdt.is_activate "
-                              f"and tds.\"isClosed\" = false"
+                              f"and tds.\"isClosed\" = false and tdt.is_activate=True;"
                 )
 
                 # Another tasks
@@ -1407,7 +1407,7 @@ def search_tasks(request, project_id):
                               f"join tracking_dev_state tds on tds.state_id = tdt.state_id "
                               f"where tde.user_id != {request.user.id} and tdt.project_id = {project_id} "
                               f"and tde2.user_id != {request.user.id} and tdt.is_activate "
-                              f"and tds.\"isClosed\" = false"
+                              f"and tds.\"isClosed\" = false and tdt.is_activate=True;"
                 )
 
             if len(tasks_personal) > 0 or len(tasks_observer) > 0 or len(tasks_list) > 0:
