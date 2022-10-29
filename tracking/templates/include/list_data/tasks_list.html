@@ -3,6 +3,16 @@
 
 {% block content %}
     <div class="container-fluid">
+        <div class="d-flex flex-row">
+            <form action="{% url 'project_search' %}" class="form-inline search-form" method="get">
+                <div class="d-flex">
+                    <label for="search-input" class="sr-only text_button"></label>
+                    <input name="search" class="form-control me-2" id="search-input"
+                           placeholder="Введите текст для поиска" value="{{ value_in_the_search_form }}">
+                </div>
+            </form>
+        </div>
+
         {% if is_admin %}
             <div class="d-flex flex-row">
                 <div class="p-2">
@@ -13,73 +23,92 @@
             </div>
         {% endif %}
 
-        {% if count_personal_tasks > 0 %}
-            <div class="position_block">
-                <a class="text-dark fw-bolder text_button text-decoration-none dropdown-toggle"
-                   data-bs-toggle="collapse" href="#collapseExample_personal" role="button"
-                   aria-expanded="false" aria-controls="collapseExample_personal">
-                    Задачи, в которых вы ответственный ({{ count_personal_tasks }})
-                </a>
-            </div>
+        <div class="row" id="my_row"></div>
 
-            {% for task in tasks_personal %}
-                <div class="row collapse rounded-2" id="collapseExample_personal">
-                    <a href="{% url 'task_description' project_id=project_id task_id=task.task_id %}"
-                       class="list-group-item list-group-item-action text_button" aria-current="true">
-                        <div class="d-flex w-100 justify-content-between">
-                            <h3 class="mb-1">{{ task.code }}</h3>
-                            <small>{{ task.date_create }}</small>
-                        </div>
-                        <p class="mb-1">{{ task.description|truncatechars:100 }}</p>
-                    </a>
-                </div>
-            {% endfor %}
-        {% endif %}
-
-        {% if count_observer_tasks > 0 %}
-            <div class="position_block">
-                <a class="text-dark fw-bolder text_button text-decoration-none dropdown-toggle"
-                   data-bs-toggle="collapse" href="#collapseExample_observer" role="button"
-                   aria-expanded="false" aria-controls="collapseExample_observer">
-                    Задачи, в которых вы наблюдатель ({{ count_observer_tasks }})
-                </a>
-            </div>
-
-            {% for task in tasks_observer %}
-                <div class="collapse row rounded-2" id="collapseExample_observer">
-                    <a href="{% url 'task_description' project_id=project_id task_id=task.task_id %}"
-                       class="list-group-item list-group-item-action text_button" aria-current="true">
-                        <div class="d-flex w-100 justify-content-between">
-                            <h3 class="mb-1">{{ task.code }}</h3>
-                            <small>{{ task.date_create }}</small>
-                        </div>
-                        <p class="mb-1">{{ task.description|truncatechars:100 }}</p>
-                    </a>
-                </div>
-            {% endfor %}
-        {% endif %}
-
-        {% if count_tasks_list > 0 %}
-            <div class="position_block">
-                <a class="text-dark fw-bolder text_button text-decoration-none dropdown-toggle"
-                   data-bs-toggle="collapse" href="#collapseExample_all" role="button"
-                   aria-expanded="false" aria-controls="collapseExample_all">
-                    Остальные задачи ({{ count_tasks_list }})
-                </a>
-            </div>
-
-            {% for data in data_group %}
-                <div class="collapse row rounded-2" id="collapseExample_all">
-                    <a href="{% url 'task_description' project_id=project_id task_id=data.task_id %}"
-                       class="list-group-item list-group-item-action text_button" aria-current="true">
-                        <div class="d-flex w-100 justify-content-between">
-                            <h3 class="mb-1">{{ data.code }}</h3>
-                            <small>{{ data.date_create }}</small>
-                        </div>
-                        <p class="mb-1">{{ data.description|truncatechars:100 }}</p>
-                    </a>
-                </div>
-            {% endfor %}
-        {% endif %}
     </div>
 {% endblock content %}
+
+{% block script %}
+    <script>
+        // This function calculates the correct results
+        function calculate_correct_tasks(array) {
+            let i = 0;
+            array.forEach(element => {
+                if (element.code_exists > 0 || element.name_exists > 0 || element.description_exists > 0) {
+                    ++i;
+                }
+            })
+
+            return i;
+        }
+
+        // This method provides an ajax request to the
+        const search_data = (series) => {
+            $.ajax({
+                type: 'GET',
+                url: '{% url "task_search" project_id=project_id %}',
+                data: {
+                    'series': series
+                },
+                success: function (response) {
+                    $("#my_row").empty()
+
+                    let temp = ""
+                    let data = response.data;
+
+                    for (let i = 0; i < data.length; ++i) {
+                        let count_tasks = calculate_correct_tasks(data[i])
+                        if (count_tasks > 0) {
+                            temp += `
+                            <div class="position_block">
+                                <a class="text-dark fw-bolder text_button text-decoration-none dropdown-toggle"
+                                   data-bs-toggle="collapse" href="#` + data[i][0] + `" role="button"
+                                   aria-expanded="false" aria-controls="` + data[i][0] + `">
+                                    ` + data[i][1] + ` (${count_tasks})
+                                </a>
+                            </div>
+                            `
+
+                            for (let j = 2; j < data[i].length; ++j) {
+                                console.log("I am here")
+                                if (data[i][j].code_exists > 0 || data[i][j].name_exists > 0 ||
+                                    data[i][j].description_exists > 0) {
+                                    const django_url = "main_page/projects/" + data[i][j].project_id + "/tasks/" +
+                                        data[i][j].task_id;
+
+                                    temp += `
+                                    <div class="row collapse rounded-2" id="` + data[i][0] + `">
+                                        <a href="` + django_url + `"
+                                           class="list-group-item list-group-item-action text_button" aria-current="true">
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <h3 class="mb-1">${data[i][j].code}: ${data[i][j].name}</h3>
+                                                <small>${data[i][j].date_create}</small>
+                                            </div>
+                                            <p class="mb-1">${data[i][j].description}</p>
+                                        </a>
+                                    </div>
+                                    `
+                                }
+                            }
+
+                            $("#my_row").append(temp)
+                            temp = ""
+                        }
+                    }
+                },
+                error: function (error) {
+                    console.log(error)
+                }
+            });
+        }
+
+        // By default, we should set this value to default to display all projects.
+        search_data('')
+
+        const search_input = document.getElementById("search-input")
+        search_input.addEventListener('keyup', e => {
+            console.log(e.target.value)
+            search_data(e.target.value)
+        })
+    </script>
+{% endblock script %}

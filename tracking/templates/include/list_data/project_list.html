@@ -46,7 +46,7 @@
                     let data = response.data;
 
                     data.forEach(element => {
-                        console.log(element);
+                        //console.log(element);
                         if (element.code_exists > 0 || element.project_exists > 0 || element.description_exists > 0) {
                             const django_url = "/main_page/projects/" + element.project_id + "/description";
 

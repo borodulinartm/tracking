@@ -1306,6 +1306,122 @@ def type_search(request):
     return JsonResponse({'data': []})
 
 
+def add_data(tasks, href, text_link):
+    data = [href, text_link]
+    for position in tasks:
+        item = {
+            "task_id": position.task_id,
+            "code": position.code,
+            "name": position.name,
+            "project_id": position.project_id,
+            "date_create": position.date_create,
+            "description": position.description,
+            "code_exists": position.code_exists,
+            "name_exists": position.name_exists,
+            "description_exists": position.description_exists
+        }
+
+        data.append(item)
+
+    return data
+
+
+# This method allows user search the tasks
+def search_tasks(request, project_id):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+
+    tasks_personal = None
+    tasks_observer = None
+    tasks_list = None
+
+    if request.method == "GET":
+        # If the type is GET, we need check if request is ajax.
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        if is_ajax:
+            series = request.GET.get('series')
+            if series != '':
+                # Tasks, which needs to complete (which user is responsible)
+                tasks_personal = Task.objects.raw(
+                    raw_query=f"select *, strpos(tdt.code, '{series}') as code_exists, "
+                              f"strpos(tdt.\"name\", '{series}') as name_exists, "
+                              f"strpos(tdt.description, '{series}') as description_exists from tracking_dev_task tdt "
+                              f"join tracking_dev_employee tde on tdt.responsible_id = tde.employee_id "
+                              f"join tracking_dev_state tds on tds.state_id = tdt.state_id "
+                              f"where tdt.is_activate and tds.\"isClosed\" = false and tde.user_id = {request.user.id} "
+                              f"and tdt.project_id = {project_id};"
+                )
+
+                # Tasks, in which current user is observer
+                tasks_observer = Task.objects.raw(
+                    raw_query=f"select *, strpos(tdt.code, '{series}') as code_exists, "
+                              f"strpos(tdt.\"name\", '{series}') as name_exists, "
+                              f"strpos(tdt.description, '{series}') as description_exists "
+                              f"from tracking_dev_task tdt "
+                              f"join tracking_dev_employee tde on tdt.initiator_id = tde.employee_id "
+                              f"join tracking_dev_state tds on tds.state_id = tdt.state_id "
+                              f"where tde.user_id = {request.user.id} and tdt.project_id = {project_id} and tdt.is_activate "
+                              f"and tds.\"isClosed\" = false"
+                )
+
+                # Another tasks
+                tasks_list = Task.objects.raw(
+                    raw_query=f"select *, strpos(tdt.code, '{series}') as code_exists, "
+                              f"strpos(tdt.\"name\", '{series}') as name_exists, "
+                              f"strpos(tdt.description, '{series}') as description_exists "
+                              f"from tracking_dev_task tdt "
+                              f"join tracking_dev_employee tde on tdt.initiator_id = tde.employee_id "
+                              f"join tracking_dev_employee tde2 on tdt.responsible_id = tde2.employee_id "
+                              f"join tracking_dev_state tds on tds.state_id = tdt.state_id "
+                              f"where tde.user_id != {request.user.id} and tdt.project_id = {project_id} "
+                              f"and tde2.user_id != {request.user.id} and tdt.is_activate "
+                              f"and tds.\"isClosed\" = false"
+                )
+            else:
+                # Tasks, which needs to complete (which user is responsible)
+                tasks_personal = Task.objects.raw(
+                    raw_query=f"select *, 1 as code_exists, 1 as name_exists, 1 as description_exists from tracking_dev_task tdt "
+                              f"join tracking_dev_employee tde on tdt.responsible_id = tde.employee_id "
+                              f"join tracking_dev_state tds on tds.state_id = tdt.state_id "
+                              f"where tdt.is_activate and tds.\"isClosed\" = false and tde.user_id = {request.user.id} "
+                              f"and tdt.project_id = {project_id};"
+                )
+
+                # Tasks, in which current user is observer
+                tasks_observer = Task.objects.raw(
+                    raw_query=f"select *, 1 as code_exists, 1 as name_exists, 1 as description_exists from tracking_dev_task tdt "
+                              f"join tracking_dev_employee tde on tdt.initiator_id = tde.employee_id "
+                              f"join tracking_dev_state tds on tds.state_id = tdt.state_id "
+                              f"where tde.user_id = {request.user.id} and tdt.project_id = {project_id} and tdt.is_activate "
+                              f"and tds.\"isClosed\" = false"
+                )
+
+                # Another tasks
+                tasks_list = Task.objects.raw(
+                    raw_query=f"select *, 1 as code_exists, 1 as name_exists, 1 as description_exists from tracking_dev_task tdt "
+                              f"join tracking_dev_employee tde on tdt.initiator_id = tde.employee_id "
+                              f"join tracking_dev_employee tde2 on tdt.responsible_id = tde2.employee_id "
+                              f"join tracking_dev_state tds on tds.state_id = tdt.state_id "
+                              f"where tde.user_id != {request.user.id} and tdt.project_id = {project_id} "
+                              f"and tde2.user_id != {request.user.id} and tdt.is_activate "
+                              f"and tds.\"isClosed\" = false"
+                )
+
+            if len(tasks_personal) > 0 or len(tasks_observer) > 0 or len(tasks_list) > 0:
+                data = [add_data(tasks_personal, "collapseExample_personal", "Задачи, в которых Вы ответственный"),
+                        add_data(tasks_observer, "collapseExample_observer", "Задачи, в которых Вы наблюдатель"),
+                        add_data(tasks_list, "collapseExample_all", "Все остальные задачи")]
+                res = data
+            else:
+                res = []
+
+            return JsonResponse({'data': res, 'project_id': project_id})
+    return JsonResponse({'data': [], 'project_id': project_id})
+
+
 # This method adds new users to the project
 def add_employee_to_project(request, project_id, employee_id):
     if not request.user.is_authenticated:
