@@ -187,9 +187,6 @@ def get_state_list(request):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
 
-    if not request.user.is_staff:
-        return HttpResponseForbidden()
-
     # The settings are disable for the developer
     if not request.user.is_staff:
         return HttpResponseForbidden()
@@ -482,6 +479,13 @@ def task_description(request, project_id, task_id):
                   f"where tdt.is_activate=true and tdt.task_id = {task_id};"
     )
 
+    list_of_subtasks = SubTasks.objects.raw(
+        raw_query=f"select 1 as sub_task_id, tdt.code, tdt.\"name\", tdt.description, "
+                  f"tdt.date_change from tracking_dev_subtasks tds "
+                  f"join tracking_dev_task tdt on tds.task_id = tdt.task_id "
+                  f"where tds.reference_task_id = {task_id}"
+    )
+
     data = Task.objects.raw(
         raw_query=f"select * from tracking_dev_task tdt "
                   f"join tracking_dev_state tds on tds.state_id = tdt.state_id "
@@ -504,6 +508,8 @@ def task_description(request, project_id, task_id):
         'project_id': project_id,
         'is_project_zone': 1,
         'show_choose_project': 0,
+        'count_subtasks': len(list(list_of_subtasks)),
+        'subtasks': list_of_subtasks,
         'list_projects': list_projects,
         'is_admin': request.user.is_staff,
         'what_open': 6
@@ -960,6 +966,73 @@ def create_task(request, project_id):
         'title_page': 'Форма создания новой задачи',
         'form': creation_form,
         'text_button': 'Создать задачу',
+        'show_choose_project': 0,
+        'project_id': project_id,
+    })
+
+
+# This view provides creation form of the subtasks
+def create_subtask_form(request, project_id, task_id):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+
+    raw_data = Project.objects.filter(project_id=project_id)
+
+    arr = None
+    for data in raw_data:
+        arr = data
+
+    # This query provides an employee creation form
+    employee = Employee.objects.filter(user_id=request.user.id)
+    employee_arr = None
+    for data in employee:
+        employee_arr = data
+
+    reference_task = Task.objects.filter(task_id=task_id)
+    reference_task_arr = None
+    for data in reference_task:
+        reference_task_arr = data
+
+    if request.method == "POST":
+        creation_form = CreateTaskForm(data=request.POST)
+
+        if creation_form.is_valid():
+            code = creation_form.cleaned_data['code']
+            name = creation_form.cleaned_data['name']
+            description = creation_form.cleaned_data['description']
+            responsible = creation_form.cleaned_data['responsible']
+            initiator = creation_form.cleaned_data['initiator']
+            state = creation_form.cleaned_data['state']
+            priority = creation_form.cleaned_data['priority']
+            type_task = creation_form.cleaned_data['type']
+            date_deadline = creation_form.cleaned_data['date_deadline']
+
+            task = Task(code=code, name=name, description=description, responsible=responsible, initiator=initiator,
+                        state=state, priority=priority, type=type_task, date_deadline=date_deadline, project=arr,
+                        manager=employee_arr)
+            task.save()
+
+            subtask = SubTasks(task=task, reference_task=reference_task_arr)
+            subtask.save()
+
+            next = request.POST.get('next', '/')
+            return HttpResponseRedirect(next)
+        else:
+            messages.error(request, "Ошибка при вводе данных")
+    else:
+        creation_form = CreateTaskForm()
+
+        # Use a many-to-many query
+        creation_form.fields['responsible'].queryset = Employee.objects.filter(projects=project_id)
+        creation_form.fields['initiator'].queryset = Employee.objects.filter(projects=project_id)
+
+    return render(request, 'include/base_form.html', {
+        'title_page': 'Форма создания новой подзадачи',
+        'form': creation_form,
+        'text_button': 'Создать подзадачу',
         'show_choose_project': 0,
         'project_id': project_id,
     })

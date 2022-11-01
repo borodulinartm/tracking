@@ -132,3 +132,17 @@ class Task(models.Model):
     class Meta:
         verbose_name = "Task"
         verbose_name_plural = "Task description"
+
+
+# This model provides sub-tasks for the tasks
+class SubTasks(models.Model):
+    sub_task_id = models.AutoField(primary_key=True)
+    task = models.ForeignKey('Task', on_delete=models.CASCADE, related_name="r_task_id")
+    reference_task = models.ForeignKey('Task', on_delete=models.CASCADE, related_name='r_task_description')
+
+    def __str__(self):
+        return str(self.sub_task_id)
+
+    class Meta:
+        verbose_name = "Task"
+        verbose_name_plural = "Task description"
