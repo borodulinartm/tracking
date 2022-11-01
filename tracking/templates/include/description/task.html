@@ -86,8 +86,12 @@
                 </a>
             {% endif %}
 
-            <a href="{% url 'subtask_create' project_id=content_list.project_id task_id=content_list.task_id %}?next={{ request.path|urlencode }}"
-               class="btn btn-primary text_button">Создать под-задачу</a>
+            {% if is_admin %}
+                <a href="{% url 'subtask_create' project_id=content_list.project_id task_id=content_list.task_id %}?next={{ request.path|urlencode }}"
+                   class="btn btn-primary text_button">
+                    Создать под-задачу
+                </a>
+            {% endif %}
 
             {% if is_admin %}
                 {% if content_list.state_id != 5 %}

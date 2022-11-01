@@ -480,10 +480,12 @@ def task_description(request, project_id, task_id):
     )
 
     list_of_subtasks = SubTasks.objects.raw(
-        raw_query=f"select 1 as sub_task_id, tdt.code, tdt.\"name\", tdt.description, "
+        raw_query=f"select 1 as sub_task_id, tdt.task_id, tdt.code, tdt.\"name\", tdt.description, "
                   f"tdt.date_change from tracking_dev_subtasks tds "
                   f"join tracking_dev_task tdt on tds.task_id = tdt.task_id "
-                  f"where tds.reference_task_id = {task_id}"
+                  f"join tracking_dev_state tds2 on tds2.state_id = tdt.state_id "
+                  f"where tds.reference_task_id = {task_id} and tds2.\"isClosed\" = false "
+                  f"and tdt.is_activate=True"
     )
 
     data = Task.objects.raw(
@@ -1643,10 +1645,10 @@ def mark_as_completed(request, project_id, task_id):
         cursor.execute(f"UPDATE tracking_dev_task SET state_id=5 WHERE "
                        f"project_id={project_id} and task_id={task_id}")
 
-    return redirect(reverse('task_description', kwargs={'project_id': project_id, 'task_id': task_id}))
+    return redirect(reverse('tasks_for_project', kwargs={'project_id': project_id}))
 
 
-# This view provides a report of the completed tasks by deadline dates
+# This view provides a report of the completed tasks by deadline dates.
 def calculate_report_tasks(request, project_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
