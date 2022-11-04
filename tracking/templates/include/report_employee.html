@@ -176,32 +176,53 @@
         </div>
         <div class="position_block">
             {% for data in user_info %}
-                <div class="position_block title">
-                    <span class="fw-normal">
-                        <img src="{% static 'img/user.svg' %}" alt="User" rel="icon">
-                    </span>
-                    <span class="text_button">{{ data.first_name }} {{ data.last_name }}</span>
+
+                <div class="d-flex justify-content-center">
+                    <div class="row w-75">
+                        <div class="text_button" aria-current="true">
+                            <p class="mb-1 text-center" style="font-size: 36px">
+                                <span class="fw-normal">
+                                    <img src="{% static 'img/user.svg' %}" alt="User" rel="icon">
+                                </span> {{ data.first_name }} {{ data.last_name }}
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="position_block title">
-                    <span class="fw-normal">
-                        <img src="{% static 'img/email.svg' %}" alt="Email" rel="icon">
-                    </span>
-                    <span class="text_button">{{ data.email }}</span>
+                <div class="d-flex justify-content-center">
+                    <div class="row w-75">
+                        <div class="text_button" aria-current="true">
+                            <p class="mb-1 text-center" style="font-size: 36px">
+                                <span class="fw-normal">
+                                    <img src="{% static 'img/email.svg' %}" alt="User" rel="icon">
+                                </span> {{ data.email }}
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="position_block title">
-                    <span class="fw-normal">
-                        <img src="{% static 'img/post.svg' %}" alt="Post" rel="icon">
-                    </span>
-                    <span class="text_button">{{ data.post }}</span>
+                <div class="d-flex justify-content-center">
+                    <div class="row w-75">
+                        <div class="text_button" aria-current="true">
+                            <p class="mb-1 text-center" style="font-size: 36px">
+                                <span class="fw-normal">
+                                    <img src="{% static 'img/post.svg' %}" alt="User" rel="icon">
+                                </span> {{ data.post }}
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="position_block title">
-                    <span class="fw-normal">
-                        <img src="{% static 'img/calendar.svg' %}" alt="Date" rel="icon">
-                    </span>
-                    <span class="text_button">{{ data.date_joined }}</span>
+                <div class="d-flex justify-content-center">
+                    <div class="row w-75">
+                        <div class="text_button" aria-current="true">
+                            <p class="mb-1 text-center" style="font-size: 36px">
+                                <span class="fw-normal">
+                                    <img src="{% static 'img/calendar.svg' %}" alt="User" rel="icon">
+                                </span> {{ data.date_joined }}
+                            </p>
+                        </div>
+                    </div>
                 </div>
             {% endfor %}
         </div>

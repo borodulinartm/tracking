@@ -15,7 +15,8 @@ import random
 def index(request):
     if request.user.is_authenticated:
         raw_data = Project.objects.raw(
-            raw_query=f"select * from tracking_dev_employee_projects tdep "
+            raw_query=f"select tdp.project_id, tdp.\"name\", tdp.description, tdp.date_create, tdp.code, 1 as project_exists "
+                      f"from tracking_dev_employee_projects tdep "
                       f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
                       f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "
                       f"where tde.user_id = {request.user.id};"

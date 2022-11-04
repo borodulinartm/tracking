@@ -15,19 +15,21 @@
     </style>
 
     <div class="list_button_block">
-        <div class="d-flex flex-row">
-            <form action="{% url 'collabs_search' project_id=project_id %}" class="form-inline search-form"
-                  method="get">
-                <div class="d-flex">
-                    <label for="search-input" class="sr-only text_button"></label>
-                    <input name="search" class="form-control me-2" id="search-input"
-                           placeholder="Введите текст для поиска" value="{{ value_in_the_search_form }}">
-                </div>
-            </form>
+        <div class="d-flex justify-content-center">
+            <div class="row w-75">
+                <form action="{% url 'collabs_search' project_id=project_id %}" class="form-inline search-form"
+                      method="get">
+                    <div class="d-flex">
+                        <label for="search-input" class="sr-only text_button"></label>
+                        <input name="search" class="form-control me-2" id="search-input"
+                               placeholder="Введите текст для поиска" value="{{ value_in_the_search_form }}">
+                    </div>
+                </form>
+            </div>
         </div>
 
         <div class="position_block">
-            <div class="d-flex justify-content-between bs-example">
+            <div class="d-flex justify-content-center bs-example">
                 <div>
                     {% if is_admin_zone %}
                         <a href="#"
@@ -49,19 +51,19 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLabel1">Внимание</h5>
+                        <h5 class="modal-title" id="exampleModalLabel1">Добавление участников</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"
                                 aria-label="Close">
                         </button>
                     </div>
                     <div class="modal-body text_button">
-                        Поиск
                         <form action="{% url 'search' project_id=project_id %}" class="form-inline" method="get">
                             <div class="form-group mx-sm-3 mb-2">
                                 <label for="" class="sr-only text_button"></label>
-                                <input name="search" type="" class="form-control" id="" placeholder="keyword">
+                                <input name="search" class="form-control" id=""
+                                       placeholder="Введите имя пользователя">
                             </div>
-                            <button type="submit" class="btn btn-primary btn-lg mb-2">Search</button>
+                            <button type="submit" class="btn btn-primary btn-lg mb-2">Поиск</button>
                         </form>
                     </div>
                 </div>
@@ -125,12 +127,14 @@
                             if (element.user_id === response.user_id) {
                                 temp += `
                                             <span class="d-none d-sm-inline mx-1">
+                                                <img src="{% static 'img/user.svg' %}" alt="user" rel="icon">
                                                 ${element.first_name} ${element.last_name} (Вы)
                                             </span>`
                             } else {
                                 temp += `
                                             <span class="d-none d-sm-inline mx-1">
-                                                        ${element.first_name} ${element.last_name}
+                                                <img src="{% static 'img/user.svg' %}" alt="user" rel="icon">
+                                                ${element.first_name} ${element.last_name}
                                             </span>`
                             }
 
@@ -145,11 +149,14 @@
                                         <div class="dropdown-menu dropdown-menu-end text-small shadow rounded-10"
                                              aria-labelledby="dropdown_menu_1">
                                             <p class="fw-bolder text_button position_block dropdown-item-text">
-                                                ФИО: ${element.first_name} ${element.last_name}
+                                                ${element.first_name} ${element.last_name}
                                             </p>
                                             <p class="fw-normal dropdown-item-text text_button">
-                                                Должность: ${element.post}</p>
-                                            <p class="fw-normal dropdown-item-text text_button">Почта: ${element.email}</p>
+                                                <img src="{% static 'img/post.svg' %}" alt="post" rel="icon">
+                                                ${element.post}</p>
+                                            <p class="fw-normal dropdown-item-text text_button">
+                                                 <img src="{% static 'img/email.svg' %}" alt="mail" rel="icon">
+                                                 ${element.email}</p>
                                             <a class="btn btn-primary position_block"
                                                href="` + employee_url + `">
                                                 Подробнее

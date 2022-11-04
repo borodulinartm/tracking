@@ -9,27 +9,30 @@
 
 {% block content %}
     <div class="container-fluid">
-
-        <div class="d-flex flex-row">
-            <form action="{% url 'state_search' %}" class="form-inline" method="get">
-                <div class="d-flex">
-                    <label for="search-input" class="sr-only text_button"></label>
-                    <input name="search" class="form-control me-2"
-                           id="search-input"
-                           placeholder="Введите текст для поиска" value="{{ value_in_the_search_form }}">
-                </div>
-            </form>
+        <div class="d-flex justify-content-center">
+            <div class="row w-75">
+                <form action="{% url 'state_search' %}" class="form-inline" method="get">
+                    <div class="d-flex">
+                        <label for="search-input" class="sr-only text_button"></label>
+                        <input name="search" class="form-control me-2"
+                               id="search-input"
+                               placeholder="Введите текст для поиска" value="{{ value_in_the_search_form }}">
+                    </div>
+                </form>
+            </div>
         </div>
 
-        <div class="d-flex flex-row">
+        <div class="d-flex justify-content-center">
             <div class="p-2">
                 <a class="btn btn-primary d-flex align-items-center text-white text-decoration-none text_button"
-                    href="{% url 'create_state' %}?next={{ request.path|urlencode }}"> Добавить новые данные </a>
+                   href="{% url 'create_state' %}?next={{ request.path|urlencode }}"> Добавить новые данные </a>
             </div>
         </div>
     </div>
 
-    <div class="row" id="my_row"></div>
+    <div class="d-flex justify-content-center">
+        <div class="row w-75" id="my_row"></div>
+    </div>
 
 {% endblock content %}
 
@@ -58,7 +61,10 @@
                                     <a href="` + django_url + `"
                                        class="list-group-item list-group-item-action text_button" aria-current="true">
                                         <div class="d-flex w-100 justify-content-between">
-                                            <h3 class="mb-1">${element.code}</h3>
+                                            <h3 class="mb-1">
+                                                <img src="{% static 'img/test.svg' %}" alt="type" rel="icon">
+                                                ${element.code}
+                                            </h3>
                                             <small>${element.date_create}</small>
                                         </div>
                                         <p class="mb-1">${element.description}</p>

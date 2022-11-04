@@ -1,11 +1,68 @@
 {% extends 'include/base.html' %}
 {% load static %}
 
-{% block title %}
-    <div class="title_block">
-        <h2> {{ title_page }}</h2>
-    </div>
-{% endblock title %}
+{% block content %}
+    <div class="position_block">
+        {% if request.user.is_authenticated %}
+            <div class="title_block d-flex justify-content-center">
+                <h1>Ваши проекты</h1>
+            </div>
+            {% for project in list_projects %}
+                <div class="d-flex justify-content-center">
+                    <div class="row w-75">
+                        <a href="{% url 'project_extra_function' project_id=project.project_id %}"
+                           class="list-group-item list-group-item-action text_button" aria-current="true">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h3 class="mb-1">
+                                    <span class="fw-normal">
+                                        <img src="{% static 'img/project.svg' %}" alt="type" rel="icon">
+                                    </span>
+                                    {{ project.name }}
+                                </h3>
+                                <small>{{ project.date_create }}</small>
+                            </div>
+                            <p class="mb-1">{{ project.description|truncatechars:100 }}</p>
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="title_block d-flex justify-content-center">
+                <h1>Добро пожаловать</h1>
+            </div>
 
-{#{% block content %}#}
-{#{% endblock content %}#}
+            <div class="d-flex justify-content-center">
+                <div class="row w-75">
+                    <a href="{% url 'login' %}"
+                       class="list-group-item list-group-item-action text_button" aria-current="true">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h3 class="mb-1">
+                                <span class="fw-normal">
+                                    <img src="{% static 'img/login.svg' %}" alt="User" rel="icon">
+                                </span>
+                                Авторизация
+                            </h3>
+                        </div>
+                        <p class="mb-1">Используйте этот пункт, если у Вас есть аккакунт в системе</p>
+                    </a>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-center">
+                <div class="row w-75">
+                    <a href="{% url 'signup' %}" class="list-group-item list-group-item-action text_button" aria-current="true">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h3 class="mb-1">
+                                <span class="fw-normal">
+                                    <img src="{% static 'img/user-add.svg' %}" alt="User" rel="icon">
+                                </span>
+                                Регистрация
+                            </h3>
+                        </div>
+                        <p class="mb-1">Используйте этот пункт, если у Вас нет учётной записи в системе</p>
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock content %}

@@ -9,16 +9,24 @@
 
 {% block content %}
     <div class="list_button_block">
-        {% for participant in participants %}
-            <a href="{% url 'add_user' project_id=project_id employee_id=participant.employee_id %}"
-               class="list-group-item list-group-item-action" aria-current="true" style="margin-top: 50px">
-                <div>
-                    <p class="text_button position_block">
-                        <span class="fw-bolder">{{ participant.first_name }} {{ participant.last_name }}</span>,
-                        <span class="fw-normal">{{ participant.post }}</span>
-                    </p>
+        <div class="d-flex justify-content-center">
+            {% for participant in participants %}
+                <div class="row w-75">
+                    <a href="{% url 'add_user' project_id=project_id employee_id=participant.employee_id %}"
+                       class="list-group-item list-group-item-action rounded-2" aria-current="true"
+                       style="margin-top: 50px">
+                        <div>
+                            <p class="text_button position_block">
+                                <span class="fw-bolder">
+                                    <img src="{% static 'img/user.svg' %}" alt="user" rel="icon">
+                                    {{ participant.first_name }} {{ participant.last_name }}
+                                </span>,
+                                <span class="fw-normal">{{ participant.post }}</span>
+                            </p>
+                        </div>
+                    </a>
                 </div>
-            </a>
-        {% endfor %}
+            {% endfor %}
+        </div>
     </div>
 {% endblock content %}
