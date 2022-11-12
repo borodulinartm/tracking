@@ -183,6 +183,76 @@ def project_description(request, project_id):
     })
 
 
+def get_sprint_list_for_project(request, project_id):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+
+    raw_data = Sprint.objects.raw(
+        raw_query=f"select * from tracking_dev_sprint tds where tds.project_id = {project_id} and tds.is_activate ;"
+    )
+
+    all_projects = Project.objects.raw(
+        raw_query=f"select * from tracking_dev_employee_projects tdep "
+                  f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
+                  f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "
+                  f"where tde.user_id = {request.user.id};"
+    )
+
+    return render(request, 'include/list_data/sprint_list.html', {
+        'title_page': 'Выберите спринт для его просмотра или удаления',
+        'show_list_group': 0,
+        'show_choose_project': 1,
+        'list_sprint': raw_data,
+        'data_group': all_projects,
+        'list_projects': all_projects,
+        'is_project_zone': 1,
+        'project_id': project_id,
+        'value_in_the_search_form': ''
+    })
+
+
+def sprint_description(request, project_id, sprint_id):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+
+    sprint_desc = Sprint.objects.raw(
+        raw_query=f"select * from tracking_dev_sprint tds "
+                  f"where tds.project_id = {project_id} and tds.sprint_id = {sprint_id} and tds.is_activate ;"
+    )
+
+    data = Sprint.objects.raw(
+        raw_query=f"SELECT * FROM tracking_dev_sprint where is_activate=True"
+    )
+
+    all_projects = Project.objects.raw(
+        raw_query=f"select * from tracking_dev_employee_projects tdep "
+                  f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
+                  f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "
+                  f"where tde.user_id = {request.user.id};"
+    )
+
+    head = ["Номер", "Код", "Название", "Описание", "Дата создания", "Дата начала", "Дата завершения"]
+
+    return render(request, "include/description/sprint.html", {
+        'title_page': 'Сведения о спринте',
+        'head': head,
+        'table': sprint_desc,
+        'show_list_group': 1,
+        'data_group': data,
+        'what_open': 7,
+        'is_project_zone': 1,
+        'project_id': project_id,
+        'show_choose_project': 1,
+        'list_projects': all_projects
+    })
+
+
 # This view provides list of the states
 def get_state_list(request):
     if not request.user.is_authenticated:
@@ -531,6 +601,18 @@ def project_remove(request, project_id):
     return redirect(reverse('projects'))
 
 
+# This view allows user remove sprint from the task
+def sprint_remove(request, project_id, sprint_id):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+
+    Sprint.objects.filter(sprint_id=sprint_id).update(is_activate=False)
+    return redirect(reverse('sprints', kwargs={'project_id': project_id}))
+
+
 # This view allows you remove the task
 def task_remove(request, project_id, task_id):
     if not request.user.is_authenticated:
@@ -764,6 +846,66 @@ def create_priority(request):
         'form': creation_form,
         'text_button': 'Создать приоритет',
         'show_choose_project': 0,
+    })
+
+
+# This view provides create sprint form
+def create_sprint(request, project_id):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+
+    if request.method == "POST":
+        creation_form = CreateSprintForm(data=request.POST)
+
+        if creation_form.is_valid():
+            code = creation_form.cleaned_data['code']
+            name = creation_form.cleaned_data['name']
+            description = creation_form.cleaned_data['description']
+            date_start = creation_form.cleaned_data['date_start']
+            date_end = creation_form.cleaned_data['date_end']
+
+            SprintData = Sprint(code=code, name=name, description=description, project_id=project_id,
+                                date_start=date_start, date_end=date_end)
+            SprintData.save()
+
+            next = request.POST.get('next', '/')
+            return HttpResponseRedirect(next)
+    else:
+        creation_form = CreateSprintForm()
+
+    return render(request, 'include/base_form.html', {
+        'title_page': 'Форма создания нового спринта',
+        'form': creation_form,
+        'text_button': 'Создать спринт',
+        'show_choose_project': 0
+    })
+
+
+# This view provides edit form of the sprint
+def edit_sprint(request, project_id, sprint_id):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+
+    instance = get_object_or_404(Sprint, sprint_id=sprint_id)
+    form = CreateSprintForm(request.POST or None, instance=instance)
+
+    if form.is_valid():
+        form.save()
+
+        next = request.POST.get('next', '/')
+        return HttpResponseRedirect(next)
+
+    return render(request, 'include/base_form.html', {
+        'title_page': 'Форма редактирования спринта',
+        'form': form,
+        'text_button': 'Применить изменения',
+        'show_choose_project': 0
     })
 
 

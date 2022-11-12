@@ -26,7 +26,16 @@ urlpatterns = [
     path('main_page/projects/<int:project_id>', show_extra_functions, name="project_extra_function"),
     path('main_page/projects/<int:project_id>/description', project_description, name="project_description"),
     path('main_page/projects/<int:project_id>/report', calculate_report_tasks, name="project_report"),
-    path('main_page/projects/<int:project_id>/report_employee/<int:employee_id>', report_by_employee, name="employee_report"),
+
+    path('main_page/projects/<int:project_id>/sprints', get_sprint_list_for_project, name="sprints"),
+    path('main_page/projects/<int:project_id>/sprints/<int:sprint_id>', sprint_description,
+         name="sprint_description"),
+    path('main_page/projects/<int:project_id>/sprints/<int:sprint_id>/edit', edit_sprint, name="sprint_edit"),
+    path('main_page/projects/<int:project_id>/sprints/<int:sprint_id>/delete', sprint_remove, name="sprint_remove"),
+
+    path('main_page/projects/<int:project_id>/sprints/create', create_sprint, name="create_sprint"),
+    path('main_page/projects/<int:project_id>/report_employee/<int:employee_id>', report_by_employee,
+         name="employee_report"),
     path('main_page/projects/<int:project_id>/employee/<int:employee_id>/tasks/<str:sort>',
          show_uncompleted_tasks_by_user, name="uncompleted_tasks_by_user"),
     path('main_page/projects/<int:project_id>/delete', project_remove, name="project_delete"),

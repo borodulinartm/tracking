@@ -1,0 +1,45 @@
+{% extends 'include/base.html' %}
+{% load static %}
+
+{% block title %}
+    <div class="title_block">
+        <h2 class="title">{{ title_page }}</h2>
+    </div>
+{% endblock title %}
+
+{% block content %}
+    <div class="d-flex justify-content-center">
+        <div class="p-2">
+            <a class="btn btn-primary d-flex align-items-center text-white text-decoration-none text_button"
+               href="{% url 'create_sprint' project_id=project_id %}?next={{ request.path|urlencode }}"> Добавить новые данные </a>
+        </div>
+    </div>
+
+    {% for sprint in list_sprint %}
+        <div class="d-flex justify-content-center">
+            <div class="row w-75">
+                <a href="{% url 'sprint_description' project_id=project_id sprint_id=sprint.sprint_id %}"
+                   class="list-group-item list-group-item-action text_button" aria-current="true">
+                    <div class="d-flex w-100 justify-content-between" style="margin-bottom: 10px">
+                        <h3 class="mb-1">
+                            <span class="fw-normal">
+                                <img src="{% static 'img/running.svg' %}" alt="type" rel="icon">
+                            </span>
+                            {{ sprint.name }}
+                        </h3>
+
+                        <small>{{ sprint.date_create }}</small>
+                    </div>
+
+                    <p class="mb-1">
+                        {{ sprint.description|truncatechars:100 }}
+                    </p>
+
+                    <p class="mb-1">
+                        {{ sprint.date_start }} - {{ sprint.date_end }}
+                    </p>
+                </a>
+            </div>
+        </div>
+    {% endfor %}
+{% endblock content %}

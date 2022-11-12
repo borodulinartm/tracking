@@ -111,6 +111,43 @@ class CreateTypeTaskForm(forms.ModelForm):
         self.fields['description'].label = "Описание"
 
 
+# This form provides sprint form
+class CreateSprintForm(forms.ModelForm):
+    class Meta:
+        model = Sprint
+        fields = ['code', 'name', 'description', 'date_start', 'date_end']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields['code'] = forms.CharField(widget=forms.TextInput(attrs={
+            'placeholder': 'Введите код',
+            'style': 'margin-bottom: 20px'}))
+
+        self.fields['name'] = forms.CharField(widget=forms.TextInput(attrs={
+            'placeholder': 'Введите название',
+            'style': 'margin-bottom: 20px'}))
+
+        self.fields['description'] = forms.CharField(widget=forms.Textarea(attrs={
+            'placeholder': 'Введите описание',
+            'rows': '3',
+            'style': 'margin-bottom: 20px'}))
+
+        self.fields['date_start'] = forms.DateField(widget=forms.SelectDateWidget(attrs={
+            "style": "margin-bottom: 20px"
+        }))
+
+        self.fields['date_end'] = forms.DateField(widget=forms.SelectDateWidget(attrs={
+            "style": "margin-bottom: 20px"
+        }))
+
+        self.fields['code'].label = "Код"
+        self.fields['name'].label = "Название"
+        self.fields['description'].label = "Описание"
+        self.fields['date_start'].label = "Дата начала"
+        self.fields['date_end'].label = "Дата окончания"
+
+
 # Login Form
 class LoginForm(forms.Form):
     username = forms.CharField(widget=forms.TextInput(attrs={

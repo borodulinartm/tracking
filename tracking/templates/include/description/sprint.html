@@ -1,0 +1,75 @@
+{% extends 'include/base.html' %}
+{% load static %}
+
+{% block title %}
+    <div class="title_block">
+        <h2 class="title">{{ title_page }}</h2>
+    </div>
+{% endblock title %}
+
+{% block content %}
+    <div class="list_button_block">
+        {% for content_list in table %}
+            <div class="position_block">
+                <span class="fw-bolder text_button">Номер:</span>
+                <span class="fw-normal text_button">{{ content_list.priority_id }}</span>
+            </div>
+
+            <div class="position_block">
+                <span class="fw-bolder text_button">Код:</span>
+                <span class="fw-normal text_button">{{ content_list.code }}</span>
+            </div>
+
+            <div class="position_block">
+                <span class="fw-bolder text_button">Название:</span>
+                <span class="fw-normal text_button">{{ content_list.name }}</span>
+            </div>
+
+            <div class="position_block">
+                <span class="fw-bolder text_button">Описание:</span>
+                <span class="fw-normal text_button">{{ content_list.description }}</span>
+            </div>
+
+            <div class="position_block">
+                <span class="fw-bolder text_button">Создано:</span>
+                <span class="fw-normal text_button">{{ content_list.date_create }}</span>
+            </div>
+
+            <div class="position_block">
+                <span class="fw-bolder text_button">Дата начала:</span>
+                <span class="fw-normal text_button">{{ content_list.date_start }}</span>
+            </div>
+
+            <div class="position_block">
+                <span class="fw-bolder text_button">Дата завершения:</span>
+                <span class="fw-normal text_button">{{ content_list.date_end }}</span>
+            </div>
+
+            <a href="{% url 'sprint_edit' project_id=content_list.project_id sprint_id=content_list.sprint_id %}?next={{ request.path|urlencode }}"
+               class="btn btn-primary text_button"> Редактировать</a>
+
+            <a type="button" data-bs-toggle="modal" data-bs-target="#exampleModal" href="#"
+               class="btn btn-danger text_button"> Удалить
+            </a>
+
+            <!-- Remove modal window -->
+            <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+                 aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Внимание</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body text_button">Вы действительно хотите удалить спринт?</div>
+                        <div class="modal-footer">
+                            <a type="button" class="btn btn-primary" data-bs-dismiss="modal">Отмена</a>
+                            <a type="button" href="{% url 'sprint_remove' project_id=project_id sprint_id=content_list.sprint_id %}"
+                               class="btn btn-danger">Подтвердить удаление</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock content %}

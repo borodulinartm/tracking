@@ -146,3 +146,23 @@ class SubTasks(models.Model):
     class Meta:
         verbose_name = "Task"
         verbose_name_plural = "Task description"
+
+
+# This model provides sprint realization
+class Sprint(models.Model):
+    sprint_id = models.AutoField(primary_key=True)
+    code = models.CharField(max_length=50, default="default code")
+    name = models.CharField(max_length=50, default="default name")
+    project = models.ForeignKey('Project', on_delete=models.CASCADE, related_name='r_project_id')
+    description = models.TextField(default="description of the task", blank=True)
+    date_create = models.DateTimeField(default=django.utils.timezone.now(), blank=True)  # This date you cannot change
+    date_start = models.DateTimeField(default=django.utils.timezone.now())  # This date can change
+    date_end = models.DateTimeField(default=django.utils.timezone.now())
+    is_activate = models.BooleanField(default=True)
+
+    def __str__(self):
+        return str(self.sprint_id)
+
+    class Meta:
+        verbose_name = "Sprint"
+        verbose_name_plural = "Sprint description"
