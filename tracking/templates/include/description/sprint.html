@@ -64,12 +64,44 @@
                         <div class="modal-body text_button">Вы действительно хотите удалить спринт?</div>
                         <div class="modal-footer">
                             <a type="button" class="btn btn-primary" data-bs-dismiss="modal">Отмена</a>
-                            <a type="button" href="{% url 'sprint_remove' project_id=project_id sprint_id=content_list.sprint_id %}"
+                            <a type="button"
+                               href="{% url 'sprint_remove' project_id=project_id sprint_id=content_list.sprint_id %}"
                                class="btn btn-danger">Подтвердить удаление</a>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <div class="block_title" style="margin-top: 50px">
+                <h2 class="title">Задачи спринта</h2>
+            </div>
+
+            {% for task in tasks %}
+                <div class="position_block justify-content-between">
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'task_description' project_id=task.project_id task_id=task.task_id %}"
+                           class="list-group-item list-group-item-action text_button rounded-2" aria-current="true">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h3 class="mb-1">
+                                    <img src="{% static 'img/pencil.svg' %}" alt="pencil" rel="icon">
+                                    {{ task.code }}
+                                </h3>
+                                <small>{{ task.date_create }}</small>
+                            </div>
+
+                            <p class="mb-1" style="margin-top: 10px">
+                                <svg xmlns="http://www.w3.org/2000/svg" id="Outline" viewBox="0 0 24 24" width="24"
+                                     height="24">
+                                    <path d="M12,0A12,12,0,1,0,24,12,12.013,12.013,0,0,0,12,0Zm0,22A10,10,0,1,1,22,12,10.011,10.011,0,0,1,12,22Z"></path>
+                                    <path d="M12,10H11a1,1,0,0,0,0,2h1v6a1,1,0,0,0,2,0V12A2,2,0,0,0,12,10Z"></path>
+                                    <circle cx="12" cy="6.5" r="1.5"></circle>
+                                </svg>
+                                {{ task.description|truncatechars:100 }}
+                            </p>
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
         {% endfor %}
     </div>
 {% endblock content %}

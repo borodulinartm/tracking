@@ -52,7 +52,8 @@
 
                     data.forEach(element => {
                         if (element.code_exists > 0 || element.name_exists > 0 || element.description_exists > 0) {
-                            const django_url = "/main_page/projects/" + element.project_id + "/sprints";
+                            const django_url = "/main_page/projects/" + element.project_id + "/sprints/" +
+                                element.sprint_id;
 
                             temp += `
                                 <a href="` + django_url + `"

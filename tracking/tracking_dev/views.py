@@ -230,6 +230,11 @@ def sprint_description(request, project_id, sprint_id):
         raw_query=f"SELECT * FROM tracking_dev_sprint where is_activate=True"
     )
 
+    list_tasks = Task.objects.raw(
+        raw_query=f"select * from tracking_dev_sprint_task tdst "
+                  f"join tracking_dev_task tdt on tdst.task_id = tdt.task_id where tdst.sprint_id = 2"
+    )
+
     all_projects = Project.objects.raw(
         raw_query=f"select * from tracking_dev_employee_projects tdep "
                   f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
@@ -247,6 +252,7 @@ def sprint_description(request, project_id, sprint_id):
         'data_group': data,
         'what_open': 7,
         'is_project_zone': 1,
+        'tasks': list_tasks,
         'project_id': project_id,
         'show_choose_project': 1,
         'list_projects': all_projects

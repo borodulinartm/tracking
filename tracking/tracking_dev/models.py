@@ -160,6 +160,9 @@ class Sprint(models.Model):
     date_end = models.DateTimeField(default=django.utils.timezone.now())
     is_activate = models.BooleanField(default=True)
 
+    # Add the external field many-to-many relationship
+    task = models.ManyToManyField(Task, related_name="employee_projects")
+
     def __str__(self):
         return str(self.sprint_id)
 
