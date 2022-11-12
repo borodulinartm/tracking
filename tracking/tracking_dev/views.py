@@ -1326,6 +1326,56 @@ def project_search(request):
     return JsonResponse({'data': []})
 
 
+# This view provides sprint search
+def sprint_search(request, project_id):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+
+    if request.method == "GET":
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        if is_ajax:
+            series = request.GET.get('series')
+            if series != '':
+                query_se = Project.objects.raw(
+                    raw_query=f"select *,"
+                              f"strpos(tds.\"name\", '{series}') as name_exists, strpos(tds.description, '{series}') "
+                              f"as description_exists from tracking_dev_sprint tds "
+                              f"where tds.project_id = {project_id} and tds.is_activate ;"
+                )
+            else:
+                query_se = Project.objects.raw(
+                    raw_query=f"select *, "
+                              f"1 as name_exists, 1 as description_exists from tracking_dev_sprint tds "
+                              f"where tds.project_id = {project_id} and tds.is_activate ;"
+                )
+
+            if len(query_se) > 0:
+                data = []
+                for position in query_se:
+                    item = {
+                        "sprint_id": position.sprint_id,
+                        "project_id": project_id,
+                        "name": position.name,
+                        "date_create": position.date_create,
+                        "description": position.description,
+                        "name_exists": position.name_exists,
+                        "description_exists": position.description_exists,
+                        "date_start": position.date_start,
+                        "date_end": position.date_end
+                    }
+
+                    data.append(item)
+                res = data
+            else:
+                res = []
+
+            return JsonResponse({'data': res})
+    return JsonResponse({'data': []})
+
+
 # This method allows users search the states
 def state_search(request):
     if not request.user.is_authenticated:

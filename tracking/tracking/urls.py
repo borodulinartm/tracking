@@ -29,7 +29,7 @@ urlpatterns = [
 
     path('main_page/projects/<int:project_id>/sprints', get_sprint_list_for_project, name="sprints"),
     path('main_page/projects/<int:project_id>/sprints/<int:sprint_id>', sprint_description,
-         name="sprint_description"),
+            name="sprint_description"),
     path('main_page/projects/<int:project_id>/sprints/<int:sprint_id>/edit', edit_sprint, name="sprint_edit"),
     path('main_page/projects/<int:project_id>/sprints/<int:sprint_id>/delete', sprint_remove, name="sprint_remove"),
 
@@ -84,6 +84,7 @@ urlpatterns = [
     path('main_page/projects/<int:project_id>/collobarators/search', search, name="search"),
     path('main_page/finded_projects', project_search, name="project_search"),
     path('main_page/finded_states', state_search, name="state_search"),
+    path('main_page/<int:project_id>/finded_sprints', sprint_search, name="sprint_search"),
     path('main_page/finded_employee', employee_search, name="employee_search"),
     path('main_page/finded_priority', priority_search, name="priority_search"),
     path('main_page/finded_type_task', type_search, name="type_search"),
