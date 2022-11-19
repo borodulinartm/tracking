@@ -227,12 +227,12 @@ def sprint_description(request, project_id, sprint_id):
     )
 
     data = Sprint.objects.raw(
-        raw_query=f"SELECT * FROM tracking_dev_sprint where is_activate=True"
+        raw_query=f"SELECT * FROM tracking_dev_sprint tds where is_activate=True and tds.project_id = {project_id}"
     )
 
     list_tasks = Task.objects.raw(
         raw_query=f"select * from tracking_dev_sprint_task tdst "
-                  f"join tracking_dev_task tdt on tdst.task_id = tdt.task_id where tdst.sprint_id = 2"
+                  f"join tracking_dev_task tdt on tdst.task_id = tdt.task_id where tdst.sprint_id = {sprint_id}"
     )
 
     all_projects = Project.objects.raw(
@@ -617,6 +617,21 @@ def sprint_remove(request, project_id, sprint_id):
 
     Sprint.objects.filter(sprint_id=sprint_id).update(is_activate=False)
     return redirect(reverse('sprints', kwargs={'project_id': project_id}))
+
+
+# This view allows user remove task from sprint
+def remove_task_from_sprint(request, project_id, sprint_id, task_id):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+
+    with connection.cursor() as cursor:
+        cursor.execute(f"delete from tracking_dev_sprint_task tdst where tdst.sprint_id = {sprint_id} "
+                       f"and tdst.task_id = {task_id}")
+
+    return redirect(reverse('sprint_description', kwargs={'project_id': project_id, 'sprint_id': sprint_id}))
 
 
 # This view allows you remove the task
@@ -1282,6 +1297,43 @@ def search(request, project_id):
     })
 
 
+# This view allows user search tasks for the sprint
+def task_sprint_search(request, project_id, sprint_id):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+
+    results = []
+    if request.method == "GET":
+        query = request.GET.get('search')
+        if query == '':
+            query = 'None'
+
+        results = Task.objects.raw(
+            raw_query=f"select * from tracking_dev_task tdt where tdt.code = '{query}' and tdt.is_activate;"
+        )
+
+    raw_data = Project.objects.raw(
+        raw_query=f"select * from tracking_dev_employee_projects tdep "
+                  f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
+                  f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "
+                  f"where tde.user_id = {request.user.id};"
+    )
+
+    return render(request, 'include/task_search.html', {
+        'title_page': 'Найденные задачи',
+        'tasks': results,
+        'show_choose_project': 0,
+        'list_projects': raw_data,
+        'show_list_group': 0,
+        'is_project_zone': 1,
+        'project_id': project_id,
+        'sprint_id': sprint_id
+    })
+
+
 # This view allows user search projects in the list of projects.
 def project_search(request):
     if not request.user.is_authenticated:
@@ -1768,6 +1820,24 @@ def add_employee_to_project(request, project_id, employee_id):
         print("Can not add the participant")
     finally:
         return redirect(reverse("collabs", kwargs={'project_id': project_id}))
+
+
+# This view allows user add the task to sprint
+def add_task_to_sprint(request, project_id, sprint_id, task_id):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(f"insert into tracking_dev_sprint_task(sprint_id, task_id) "
+                           f"values ({sprint_id}, {task_id})")
+    except:
+        print("Can not add the task to the sprint")
+    finally:
+        return redirect(reverse('sprint_description', kwargs={'project_id': project_id, 'sprint_id': sprint_id}))
 
 
 # This method allows users login

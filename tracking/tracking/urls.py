@@ -32,6 +32,8 @@ urlpatterns = [
             name="sprint_description"),
     path('main_page/projects/<int:project_id>/sprints/<int:sprint_id>/edit', edit_sprint, name="sprint_edit"),
     path('main_page/projects/<int:project_id>/sprints/<int:sprint_id>/delete', sprint_remove, name="sprint_remove"),
+    path('main_page/projects/<int:project_id>/sprints/<int:sprint_id>/delete_task/<int:task_id>', remove_task_from_sprint,
+         name="remove_task_from_sprint"),
 
     path('main_page/projects/<int:project_id>/sprints/create', create_sprint, name="create_sprint"),
     path('main_page/projects/<int:project_id>/report_employee/<int:employee_id>', report_by_employee,
@@ -82,6 +84,8 @@ urlpatterns = [
          name="mark_completed"),
 
     path('main_page/projects/<int:project_id>/collobarators/search', search, name="search"),
+    path('main_page/projects/<int:project_id>/sprints/<int:sprint_id>/search', task_sprint_search,
+         name="task_sprint_search"),
     path('main_page/finded_projects', project_search, name="project_search"),
     path('main_page/finded_states', state_search, name="state_search"),
     path('main_page/<int:project_id>/finded_sprints', sprint_search, name="sprint_search"),
@@ -93,6 +97,8 @@ urlpatterns = [
 
     path('main_page/projects/<int:project_id>/collobarators/add/<int:employee_id>', add_employee_to_project,
          name="add_user"),
+    path('main_page/projects/<int:project_id>/sprints/<int:sprint_id>/add/<int:task_id>', add_task_to_sprint,
+         name="add_task"),
 
     path('login/', login, name="login"),
     path('logout/', logout, name="logout"),
