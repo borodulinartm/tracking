@@ -10,73 +10,139 @@
 {% block content %}
     <div class="list_button_block">
         {% for content_list in table %}
-            <div class="position_block">
-                <span class="fw-bolder text_button">Номер:</span>
-                <span class="fw-normal text_button">{{ content_list.project_id }}</span>
-            </div>
-
-            <div class="position_block">
-                <span class="fw-bolder text_button">Код:</span>
-                <span class="fw-normal text_button">{{ content_list.code }}</span>
-            </div>
-
-            <div class="position_block">
-                <span class="fw-bolder text_button">Название:</span>
-                <span class="fw-normal text_button">{{ content_list.name }}</span>
-            </div>
-
-            <div class="position_block">
-                <span class="fw-bolder text_button">Описание:</span>
-                <span class="fw-normal text_button">{{ content_list.description }}</span>
-            </div>
-
-            <div class="position_block">
-                <span class="fw-bolder text_button">Создано:</span>
-                <span class="fw-normal text_button">{{ content_list.date_create }}</span>
-            </div>
-
-            <div class="position_block">
-                <span class="fw-bolder text_button">Изменено:</span>
-                <span class="fw-normal text_button">{{ content_list.date_change }}</span>
-            </div>
-
-            <div class="position_block">
-                <a class="align-items-center text-dark fw-bolder text_button text-decoration-none dropdown-toggle"
-                   data-bs-toggle="collapse" href="#collapseExample" role="button"
-                   aria-expanded="false" aria-controls="collapseExample">
-                    Участники проекта
-                </a>
-
-                {% for participant in participants %}
-                    <div class="collapse rounded mt-2" id="collapseExample">
-                        <a href="{% url 'employee_description' employee_id=participant.employee_id %}"
-                           class="list-group-item list-group-item-action" aria-current="true">
-                            <div>
-                                <p class="text_button position_block dropdown-item-text">
-                                    <span class="fw-bolder">{{ participant.first_name }} {{ participant.last_name }}
-                                    </span>,
-                                    <span class="fw-normal">{{ participant.post }}</span>
-                                </p>
+            <div class="row">
+                <div class="col-sm">
+                    <div class="d-flex justify-content-center">
+                        <div class="row w-100">
+                            <div class="position_block">
+                                <span class="fw-bolder text_button">Номер:</span>
+                                <span class="fw-normal text_button">{{ content_list.project_id }}</span>
                             </div>
-                        </a>
+                        </div>
                     </div>
-                {% endfor %}
+                </div>
+                <div class="col-sm">
+                    <div class="d-flex justify-content-center">
+                        <div class="row w-100">
+                            <div class="position_block">
+                                <span class="fw-bolder text_button">Код:</span>
+                                <span class="fw-normal text_button">{{ content_list.code }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <a href="{% url 'edit_project' project_id=content_list.project_id %}?next={{ request.path|urlencode }}"
-               class="btn btn-primary text_button"> Редактировать</a>
-            <a href="{% url 'collabs' project_id=content_list.project_id %}"
-               class="btn btn-primary text_button">Участники</a>
+            <div class="row">
+                <div class="col-sm">
+                    <div class="d-flex justify-content-center">
+                        <div class="row w-100">
+                            <div class="position_block">
+                                <span class="fw-bolder text_button">Название:</span>
+                                <span class="fw-normal text_button">{{ content_list.name }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm">
+                    <div class="d-flex justify-content-center">
+                        <div class="row w-100">
+                            <div class="position_block">
+                                <span class="fw-bolder text_button">Создано:</span>
+                                <span class="fw-normal text_button">{{ content_list.date_create }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-            {% if count_tasks == 0 %}
-                <a type="button" data-bs-toggle="modal" data-bs-target="#exampleModal" href="#"
-                   class="btn btn-danger text_button"> Удалить
-                </a>
-            {% else %}
-                <a type="button" data-bs-toggle="modal" data-bs-target="#errorModal" href="#"
-                   class="btn btn-danger text_button"> Удалить
-                </a>
-            {% endif %}
+            <div class="row">
+                <div class="col-sm">
+                    <div class="d-flex justify-content-center">
+                        <div class="row w-100">
+                            <div class="position_block">
+                                <span class="fw-bolder text_button">Изменено:</span>
+                                <span class="fw-normal text_button">{{ content_list.date_change }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm">
+                    <div class="d-flex justify-content-center">
+                        <div class="row w-100">
+                            <div class="position_block">
+                                <span class="fw-bolder text_button">Описание:</span>
+                                <span class="fw-normal text_button">{{ content_list.description }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="row">
+                <div class="col-sm">
+                    <div class="d-flex justify-content-center">
+                        <div class="row w-100">
+                            <div class="position_block">
+                                <a class="align-items-center text-dark fw-bolder text_button text-decoration-none dropdown-toggle"
+                                   data-bs-toggle="collapse" href="#collapseExample" role="button"
+                                   aria-expanded="false" aria-controls="collapseExample">
+                                    Участники проекта
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% for participant in participants %}
+                <div class="row w-100">
+                    <div class="col-sm">
+                        <div class="position_block w-100 collapse rounded-2" id="collapseExample">
+                            <a href="{% url 'employee_description' employee_id=participant.employee_id %}"
+                               class="list-group-item list-group-item-action text_button"
+                               aria-current="true">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h3 class="mb-1">
+                                        <img src="{% static 'img/user.svg' %}" alt="user" rel="icon">
+                                        {{ participant.first_name }} {{ participant.last_name }}</h3>
+                                    <small>{{ participant.date_create }}</small>
+                                </div>
+                                <p class="mb-1">{{ participant.post }}</p>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+
+            <div class="row">
+                <div class="col-sm">
+                    <div class="d-flex justify-content-center">
+                        <div class="row w-100">
+                            <div class="position_block">
+                                <a href="{% url 'edit_project' project_id=content_list.project_id %}?next={{ request.path|urlencode }}"
+                                   class="btn btn-primary text_button"> Редактировать</a>
+                                <a href="{% url 'collabs' project_id=content_list.project_id %}"
+                                   class="btn btn-primary text_button">Участники</a>
+
+                                {% if count_tasks == 0 %}
+                                    <a type="button" data-bs-toggle="modal" data-bs-target="#exampleModal" href="#"
+                                       class="btn btn-danger text_button"> Удалить
+                                    </a>
+                                {% else %}
+                                    <a type="button" data-bs-toggle="modal" data-bs-target="#errorModal" href="#"
+                                       class="btn btn-danger text_button"> Удалить
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <!-- Modal -->
             <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"

@@ -10,47 +10,105 @@
 {% block content %}
     <div class="list_button_block">
         {% for content_list in table %}
-            <div class="position_block">
-                <span class="fw-bolder text_button">Номер:</span>
-                <span class="fw-normal text_button">{{ content_list.sprint_id }}</span>
+            <div class="row">
+                <div class="col-sm">
+                    <div class="d-flex justify-content-center">
+                        <div class="row w-100">
+                            <div class="position_block">
+                                <span class="fw-bolder text_button">Номер:</span>
+                                <span class="fw-normal text_button">{{ content_list.sprint_id }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm">
+                    <div class="d-flex justify-content-center">
+                        <div class="row w-100">
+                            <div class="position_block">
+                                <span class="fw-bolder text_button">Код:</span>
+                                <span class="fw-normal text_button">{{ content_list.code }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div class="position_block">
-                <span class="fw-bolder text_button">Код:</span>
-                <span class="fw-normal text_button">{{ content_list.code }}</span>
+            <div class="row">
+                <div class="col-sm">
+                    <div class="d-flex justify-content-center">
+                        <div class="row w-100">
+                            <div class="position_block">
+                                <span class="fw-bolder text_button">Название:</span>
+                                <span class="fw-normal text_button">{{ content_list.name }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm">
+                    <div class="d-flex justify-content-center">
+                        <div class="row w-100">
+                            <div class="position_block">
+                                <span class="fw-bolder text_button">Создано:</span>
+                                <span class="fw-normal text_button">{{ content_list.date_create }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div class="position_block">
-                <span class="fw-bolder text_button">Название:</span>
-                <span class="fw-normal text_button">{{ content_list.name }}</span>
+            <div class="row">
+                <div class="col-sm">
+                    <div class="d-flex justify-content-center">
+                        <div class="row w-100">
+                            <div class="position_block">
+                                <span class="fw-bolder text_button">Дата начала:</span>
+                                <span class="fw-normal text_button">{{ content_list.date_start }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm">
+                    <div class="d-flex justify-content-center">
+                        <div class="row w-100">
+                            <div class="position_block">
+                                <span class="fw-bolder text_button">Дата завершения:</span>
+                                <span class="fw-normal text_button">{{ content_list.date_end }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div class="position_block">
-                <span class="fw-bolder text_button">Описание:</span>
-                <span class="fw-normal text_button">{{ content_list.description }}</span>
+            <div class="row">
+                <div class="col-sm">
+                    <div class="d-flex justify-content-center">
+                        <div class="row w-100">
+                            <div class="position_block">
+                                <span class="fw-bolder text_button">Описание:</span>
+                                <span class="fw-normal text_button">{{ content_list.description }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div class="position_block">
-                <span class="fw-bolder text_button">Создано:</span>
-                <span class="fw-normal text_button">{{ content_list.date_create }}</span>
+            <div class="row">
+                <div class="col-sm">
+                    <div class="d-flex justify-content-center">
+                        <div class="row w-100">
+                            <div class="position_block">
+                                <a href="{% url 'sprint_edit' project_id=content_list.project_id sprint_id=content_list.sprint_id %}?next={{ request.path|urlencode }}"
+                                   class="btn btn-primary text_button"> Редактировать
+                                </a>
+
+                                <a type="button" data-bs-toggle="modal" data-bs-target="#exampleModal" href="#"
+                                   class="btn btn-danger text_button"> Удалить
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-
-            <div class="position_block">
-                <span class="fw-bolder text_button">Дата начала:</span>
-                <span class="fw-normal text_button">{{ content_list.date_start }}</span>
-            </div>
-
-            <div class="position_block">
-                <span class="fw-bolder text_button">Дата завершения:</span>
-                <span class="fw-normal text_button">{{ content_list.date_end }}</span>
-            </div>
-
-            <a href="{% url 'sprint_edit' project_id=content_list.project_id sprint_id=content_list.sprint_id %}?next={{ request.path|urlencode }}"
-               class="btn btn-primary text_button"> Редактировать</a>
-
-            <a type="button" data-bs-toggle="modal" data-bs-target="#exampleModal" href="#"
-               class="btn btn-danger text_button"> Удалить
-            </a>
 
             <!-- Remove modal window -->
             <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
@@ -76,9 +134,19 @@
                 <h2 class="title">Задачи спринта</h2>
             </div>
 
-            <a href="#"
-               class="btn btn-primary text_button" data-bs-toggle="modal" data-bs-target="#exampleModal1">Добавить задачу
-            </a>
+            <div class="row">
+                <div class="col-sm">
+                    <div class="d-flex justify-content-center">
+                        <div class="row w-100">
+                            <div class="position_block">
+                                <a href="#" class="btn btn-primary text_button" data-bs-toggle="modal"
+                                   data-bs-target="#exampleModal1">Добавить задачу
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <!-- Search Bar -->
             <div class="modal fade" id="exampleModal1" tabindex="-1" aria-labelledby="exampleModalLabel1"
@@ -108,32 +176,53 @@
 
             {% for task in tasks %}
                 <div class="position_block justify-content-between">
-                    <div class="d-flex justify-content-between">
-                        <a href="{% url 'task_description' project_id=task.project_id task_id=task.task_id %}"
-                           class="list-group-item list-group-item-action text_button rounded-2" aria-current="true">
-                            <div class="d-flex w-100 justify-content-between">
-                                <h3 class="mb-1">
-                                    <img src="{% static 'img/pencil.svg' %}" alt="pencil" rel="icon">
-                                    {{ task.code }}
-                                </h3>
-                                <small>{{ task.date_create }}</small>
-                            </div>
+                    <div class="row">
+                        <div class="col-sm">
+                            <div class="d-flex justify-content-center">
+                                <div class="row w-100">
+                                    <div class="position_block">
+                                        <div class="d-flex justify-content-between">
+                                            <a href="{% url 'task_description' project_id=task.project_id task_id=task.task_id %}"
+                                               class="list-group-item list-group-item-action text_button rounded-2"
+                                               aria-current="true">
+                                                <div class="d-flex w-100 justify-content-between">
+                                                    <h3 class="mb-1">
+                                                        <img src="{% static 'img/pencil.svg' %}" alt="pencil"
+                                                             rel="icon">
+                                                        {{ task.code }}
+                                                    </h3>
+                                                    <small>{{ task.date_create }}</small>
+                                                </div>
 
-                            <p class="mb-1" style="margin-top: 10px">
-                                <svg xmlns="http://www.w3.org/2000/svg" id="Outline" viewBox="0 0 24 24" width="24"
-                                     height="24">
-                                    <path d="M12,0A12,12,0,1,0,24,12,12.013,12.013,0,0,0,12,0Zm0,22A10,10,0,1,1,22,12,10.011,10.011,0,0,1,12,22Z"></path>
-                                    <path d="M12,10H11a1,1,0,0,0,0,2h1v6a1,1,0,0,0,2,0V12A2,2,0,0,0,12,10Z"></path>
-                                    <circle cx="12" cy="6.5" r="1.5"></circle>
-                                </svg>
-                                {{ task.description|truncatechars:100 }}
-                            </p>
-                        </a>
+                                                <p class="mb-1" style="margin-top: 10px">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" id="Outline"
+                                                         viewBox="0 0 24 24" width="24"
+                                                         height="24">
+                                                        <path d="M12,0A12,12,0,1,0,24,12,12.013,12.013,0,0,0,12,0Zm0,22A10,10,0,1,1,22,12,10.011,10.011,0,0,1,12,22Z"></path>
+                                                        <path d="M12,10H11a1,1,0,0,0,0,2h1v6a1,1,0,0,0,2,0V12A2,2,0,0,0,12,10Z"></path>
+                                                        <circle cx="12" cy="6.5" r="1.5"></circle>
+                                                    </svg>
+                                                    {{ task.description|truncatechars:100 }}
+                                                </p>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="d-flex justify-content-between">
-                        <a href="{% url 'remove_task_from_sprint' project_id=project_id sprint_id=content_list.sprint_id task_id=task.task_id %}"
-                           class="btn btn-danger text_button">Удалить задачу
-                        </a>
+                    <div class="row">
+                        <div class="col-sm">
+                            <div class="d-flex justify-content-center">
+                                <div class="row w-100">
+                                    <div class="position_block">
+                                        <a href="{% url 'remove_task_from_sprint' project_id=project_id sprint_id=content_list.sprint_id task_id=task.task_id %}"
+                                           class="btn btn-danger text_button">Удалить задачу
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             {% endfor %}
