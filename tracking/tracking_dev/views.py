@@ -1312,7 +1312,12 @@ def task_sprint_search(request, project_id, sprint_id):
             query = 'None'
 
         results = Task.objects.raw(
-            raw_query=f"select * from tracking_dev_task tdt where tdt.code = '{query}' and tdt.is_activate;"
+            raw_query=f"select * from tracking_dev_task tdt "
+                      f"join tracking_dev_state tds on tdt.state_id = tds.state_id "
+                      f"where tds.\"isClosed\" = false and tdt.is_activate "
+                      f"and (strpos(lower(tdt.code), lower('{query}')) > 0 or strpos(lower(tdt.\"name\"), "
+                      f"lower('{query}')) > 0 "
+                      f"or strpos(lower(tdt.description), lower('{query}')) > 0);"
         )
 
     raw_data = Project.objects.raw(
@@ -1349,9 +1354,9 @@ def project_search(request):
             series = request.GET.get('series')
             if series != '':
                 query_se = Project.objects.raw(
-                    raw_query=f"select tdp.project_id, tdp.\"name\",  strpos(tdp.code, '{series}') "
-                              f"as project_exists, strpos(tdp.code, '{series}') as code_exists, "
-                              f"strpos(tdp.description, '{series}') as description_exists "
+                    raw_query=f"select tdp.project_id, tdp.\"name\",  strpos(lower(tdp.code), lower('{series}')) "
+                              f"as project_exists, strpos(lower(tdp.code), lower('{series}')) as code_exists, "
+                              f"strpos(lower(tdp.description), lower('{series}')) as description_exists "
                               f"from tracking_dev_project tdp WHERE tdp.is_activate=True"
                 )
             else:
@@ -1399,7 +1404,8 @@ def sprint_search(request, project_id):
             if series != '':
                 query_se = Project.objects.raw(
                     raw_query=f"select *,"
-                              f"strpos(tds.\"name\", '{series}') as name_exists, strpos(tds.description, '{series}') "
+                              f"strpos(lower(tds.\"name\"), lower('{series}')) as name_exists, "
+                              f"strpos(lower(tds.description), lower('{series}')) "
                               f"as description_exists from tracking_dev_sprint tds "
                               f"where tds.project_id = {project_id} and tds.is_activate ;"
                 )
@@ -1449,9 +1455,10 @@ def state_search(request):
             series = request.GET.get('series')
             if series != '':
                 query_se = State.objects.raw(
-                    raw_query=f"select tds.state_id, tds.\"name\",  strpos(tds.\"name\", '{series}') as state_exists, "
-                              f"strpos(tds.code, '{series}') as code_exists, "
-                              f"strpos(tds.description, '{series}') as description_exists "
+                    raw_query=f"select tds.state_id, tds.\"name\",  "
+                              f"strpos(lower(tds.\"name\"), lower('{series}')) as state_exists, "
+                              f"strpos(lower(tds.code), lower('{series}')) as code_exists, "
+                              f"strpos(lower(tds.description), lower('{series}')) as description_exists "
                               f"from tracking_dev_state tds WHERE tds.is_activate=True"
                 )
             else:
@@ -1499,10 +1506,10 @@ def employee_search(request):
             if series != '':
                 query_se = Employee.objects.raw(
                     raw_query=f"select au.first_name, au.last_name, tde.employee_id, tde.post, tde.description, tde.date_create, "
-                              f"strpos(au.first_name, '{series}') as name_exists, "
-                              f"strpos(au.last_name, '{series}') as surname_exists, "
-                              f"strpos(au.username, '{series}') as username_exists, strpos(tde.post, '{series}'), "
-                              f"strpos(tde.description, '{series}') as description_exists "
+                              f"strpos(lower(au.first_name), lower('{series}')) as name_exists, "
+                              f"strpos(lower(au.last_name), lower('{series}')) as surname_exists, "
+                              f"strpos(lower(au.username), lower('{series}')) as username_exists, "
+                              f"strpos(lower(tde.description), lower('{series}')) as description_exists "
                               f"from tracking_dev_employee tde join auth_user au on au.id = tde.user_id "
                               f"where tde.is_activate=True;"
                 )
@@ -1510,7 +1517,7 @@ def employee_search(request):
                 query_se = Employee.objects.raw(
                     raw_query=f"select au.first_name, au.last_name, tde.employee_id, tde.post, "
                               f"tde.description, tde.date_create, "
-                              f"1 as name_exists, 1 as surname_exists, 1 as username_exists, strpos(tde.post, '{series}'), "
+                              f"1 as name_exists, 1 as surname_exists, 1 as username_exists, "
                               f"1 as description_exists from tracking_dev_employee tde join auth_user au "
                               f"on au.id = tde.user_id where tde.is_activate=True;"
                 )
@@ -1552,8 +1559,9 @@ def priority_search(request):
             series = request.GET.get('series')
             if series != '':
                 query_se = Priority.objects.raw(
-                    raw_query=f"select *, strpos(tdp.code, '{series}') as code_exists, "
-                              f"strpos(tdp.\"name\", '{series}') as name_exists, strpos(tdp.description, '{series}') "
+                    raw_query=f"select *, strpos(lower(tdp.code), lower('{series}')) as code_exists, "
+                              f"strpos(lower(tdp.\"name\"), lower('{series}')) as name_exists, "
+                              f"strpos(lower(tdp.description), lower('{series}')) "
                               f"as description_exists from tracking_dev_priority tdp "
                               f"WHERE tdp.is_activate=True"
                 )
@@ -1601,8 +1609,10 @@ def type_search(request):
             series = request.GET.get('series')
             if series != '':
                 query_se = TypeTask.objects.raw(
-                    raw_query=f"select *, strpos(tdp.code, '{series}') as code_exists, "
-                              f"strpos(tdp.\"name\", '{series}') as name_exists, strpos(tdp.description, '{series}') "
+                    raw_query=f"select *, "
+                              f"strpos(lower(tdp.code), lower('{series}')) as code_exists, "
+                              f"strpos(lower(tdp.\"name\"), lower('{series}')) as name_exists, "
+                              f"strpos(lower(tdp.description), lower('{series}')) "
                               f"as description_exists from tracking_dev_typetask tdp "
                               f"WHERE tdp.is_activate=True"
                 )
@@ -1672,9 +1682,10 @@ def search_tasks(request, project_id):
             if series != '':
                 # Tasks, which needs to complete (which user is responsible)
                 tasks_personal = Task.objects.raw(
-                    raw_query=f"select *, strpos(tdt.code, '{series}') as code_exists, "
-                              f"strpos(tdt.\"name\", '{series}') as name_exists, "
-                              f"strpos(tdt.description, '{series}') as description_exists from tracking_dev_task tdt "
+                    raw_query=f"select *, strpos(lower(tdt.code), lower('{series}')) as code_exists, "
+                              f"strpos(lower(tdt.\"name\"), lower('{series}')) as name_exists, "
+                              f"strpos(lower(tdt.description), lower('{series}')) as description_exists "
+                              f"from tracking_dev_task tdt "
                               f"join tracking_dev_employee tde on tdt.responsible_id = tde.employee_id "
                               f"join tracking_dev_state tds on tds.state_id = tdt.state_id "
                               f"where tdt.is_activate and tds.\"isClosed\" = false and tde.user_id = {request.user.id} "
@@ -1683,9 +1694,10 @@ def search_tasks(request, project_id):
 
                 # Tasks, in which current user is observer
                 tasks_observer = Task.objects.raw(
-                    raw_query=f"select *, strpos(tdt.code, '{series}') as code_exists, "
-                              f"strpos(tdt.\"name\", '{series}') as name_exists, "
-                              f"strpos(tdt.description, '{series}') as description_exists "
+                    raw_query=f"select *, "
+                              f"strpos(lower(tdt.code), lower('{series}')) as code_exists, "
+                              f"strpos(lower(tdt.\"name\"), lower('{series}')) as name_exists, "
+                              f"strpos(lower(tdt.description), lower('{series}')) as description_exists "
                               f"from tracking_dev_task tdt "
                               f"join tracking_dev_employee tde on tdt.initiator_id = tde.employee_id "
                               f"join tracking_dev_state tds on tds.state_id = tdt.state_id "
@@ -1695,9 +1707,10 @@ def search_tasks(request, project_id):
 
                 # Another tasks
                 tasks_list = Task.objects.raw(
-                    raw_query=f"select *, strpos(tdt.code, '{series}') as code_exists, "
-                              f"strpos(tdt.\"name\", '{series}') as name_exists, "
-                              f"strpos(tdt.description, '{series}') as description_exists "
+                    raw_query=f"select *, "
+                              f"strpos(lower(tdt.code), lower('{series}')) as code_exists, "
+                              f"strpos(lower(tdt.\"name\"), lower('{series}')) as name_exists, "
+                              f"strpos(lower(tdt.description), lower('{series}')) as description_exists "
                               f"from tracking_dev_task tdt "
                               f"join tracking_dev_employee tde on tdt.initiator_id = tde.employee_id "
                               f"join tracking_dev_employee tde2 on tdt.responsible_id = tde2.employee_id "
@@ -1727,7 +1740,8 @@ def search_tasks(request, project_id):
 
                 # Another tasks
                 tasks_list = Task.objects.raw(
-                    raw_query=f"select *, 1 as code_exists, 1 as name_exists, 1 as description_exists from tracking_dev_task tdt "
+                    raw_query=f"select *, 1 as code_exists, 1 as name_exists, 1 as description_exists "
+                              f"from tracking_dev_task tdt "
                               f"join tracking_dev_employee tde on tdt.initiator_id = tde.employee_id "
                               f"join tracking_dev_employee tde2 on tdt.responsible_id = tde2.employee_id "
                               f"join tracking_dev_state tds on tds.state_id = tdt.state_id "
@@ -1762,8 +1776,9 @@ def search_collabarators(request, project_id):
             series = request.GET.get('series')
             if series != '':
                 query_se = Project.objects.raw(
-                    raw_query=f"select *, au.id as user_id, strpos(au.first_name, '{series}') as name_exists, "
-                              f"strpos(au.last_name, '{series}') as last_name_exists "
+                    raw_query=f"select *, au.id as user_id, "
+                              f"strpos(lower(au.first_name), lower('{series}')) as name_exists, "
+                              f"strpos(lower(au.last_name), lower('{series}')) as last_name_exists "
                               f"from tracking_dev_employee_projects tdep "
                               f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
                               f"join auth_user au on tde.user_id = au.id "
