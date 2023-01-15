@@ -126,6 +126,9 @@ class Task(models.Model):
     date_deadline = models.DateField(default=django.utils.timezone.now(), blank=True)
     is_activate = models.BooleanField(default=True)
 
+    # Add the external field (Employee) - many-to-many relationship
+    employee = models.ManyToManyField(Employee, related_name="task_votes")
+
     def __str__(self):
         return str(self.name)
 

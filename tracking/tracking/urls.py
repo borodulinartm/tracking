@@ -94,6 +94,7 @@ urlpatterns = [
     path('main_page/finded_type_task', type_search, name="type_search"),
     path('main_page/<int:project_id>/finded_task', search_tasks, name="task_search"),
     path('main_page/<int:project_id>/finded_collabs', search_collabarators, name="collabs_search"),
+    path('main_page/projects/<int:project_id>/tasks/<int:task_id>/vote', vote, name="vote"),
 
     path('main_page/projects/<int:project_id>/collobarators/add/<int:employee_id>', add_employee_to_project,
          name="add_user"),

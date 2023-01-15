@@ -534,9 +534,6 @@ def task_description(request, project_id, task_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
 
-    if not request.user.is_staff:
-        return HttpResponseForbidden()
-
     raw_data = Task.objects.raw(
         raw_query=f"select tdt.task_id, tdt.code, tdt.name, tdt.description, au.first_name  as init_name, "
                   f"au.last_name as init_surname, au2.last_name as resp_surname, "
@@ -579,6 +576,23 @@ def task_description(request, project_id, task_id):
                   f"where tde.user_id = {request.user.id};"
     )
 
+    employee_id_list = Employee.objects.filter(user_id=request.user.id)
+    employee_id = 0
+
+    for current_employee in employee_id_list:
+        employee_id = current_employee.employee_id
+
+    # Add the check if the current user has voted to the task.
+    user_voted = Employee.objects.raw(
+        raw_query=f"select * from tracking_dev_task_employee tdte "
+                  f"where tdte.employee_id = {employee_id} and tdte.task_id = {task_id}"
+    )
+
+    count_votes = Employee.objects.raw(
+        raw_query=f"select * from tracking_dev_task_employee tdte "
+                  f"where tdte.task_id = {task_id}"
+    )
+
     return render(request, "include/description/task.html", {
         'title_page': 'Сведения о задаче',
         'table': raw_data,
@@ -588,9 +602,12 @@ def task_description(request, project_id, task_id):
         'is_project_zone': 1,
         'show_choose_project': 0,
         'count_subtasks': len(list(list_of_subtasks)),
+        'is_current_user_voted': len(list(user_voted)) > 0,
+        'count_votes': len(list(count_votes)),
         'subtasks': list_of_subtasks,
         'list_projects': list_projects,
         'is_admin': request.user.is_staff,
+        'task_id': task_id,
         'what_open': 6
     })
 
@@ -1265,9 +1282,6 @@ def search(request, project_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
 
-    if not request.user.is_staff:
-        return HttpResponseForbidden()
-
     results = []
     if request.method == "GET":
         query = request.GET.get('search')
@@ -1301,9 +1315,6 @@ def search(request, project_id):
 def task_sprint_search(request, project_id, sprint_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
-
-    if not request.user.is_staff:
-        return HttpResponseForbidden()
 
     results = []
     if request.method == "GET":
@@ -1339,13 +1350,68 @@ def task_sprint_search(request, project_id, sprint_id):
     })
 
 
+# This function provides ajax for the vote button
+def vote(request, project_id, task_id):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    # As we send data to the server we must use the POST.
+    if request.method == "POST":
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        if is_ajax:
+            # Now we need check if the current user has voted
+            employee_id_list = Employee.objects.filter(user_id=request.user.id)
+            employee_id = 0
+
+            # Go in the cycle
+            for current_employee in employee_id_list:
+                employee_id = current_employee.employee_id
+
+            # Add the check if the current user has voted to the task.
+            user_voted = Employee.objects.raw(
+                raw_query=f"select * from tracking_dev_task_employee tdte "
+                          f"where tdte.employee_id = {employee_id} and tdte.task_id = {task_id}"
+            )
+
+            # User has voted—the variable is 0. In the another side, this variable is 1.
+            is_user_vote = 0
+
+            # If the user has voted to the task, we should unlike.
+            if len(list(user_voted)) > 0:
+                try:
+                    with connection.cursor() as cursor:
+                        cursor.execute(f"delete from tracking_dev_task_employee tdte "
+                                       f"WHERE tdte.task_id={task_id} and tdte.employee_id={employee_id}")
+                except:
+                    print("Can not delete the data")
+            else:
+                try:
+                    with connection.cursor() as cursor:
+                        cursor.execute(f"insert into tracking_dev_task_employee(task_id, employee_id) "
+                                       f"values ({task_id}, {employee_id})")
+                    connection.commit()
+                except:
+                    print("The user can not add to the database")
+                is_user_vote = 1
+
+            count_votes = len(list(Employee.objects.raw(
+                raw_query=f"select * from tracking_dev_task_employee tdte "
+                          f"where tdte.task_id = {task_id}"
+            )))
+
+            data = {
+                "is_user_vote": is_user_vote,
+                "count_votes": count_votes
+            }
+
+            return JsonResponse({'data': data})
+    return JsonResponse({'data': {}})
+
+
 # This view allows user search projects in the list of projects.
 def project_search(request):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
-
-    if not request.user.is_staff:
-        return HttpResponseForbidden()
 
     if request.method == "GET":
         # If the type is GET, we need check if request is ajax.
@@ -1393,9 +1459,6 @@ def project_search(request):
 def sprint_search(request, project_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
-
-    if not request.user.is_staff:
-        return HttpResponseForbidden()
 
     if request.method == "GET":
         is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
@@ -1445,9 +1508,6 @@ def state_search(request):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
 
-    if not request.user.is_staff:
-        return HttpResponseForbidden()
-
     if request.method == "GET":
         # If the type is GET, we need check if request is ajax.
         is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
@@ -1494,9 +1554,6 @@ def state_search(request):
 def employee_search(request):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
-
-    if not request.user.is_staff:
-        return HttpResponseForbidden()
 
     if request.method == "GET":
         # If the type is GET, we need check if request is ajax.
@@ -1549,9 +1606,6 @@ def priority_search(request):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
 
-    if not request.user.is_staff:
-        return HttpResponseForbidden()
-
     if request.method == "GET":
         # If the type is GET, we need check if request is ajax.
         is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
@@ -1598,9 +1652,6 @@ def priority_search(request):
 def type_search(request):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
-
-    if not request.user.is_staff:
-        return HttpResponseForbidden()
 
     if request.method == "GET":
         # If the type is GET, we need check if request is ajax.
@@ -1670,9 +1721,6 @@ def add_data(tasks, href, text_link):
 def search_tasks(request, project_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
-
-    if not request.user.is_staff:
-        return HttpResponseForbidden()
 
     if request.method == "GET":
         # If the type is GET, we need check if request is ajax.
@@ -1765,9 +1813,6 @@ def search_tasks(request, project_id):
 def search_collabarators(request, project_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
-
-    if not request.user.is_staff:
-        return HttpResponseForbidden()
 
     if request.method == "GET":
         # If the type is GET, we need check if request is ajax.
