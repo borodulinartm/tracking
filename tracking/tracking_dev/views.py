@@ -589,7 +589,10 @@ def task_description(request, project_id, task_id):
     )
 
     count_votes = Employee.objects.raw(
-        raw_query=f"select * from tracking_dev_task_employee tdte "
+        raw_query=f"select tdte.id, tdte.employee_id, au.first_name, au.last_name, "
+                  f"tde.post from tracking_dev_task_employee tdte "
+                  f"join tracking_dev_employee tde on tde.employee_id = tdte.employee_id "
+                  f"join auth_user au on au.id = tde.user_id  "
                   f"where tdte.task_id = {task_id}"
     )
 
@@ -604,6 +607,7 @@ def task_description(request, project_id, task_id):
         'count_subtasks': len(list(list_of_subtasks)),
         'is_current_user_voted': len(list(user_voted)) > 0,
         'count_votes': len(list(count_votes)),
+        'votes': count_votes,
         'subtasks': list_of_subtasks,
         'list_projects': list_projects,
         'is_admin': request.user.is_staff,
@@ -1394,18 +1398,34 @@ def vote(request, project_id, task_id):
                     print("The user can not add to the database")
                 is_user_vote = 1
 
-            count_votes = len(list(Employee.objects.raw(
-                raw_query=f"select * from tracking_dev_task_employee tdte "
+            count_votes = Employee.objects.raw(
+                raw_query=f"select tdte.id, tdte.employee_id, au.first_name, au.last_name, "
+                          f"tde.post from tracking_dev_task_employee tdte "
+                          f"join tracking_dev_employee tde on tde.employee_id = tdte.employee_id "
+                          f"join auth_user au on au.id = tde.user_id  "
                           f"where tdte.task_id = {task_id}"
-            )))
+            )
 
             data = {
                 "is_user_vote": is_user_vote,
-                "count_votes": count_votes
+                "count_votes": len(count_votes)
             }
 
-            return JsonResponse({'data': data})
-    return JsonResponse({'data': {}})
+            list_employee = []
+
+            if len(count_votes) > 0:
+                for employee in count_votes:
+                    item = {
+                        "employee_id": employee.employee_id,
+                        "first_name": employee.first_name,
+                        "last_name": employee.last_name,
+                        "working": employee.post
+                    }
+
+                    list_employee.append(item)
+
+            return JsonResponse({'data': data, 'list_employee': list_employee})
+    return JsonResponse({'data': {}, 'list_employee': []})
 
 
 # This view allows user search projects in the list of projects.
