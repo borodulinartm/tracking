@@ -596,6 +596,15 @@ def task_description(request, project_id, task_id):
                   f"where tdte.task_id = {task_id}"
     )
 
+    # The user capacity
+    laboriousness = Laboriousness.objects.raw(
+        raw_query=f"select 1 as laboriousness_id, tdl.capacity_plan, tdl.task_id, au.first_name, "
+                  f"au.last_name from tracking_dev_laboriousness tdl "
+                  f"join tracking_dev_employee tde on tdl.employee_id = tde.employee_id "
+                  f"join auth_user au on au.id = tde.user_id "
+                  f"where tdl.task_id = {task_id}"
+    )
+
     return render(request, "include/description/task.html", {
         'title_page': 'Сведения о задаче',
         'table': raw_data,
@@ -609,11 +618,44 @@ def task_description(request, project_id, task_id):
         'count_votes': len(list(count_votes)),
         'votes': count_votes,
         'subtasks': list_of_subtasks,
+        'laboriousness': laboriousness,
         'list_projects': list_projects,
         'is_admin': request.user.is_staff,
         'task_id': task_id,
         'what_open': 6
     })
+
+
+# This method allows user get the capacity and set to the table
+def form_capacity_table(request, project_id, task_id):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    if request.method == "GET":
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        if is_ajax:
+            # The user capacity
+            laboriousness = Laboriousness.objects.raw(
+                raw_query=f"select 1 as laboriousness_id, tdl.employee_id, tdl.capacity_plan, tdl.task_id, au.first_name, "
+                          f"au.last_name from tracking_dev_laboriousness tdl "
+                          f"join tracking_dev_employee tde on tdl.employee_id = tde.employee_id "
+                          f"join auth_user au on au.id = tde.user_id "
+                          f"where tdl.task_id = {task_id}"
+            )
+
+            data = []
+            for element in laboriousness:
+                item = {
+                    "employee_id": element.laboriousness_id,
+                    "task_id": element.task_id,
+                    "capacity_plan": element.capacity_plan,
+                    "user_name": element.first_name + " " + element.last_name
+                }
+
+                data.append(item)
+
+            return JsonResponse({'data': data})
+    return JsonResponse({'data': []})
 
 
 # This view allows you to remove project. But it cannot remove if the tasks linked to project exists.
@@ -765,6 +807,11 @@ def remove_user_from_current_project(request, project_id, employee_id):
 
     # Redirect to the website with projects
     return redirect(reverse("collabs", kwargs={'project_id': project_id}))
+
+
+# This method remove the current value from the table of capacity.
+def remove_row_from_capacity_table(request, task_id, employee_id):
+    pass
 
 
 # This view allows admin remove all users from this project

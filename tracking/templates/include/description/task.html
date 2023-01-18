@@ -328,7 +328,7 @@
                                 <a class="text-dark fw-bolder text_button text-decoration-none dropdown-toggle"
                                    data-bs-toggle="collapse" href="#collapseExample_votes" role="button"
                                    aria-expanded="false" aria-controls="collapseVote_personal"
-                                    id="count_votes">
+                                   id="count_votes">
                                     Проголосовавшие участники ({{ count_votes }})
                                 </a>
                             </div>
@@ -362,6 +362,42 @@
                 </div>
             </div>
         {% endif %}
+
+        <div class="row">
+            <div class="col-sm">
+                <div class="d-flex justify-content-center">
+                    <div class="row w-100">
+                        <div class="position_block">
+                            <a class="text-dark fw-bolder text_button text-decoration-none dropdown-toggle"
+                               data-bs-toggle="collapse" href="#collapseExample_capacity" role="button"
+                               aria-expanded="false" aria-controls="collapseCapacity_personal">
+                                Трудоёмкость
+                            </a>
+                        </div>
+
+                        <div class="collapse rounded-2 my_table" id="collapseExample_capacity">
+{#                            <table class="table table-bordered">#}
+{#                                <tr>#}
+{#                                    <th class="text_button">ФИО сотрудника</th>#}
+{#                                    <th class="text_button">Трудоёмкость (план), ч.</th>#}
+{#                                    <th></th>#}
+{#                                </tr>#}
+{##}
+{#                                {% for data in laboriousness %}#}
+{#                                    <tr>#}
+{#                                        <th class="fw-normal text_button">{{ data.first_name }} {{ data.last_name }}</th>#}
+{#                                        <th class="fw-normal text_button">{{ data.capacity_plan }}</th>#}
+{#                                        <th class="fw-normal text_button">#}
+{#                                            <a class="btn btn-outline-danger text_button" href="#">Удалить</a>#}
+{#                                        </th>#}
+{#                                    </tr>#}
+{#                                {% endfor %}#}
+{#                            </table>#}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 {% endblock content %}
 
@@ -391,7 +427,7 @@
 
                     let list_of_the_employee = response.list_employee
                     document.getElementById("count_votes").innerHTML =
-                            String("Проголосовавшие участники (" + list_of_the_employee.length + ") ")
+                        String("Проголосовавшие участники (" + list_of_the_employee.length + ") ")
 
                     let temp = ""
                     list_of_the_employee.forEach(element => {
@@ -424,6 +460,40 @@
                     })
                 }
             })
+        })
+
+        $.ajax({
+            type: 'GET',
+            url: '{% url "form_capacity" project_id=project_id task_id=task_id %}',
+
+            success: function (response) {
+                let data = response.data;
+
+                let selector = document.getElementById("collapseExample_capacity");
+                selector.innerHTML = ""
+
+                let temp = `<table class="table table-bordered">
+                                <tr>
+                                    <th class="text_button">ФИО сотрудника</th>
+                                    <th class="text_button">Трудоёмкость (план), ч.</th>
+                                    <th></th>
+                                </tr>`
+                data.forEach(element => {
+                    temp += `<tr>
+                                        <th class="fw-normal text_button">${element.user_name}</th>
+                                        <th class="fw-normal text_button">${element.capacity_plan}</th>
+                                        <th class="fw-normal text_button">
+                                            <a class="btn btn-outline-danger text_button" href="#">Удалить</a>
+                                        </th>
+                                    </tr>`
+                    selector += temp;
+
+                    $("#collapseExample_capacity").append(temp)
+                    temp = ""
+                })
+
+                $("#collapseExample_capacity").append("</table>");
+            }
         })
     </script>
 {% endblock script %}

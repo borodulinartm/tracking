@@ -172,3 +172,19 @@ class Sprint(models.Model):
     class Meta:
         verbose_name = "Sprint"
         verbose_name_plural = "Sprint description"
+
+
+# This model provides capacity for the task and person
+class Laboriousness(models.Model):
+    laboriousness_id = models.AutoField(primary_key=True)
+    employee = models.ForeignKey('Employee', on_delete=models.CASCADE, related_name='rr_employee_id')
+    task = models.ForeignKey('Task', on_delete=models.CASCADE, related_name='rr_task_id')
+    capacity_plan = models.IntegerField(default=0)
+    capacity_fact = models.IntegerField(default=0)
+
+    def __str__(self):
+        return str(self.laboriousness_id)
+
+    class Meta:
+        verbose_name = "Laboriousness"
+        verbose_name_plural = "Laboriousness description"

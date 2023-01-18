@@ -101,6 +101,10 @@ urlpatterns = [
     path('main_page/projects/<int:project_id>/sprints/<int:sprint_id>/add/<int:task_id>', add_task_to_sprint,
          name="add_task"),
 
+    path('main_page/projects/<int:project_id>/tasks/<int:task_id>/capacity', form_capacity_table, name="form_capacity"),
+    path('main_page/projects/<int:project_id>/tasks/<int:task_id>/capacity_delete/<int:employee_id>',
+         remove_row_from_capacity_table, name="remove_capacity"),
+
     path('login/', login, name="login"),
     path('logout/', logout, name="logout"),
     path('signup/', signup, name="signup"),
