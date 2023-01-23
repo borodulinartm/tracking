@@ -803,15 +803,23 @@ def remove_user_from_current_project(request, project_id, employee_id):
     with connection.cursor() as cursor:
         cursor.execute(f"delete from tracking_dev_employee_projects where "
                        f"project_id={project_id} and employee_id={employee_id}")
-        # cursor.commit()
 
     # Redirect to the website with projects
     return redirect(reverse("collabs", kwargs={'project_id': project_id}))
 
 
 # This method remove the current value from the table of capacity.
-def remove_row_from_capacity_table(request, task_id, employee_id):
-    pass
+def remove_row_from_capacity_table(request, project_id, task_id, employee_id):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+
+    with connection.cursor() as cursor:
+        cursor.execute(f"delete from tracking_dev_laboriousness tdl "
+                       f"where tdl.employee_id = {employee_id} and tdl.task_id = {task_id};")
+
+    return redirect(reverse('task_description', kwargs={'project_id': project_id, 'task_id': task_id}))
 
 
 # This view allows admin remove all users from this project

@@ -375,25 +375,7 @@
                             </a>
                         </div>
 
-                        <div class="collapse rounded-2 my_table" id="collapseExample_capacity">
-{#                            <table class="table table-bordered">#}
-{#                                <tr>#}
-{#                                    <th class="text_button">ФИО сотрудника</th>#}
-{#                                    <th class="text_button">Трудоёмкость (план), ч.</th>#}
-{#                                    <th></th>#}
-{#                                </tr>#}
-{##}
-{#                                {% for data in laboriousness %}#}
-{#                                    <tr>#}
-{#                                        <th class="fw-normal text_button">{{ data.first_name }} {{ data.last_name }}</th>#}
-{#                                        <th class="fw-normal text_button">{{ data.capacity_plan }}</th>#}
-{#                                        <th class="fw-normal text_button">#}
-{#                                            <a class="btn btn-outline-danger text_button" href="#">Удалить</a>#}
-{#                                        </th>#}
-{#                                    </tr>#}
-{#                                {% endfor %}#}
-{#                            </table>#}
-                        </div>
+                        <div class="collapse rounded-2 my_table" id="collapseExample_capacity"></div>
                     </div>
                 </div>
             </div>
@@ -479,20 +461,24 @@
                                     <th></th>
                                 </tr>`
                 data.forEach(element => {
+                    let link_to_remove_table = `/main_page/projects/{{ project_id }}/tasks/${element.task_id}/capacity_delete/${element.employee_id}`
                     temp += `<tr>
                                         <th class="fw-normal text_button">${element.user_name}</th>
                                         <th class="fw-normal text_button">${element.capacity_plan}</th>
                                         <th class="fw-normal text_button">
-                                            <a class="btn btn-outline-danger text_button" href="#">Удалить</a>
+                                            <a class="btn btn-outline-danger text_button" href="` + link_to_remove_table + `">Удалить</a>
+                                        </th>
+                                        <th class="fw-normal text_button">
+                                            <a class="btn btn-outline-primary text_button" href="#">Редактировать</a>
                                         </th>
                                     </tr>`
                     selector += temp;
 
                     $("#collapseExample_capacity").append(temp)
-                    temp = ""
+
                 })
 
-                $("#collapseExample_capacity").append("</table>");
+                $("#collapseExample_capacity").append(`</table><a href="#" class="btn btn-primary text_button">Добавить</a>`)
             }
         })
     </script>
