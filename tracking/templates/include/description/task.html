@@ -454,31 +454,62 @@
                 let selector = document.getElementById("collapseExample_capacity");
                 selector.innerHTML = ""
 
-                let temp = `<table class="table table-bordered">
+                if (data.length > 0) {
+                    let temp = `<table class="table table-bordered">
                                 <tr>
                                     <th class="text_button">ФИО сотрудника</th>
                                     <th class="text_button">Трудоёмкость (план), ч.</th>
                                     <th></th>
+                                    <th></th>
                                 </tr>`
-                data.forEach(element => {
-                    let link_to_remove_table = `/main_page/projects/{{ project_id }}/tasks/${element.task_id}/capacity_delete/${element.employee_id}`
-                    temp += `<tr>
-                                        <th class="fw-normal text_button">${element.user_name}</th>
-                                        <th class="fw-normal text_button">${element.capacity_plan}</th>
-                                        <th class="fw-normal text_button">
-                                            <a class="btn btn-outline-danger text_button" href="` + link_to_remove_table + `">Удалить</a>
-                                        </th>
-                                        <th class="fw-normal text_button">
-                                            <a class="btn btn-outline-primary text_button" href="#">Редактировать</a>
-                                        </th>
-                                    </tr>`
-                    selector += temp;
 
+                    data.forEach(element => {
+                        let link_to_remove_table = `/main_page/projects/{{ project_id }}/tasks/${element.task_id}/capacity_delete/${element.employee_id}`
+                        let link_to_edit_line = `/main_page/projects/{{ project_id }}/tasks/${element.task_id}/edit/${element.laboriousness_id}?next={{ request.path|urlencode }}`
+
+                        temp += `<tr>
+                                        <td class="fw-normal text_button">${element.user_name}</td>
+                                        <td class="fw-normal text_button">${element.capacity_plan}</td>
+                                        <td class="fw-normal text_button">
+                                            <a class="btn btn-outline-danger text_button" href="#"
+                                                    data-bs-toggle="modal" data-bs-target="#exampleEditing">Удалить</a>
+                                        </td>
+                                        <td class="fw-normal text_button">
+                                            <a class="btn btn-outline-primary text_button" href="` + link_to_edit_line + `">Редактировать</a>
+                                        </td>
+                                    </tr>
+                            <div class="modal fade" id="exampleEditing" tabindex="-1" aria-labelledby="exampleModalEditing"
+                                    aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="exampleModalLabel">Внимание</h5>
+                                            <a type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></a>
+                                        </div>
+                                        <div class="modal-body text_button">Вы действительно хотите удалить запись с трудоёмкостью?</div>
+                                            <div class="modal-body text_button">Удаляемые данные: ФИО - ${element.user_name}, трудоёмкость - ${element.capacity_plan}</div>
+                                            <div class="modal-footer">
+                                                <a type="button" class="btn btn-primary" data-bs-dismiss="modal">Отмена</a>
+                                                <a type="button"
+                                                    href="` + link_to_remove_table + `"
+                                                    class="btn btn-danger">Подтвердить удаление</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>`
+                    })
+
+                    temp += `
+                </table>
+                <a href="{% url 'create_capacity' project_id=project_id task_id=task_id %}?next={{ request.path|urlencode }}"
+                        class="btn btn-primary text_button">Добавить новые данные</a>
+                `
                     $("#collapseExample_capacity").append(temp)
-
-                })
-
-                $("#collapseExample_capacity").append(`</table><a href="#" class="btn btn-primary text_button">Добавить</a>`)
+                } else {
+                    let temp = `<a href="{% url 'create_capacity' project_id=project_id task_id=task_id %}?next={{ request.path|urlencode }}"
+                        class="btn btn-primary text_button">Добавить новые данные</a>`
+                    $("#collapseExample_capacity").append(temp)
+                }
             }
         })
     </script>

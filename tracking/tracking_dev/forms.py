@@ -288,3 +288,27 @@ class CreateEmployeeForm(forms.ModelForm):
             'placeholder': 'Расскажите о себе',
             'style': 'margin-bottom: 20px'
         }))
+
+
+# This form provides laboriousness form
+class CreateLaboriousnessForm(forms.ModelForm):
+    class Meta:
+        model = Laboriousness
+        fields = ['employee', 'capacity_plan']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields['employee'] = forms.ModelChoiceField(queryset=Employee.objects.all())
+
+        self.fields['capacity_plan'] = forms.IntegerField(widget=forms.TextInput(attrs={
+            'placeholder': 'Введите колчичество часов',
+            'style': 'margin-bottom: 20px'
+        }))
+
+        # Add the same style to the employee
+        self.fields['employee'].label = "Сотрудник"
+        self.fields['capacity_plan'].label="Запланированное колчество часов"
+        self.fields['employee'].widget.attrs = {
+            "style": "margin-bottom: 20px"
+        }

@@ -104,6 +104,10 @@ urlpatterns = [
     path('main_page/projects/<int:project_id>/tasks/<int:task_id>/capacity', form_capacity_table, name="form_capacity"),
     path('main_page/projects/<int:project_id>/tasks/<int:task_id>/capacity_delete/<int:employee_id>',
          remove_row_from_capacity_table, name="remove_capacity"),
+    path('main_page/projects/<int:project_id>/tasks/<int:task_id>/create_capacity', create_laboriousness,
+            name="create_capacity"),
+    path('main_page/projects/<int:project_id>/tasks/<int:task_id>/edit/<int:laboriousness_id>', edit_laboriousness,
+            name="edit_laboriousness"),
 
     path('login/', login, name="login"),
     path('logout/', logout, name="logout"),

@@ -636,7 +636,7 @@ def form_capacity_table(request, project_id, task_id):
         if is_ajax:
             # The user capacity
             laboriousness = Laboriousness.objects.raw(
-                raw_query=f"select 1 as laboriousness_id, tdl.employee_id, tdl.capacity_plan, tdl.task_id, au.first_name, "
+                raw_query=f"select tdl.laboriousness_id, tdl.employee_id, tdl.capacity_plan, tdl.task_id, au.first_name, "
                           f"au.last_name from tracking_dev_laboriousness tdl "
                           f"join tracking_dev_employee tde on tdl.employee_id = tde.employee_id "
                           f"join auth_user au on au.id = tde.user_id "
@@ -646,7 +646,8 @@ def form_capacity_table(request, project_id, task_id):
             data = []
             for element in laboriousness:
                 item = {
-                    "employee_id": element.laboriousness_id,
+                    "laboriousness_id": element.laboriousness_id,
+                    "employee_id": element.employee_id,
                     "task_id": element.task_id,
                     "capacity_plan": element.capacity_plan,
                     "user_name": element.first_name + " " + element.last_name
@@ -1023,6 +1024,87 @@ def edit_priority(request, priority_id):
 
     return render(request, 'include/base_form.html', {
         'title_page': 'Форма редактирования приоритета',
+        'form': form,
+        'text_button': 'Применить изменения',
+        'show_choose_project': 0,
+    })
+
+
+# This function provides a creation instance of the laboriousness
+def create_laboriousness(request, project_id, task_id):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+
+    if request.method == "POST":
+        creation_form = CreateLaboriousnessForm(data=request.POST)
+        if creation_form.is_valid():
+            employee = str(creation_form.cleaned_data['employee'])
+            capacity_plan = creation_form.cleaned_data['capacity_plan']
+
+            employee_name, employee_surname = employee.split()
+            s = User.objects.raw(
+                raw_query=f"select 1 as id, tde.employee_id  from auth_user au join tracking_dev_employee "
+                          f"tde on au.id = tde.user_id "
+                          f"where au.first_name = '{employee_name}' and au.last_name = '{employee_surname}'"
+            )
+
+            employee_id = 0
+            for data in s:
+                employee_id = data.employee_id
+
+            list_data = Laboriousness.objects.raw(
+                raw_query=f"select 1 as laboriousness_id, * from tracking_dev_laboriousness tdl "
+                          f"where tdl.employee_id = {employee_id} and tdl.task_id = {task_id}"
+            )
+
+            # This condition are necessary, because we can have the similar record in the table.
+            if len(list(list_data)) == 0:
+                record = Laboriousness(employee_id=employee_id, capacity_plan=capacity_plan,
+                                       capacity_fact=capacity_plan,
+                                       task_id=task_id)
+                record.save()
+
+                next = request.POST.get('next', '/')
+                return HttpResponseRedirect(next)
+            else:
+                messages.error(request, "Трудоёмкость для данного пользователя уже "
+                                        "имеется в системе. Пожалуйста, выберите другого пользователя или отредактируйте"
+                                        " запись для данного")
+        else:
+            messages.error(request, "Произошла ошибка при вводе данных. Убедитесь, что информация введена верно")
+    else:
+        creation_form = CreateLaboriousnessForm()
+
+    return render(request, 'include/base_form.html', {
+        'title_page': 'Форма добавления записи к трудоёмкости задачи',
+        'form': creation_form,
+        'text_button': 'Добавить данные',
+        'show_choose_project': 0
+    })
+
+
+# This function provides edit the laboriousness.
+def edit_laboriousness(request, project_id, task_id, laboriousness_id):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+
+    instance = get_object_or_404(Laboriousness, laboriousness_id=laboriousness_id)
+
+    form = CreateLaboriousnessForm(request.POST or None, instance=instance)
+    if form.is_valid():
+        form.save()
+
+        next = request.POST.get('next', '/')
+        return HttpResponseRedirect(next)
+
+    return render(request, 'include/base_form.html', {
+        'title_page': 'Форма редактирования записи трудоёмкости задачи',
         'form': form,
         'text_button': 'Применить изменения',
         'show_choose_project': 0,
