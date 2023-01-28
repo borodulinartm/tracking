@@ -38,6 +38,8 @@ urlpatterns = [
     path('main_page/projects/<int:project_id>/sprints/create', create_sprint, name="create_sprint"),
     path('main_page/projects/<int:project_id>/report_employee/<int:employee_id>', report_by_employee,
          name="employee_report"),
+    path('main_page/projects/<int:project_id>/report_laboriousness/<int:sprint_id>',
+            report_by_laboriousness, name="report_laboriousness"),
     path('main_page/projects/<int:project_id>/employee/<int:employee_id>/tasks/<str:sort>',
          show_uncompleted_tasks_by_user, name="uncompleted_tasks_by_user"),
     path('main_page/projects/<int:project_id>/delete', project_remove, name="project_delete"),

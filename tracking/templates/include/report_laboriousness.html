@@ -1,0 +1,84 @@
+{% extends 'include/base.html' %}
+{% load static %}
+
+{% block config %}
+    <!--Chart js-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js"
+            integrity="sha256-Uv9BNBucvCPipKQ2NS9wYpJmi8DTOEfTA/nH2aoJALw=" crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.css"
+          integrity="sha256-aa0xaJgmK/X74WM224KMQeNQC2xYKwlAt08oZqjeF0E=" crossorigin="anonymous"/>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+{% endblock config %}
+
+{% block script %}
+    <script>
+        $(document).ready(function () {
+            var ctx = document.getElementById('myChart').getContext('2d');
+
+            var myBarChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: [{% for user in capacity %}'{{ user.employee_name }} {{ user.employee_surname }}',{% endfor %}],
+                    datasets: [{
+                            label: "Плановая трудоёмкость (в часах)",
+                            backgroundColor: [
+                                {% for elem in random_colors_array_plan %}
+                                    "{{ elem }}",
+                                {% endfor %}
+                            ],
+                            data: [{% for data in capacity %}{{ data.sum_plan }}, {% endfor %}]
+                        }, {
+                            label: "Фактическая трудоёмкость (в часах)",
+                            backgroundColor: [
+                                {% for elem in random_colors_array_fact %}
+                                    "{{ elem }}",
+                                {% endfor %}
+                            ],
+                            data: [{% for data in capacity %}{{ data.sum_fact }}, {% endfor %}
+                            ]
+                        }
+                    ]
+                },
+                options: {
+                    tooltips: {
+                        displayColors: true,
+                        callbacks: {
+                            mode: 'x',
+                        },
+                    },
+                    scales: {
+                        xAxes: [{
+                            stacked: true,
+                            gridLines: {
+                                display: false,
+                            }
+                        }],
+                        yAxes: [{
+                            stacked: true,
+                            ticks: {
+                                beginAtZero: true,
+                            },
+                            type: 'linear',
+                        }]
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    legend: {position: 'bottom'},
+                }
+            });
+        });
+    </script>
+{% endblock script %}
+
+{% block content %}
+    <div class="title_block">
+        <h2 class="title">Диаграмма трудоёмкости задач в данном спринте</h2>
+    </div>
+
+    <div>
+        <canvas id="myChart" height="500%"></canvas>
+    </div>
+{% endblock content %}

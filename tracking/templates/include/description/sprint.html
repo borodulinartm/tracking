@@ -130,6 +130,33 @@
                 </div>
             </div>
 
+            <div class="position_block justify-content-between">
+                <div class="row">
+                    <div class="col-sm">
+                        <div class="d-flex justify-content-center">
+                            <div class="row w-100">
+                                <div class="position_block">
+                                    <div class="d-flex justify-content-between">
+                                        <a href="{% url 'report_laboriousness' project_id=project_id sprint_id=sprint_id %}"
+                                           class="list-group-item list-group-item-action text_button"
+                                           aria-current="true">
+                                            <div class="d-flex w-75 justify-content-between">
+                                                <h3 class="mb-1">
+                                                    Отчёт по нагруженности сотрудников
+                                                    <span class="fw-normal">
+                                                        <img src="{% static 'img/angle-right.svg' %}" alt="Right" rel="icon">
+                                                    </span>
+                                                </h3>
+                                            </div>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="block_title" style="margin-top: 50px">
                 <h2 class="title">Задачи спринта</h2>
             </div>

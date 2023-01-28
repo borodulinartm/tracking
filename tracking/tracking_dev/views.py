@@ -254,6 +254,7 @@ def sprint_description(request, project_id, sprint_id):
         'is_project_zone': 1,
         'tasks': list_tasks,
         'project_id': project_id,
+        'sprint_id': sprint_id,
         'show_choose_project': 1,
         'list_projects': all_projects
     })
@@ -2186,6 +2187,48 @@ def calculate_report_tasks(request, project_id):
         'is_project_zone': 1,
         'list_projects': raw_data,
         'colors': random_colors_array
+    })
+
+
+# This view provides laboriousness report by user
+def report_by_laboriousness(request, project_id, sprint_id):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    sum_capacity_plan_fact = Laboriousness.objects.raw(
+        raw_query=f"select 1 as laboriousness_id, SUM(tdl.capacity_plan) as sum_plan, SUM(tdl.capacity_fact) as sum_fact, "
+                  f"tdl.task_id, tdl.employee_id as employee_id, au.first_name  as employee_name, "
+                  f"au.last_name as employee_surname from tracking_dev_laboriousness tdl "
+                  f"join tracking_dev_task tdt on tdl.task_id = tdt.task_id "
+                  f"join tracking_dev_employee tde on tdl.employee_id = tde.employee_id "
+                  f"join auth_user au on au.id = tde.user_id "
+                  f"where tdl.task_id in (select tdst.task_id  from tracking_dev_sprint_task tdst where tdst.sprint_id = {sprint_id}) "
+                  f"and tdl.task_id in (select tdt2.task_id from tracking_dev_task tdt2 where tdt2.project_id = {project_id})"
+                  f"group by tdl.employee_id, tdl.task_id, au.first_name, au.last_name "
+    )
+
+    raw_data = Project.objects.raw(
+        raw_query=f"select * from tracking_dev_employee_projects tdep "
+                  f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
+                  f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "
+                  f"where tde.user_id = {request.user.id};"
+    )
+
+    r = lambda: random.randint(0, 255)
+
+    random_color_plan = '#%02X%02X%02X' % (r(), r(), r())
+    random_color_fact = '#%02X%02X%02X' % (r(), r(), r())
+
+    random_colors_array_plan = [random_color_plan for i in range(len(list(sum_capacity_plan_fact)))]
+    random_colors_array_fact = [random_color_fact for i in range(len(list(sum_capacity_plan_fact)))]
+
+    return render(request, "include/report_laboriousness.html", {
+        'capacity': sum_capacity_plan_fact,
+        'is_project_zone': 1,
+        'random_colors_array_plan': random_colors_array_plan,
+        'random_colors_array_fact': random_colors_array_fact,
+        'count_users': len(list(sum_capacity_plan_fact)),
+        'list_projects': raw_data,
     })
 
 
