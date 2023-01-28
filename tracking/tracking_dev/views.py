@@ -2197,14 +2197,14 @@ def report_by_laboriousness(request, project_id, sprint_id):
 
     sum_capacity_plan_fact = Laboriousness.objects.raw(
         raw_query=f"select 1 as laboriousness_id, SUM(tdl.capacity_plan) as sum_plan, SUM(tdl.capacity_fact) as sum_fact, "
-                  f"tdl.task_id, tdl.employee_id as employee_id, au.first_name  as employee_name, "
+                  f"tdl.employee_id as employee_id, au.first_name as employee_name, "
                   f"au.last_name as employee_surname from tracking_dev_laboriousness tdl "
                   f"join tracking_dev_task tdt on tdl.task_id = tdt.task_id "
                   f"join tracking_dev_employee tde on tdl.employee_id = tde.employee_id "
                   f"join auth_user au on au.id = tde.user_id "
                   f"where tdl.task_id in (select tdst.task_id  from tracking_dev_sprint_task tdst where tdst.sprint_id = {sprint_id}) "
-                  f"and tdl.task_id in (select tdt2.task_id from tracking_dev_task tdt2 where tdt2.project_id = {project_id})"
-                  f"group by tdl.employee_id, tdl.task_id, au.first_name, au.last_name "
+                  f"and tdl.task_id in (select tdt2.task_id from tracking_dev_task tdt2 where tdt2.project_id = {project_id}) "
+                  f"group by tdl.employee_id, au.first_name, au.last_name"
     )
 
     raw_data = Project.objects.raw(
