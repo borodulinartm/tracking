@@ -209,7 +209,7 @@ class UserRegistrationForm(UserCreationForm):
 class CreateTaskForm(forms.ModelForm):
     class Meta:
         model = Task
-        fields = ['code', 'name', 'description', 'responsible', 'initiator', 'priority', 'type', 'state',
+        fields = ['code', 'name', 'description', 'responsible', 'initiator', 'manager', 'priority', 'type', 'state',
                   'date_deadline']
 
     def __init__(self, *args, **kwargs):
@@ -233,6 +233,7 @@ class CreateTaskForm(forms.ModelForm):
         # This line is correct for the modelChoiceField
         self.fields['responsible'].queryset = Employee.objects.filter(is_activate=True)
         self.fields['initiator'].queryset = Employee.objects.filter(is_activate=True)
+        self.fields['manager'].querysetr = Employee.objects.filter(is_activate=True)
         self.fields['priority'].queryset = Priority.objects.filter(is_activate=True)
         self.fields['type'].queryset = TypeTask.objects.filter(is_activate=True)
         self.fields['state'].queryset = State.objects.filter(is_activate=True)
@@ -242,6 +243,9 @@ class CreateTaskForm(forms.ModelForm):
             "style": "margin-bottom: 20px"
         }
         self.fields['initiator'].widget.attrs = {
+            "style": "margin-bottom: 20px"
+        }
+        self.fields['manager'].widget.attrs = {
             "style": "margin-bottom: 20px"
         }
         self.fields['priority'].widget.attrs = {
@@ -264,6 +268,7 @@ class CreateTaskForm(forms.ModelForm):
         self.fields['description'].label = "Описание задачи"
         self.fields['responsible'].label = "Отвественный"
         self.fields['initiator'].label = "Наблюдатель"
+        self.fields['manager'].label = "Проверяющий"
         self.fields['priority'].label = "Приоритет задачи"
         self.fields['type'].label = "Тип задачи"
         self.fields['state'].label = "Текущее состояние задачи"
@@ -294,7 +299,7 @@ class CreateEmployeeForm(forms.ModelForm):
 class CreateLaboriousnessForm(forms.ModelForm):
     class Meta:
         model = Laboriousness
-        fields = ['employee', 'capacity_plan']
+        fields = ['employee', 'capacity_plan', 'capacity_fact']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -305,10 +310,19 @@ class CreateLaboriousnessForm(forms.ModelForm):
             'placeholder': 'Введите колчичество часов',
             'style': 'margin-bottom: 20px'
         }))
+        self.fields['capacity_fact'] = forms.IntegerField(widget=forms.TextInput(attrs={
+            'placeholder': 'Введите количество фактических часов',
+            'style': 'margin-bottom: 20px'
+        }))
 
         # Add the same style to the employee
         self.fields['employee'].label = "Сотрудник"
-        self.fields['capacity_plan'].label="Запланированное колчество часов"
+        self.fields['capacity_plan'].label = "Запланированное колчество часов"
+        self.fields['capacity_fact'].label = "Фактическое количество часов"
+
         self.fields['employee'].widget.attrs = {
             "style": "margin-bottom: 20px"
         }
+
+        # The capacity fact is non-required field
+        self.fields['capacity_fact'].required = False

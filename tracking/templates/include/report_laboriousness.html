@@ -78,7 +78,40 @@
         <h2 class="title">Диаграмма трудоёмкости задач в данном спринте</h2>
     </div>
 
-    <div>
+    <div style="margin-bottom: 100px">
         <canvas id="myChart" height="500%"></canvas>
     </div>
+
+    <div class="title_block">
+        <h2 class="title">Таблица трудоёмкости задач в данном спринте</h2>
+    </div>
+
+    {% if details_data %}
+        <table class="table-bordered table">
+            <tr>
+                <th class="text_button">Задача</th>
+                <th class="text_button">ФИО сотрудника</th>
+                <th class="text_button">Плановая ёмкость, ч.</th>
+                <th class="text_button">Фактическая ёмкость, ч.</th>
+            </tr>
+
+            {% for data in details_data %}
+                <tr>
+                    <th class="fw-normal text_button">
+                        <a class="btn btn-outline-primary text_button fw-normal"
+                            href="{% url 'task_description' project_id=project_id task_id=data.task_id %}">
+                            {{ data.task_code }}
+                        </a>
+                    </th>
+                    <th class="fw-normal text_button">{{ data.employee_name }} {{ data.surname_employee }}</th>
+                    <th class="fw-normal text_button">{{ data.plan }}</th>
+                    <th class="fw-normal text_button">{{ data.fact }}</th>
+                </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <div style="text-align: center">
+            <p class="text_button fw-normal">Пока здесь пусто. Добавьте трудоёмкость в задачу, чтобы увидеть результат</p>
+        </div>
+    {% endif %}
 {% endblock content %}

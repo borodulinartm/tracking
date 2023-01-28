@@ -599,7 +599,7 @@ def task_description(request, project_id, task_id):
 
     # The user capacity
     laboriousness = Laboriousness.objects.raw(
-        raw_query=f"select 1 as laboriousness_id, tdl.capacity_plan, tdl.task_id, au.first_name, "
+        raw_query=f"select 1 as laboriousness_id, tdl.capacity_plan, tdl.capacity_fact, tdl.task_id, au.first_name, "
                   f"au.last_name from tracking_dev_laboriousness tdl "
                   f"join tracking_dev_employee tde on tdl.employee_id = tde.employee_id "
                   f"join auth_user au on au.id = tde.user_id "
@@ -637,7 +637,7 @@ def form_capacity_table(request, project_id, task_id):
         if is_ajax:
             # The user capacity
             laboriousness = Laboriousness.objects.raw(
-                raw_query=f"select tdl.laboriousness_id, tdl.employee_id, tdl.capacity_plan, tdl.task_id, au.first_name, "
+                raw_query=f"select tdl.laboriousness_id, tdl.employee_id, tdl.capacity_plan, tdl.capacity_fact, tdl.task_id, au.first_name, "
                           f"au.last_name from tracking_dev_laboriousness tdl "
                           f"join tracking_dev_employee tde on tdl.employee_id = tde.employee_id "
                           f"join auth_user au on au.id = tde.user_id "
@@ -651,6 +651,7 @@ def form_capacity_table(request, project_id, task_id):
                     "employee_id": element.employee_id,
                     "task_id": element.task_id,
                     "capacity_plan": element.capacity_plan,
+                    "capacity_fact": element.capacity_fact,
                     "user_name": element.first_name + " " + element.last_name
                 }
 
@@ -1043,7 +1044,9 @@ def create_laboriousness(request, project_id, task_id):
         creation_form = CreateLaboriousnessForm(data=request.POST)
         if creation_form.is_valid():
             employee = str(creation_form.cleaned_data['employee'])
+
             capacity_plan = creation_form.cleaned_data['capacity_plan']
+            capacity_fact = creation_form.cleaned_data['capacity_fact']
 
             employee_name, employee_surname = employee.split()
             s = User.objects.raw(
@@ -1056,24 +1059,34 @@ def create_laboriousness(request, project_id, task_id):
             for data in s:
                 employee_id = data.employee_id
 
+            # We need check if the user exists in the task
+            is_user_exists = Task.objects.raw(
+                raw_query=f"select * from tracking_dev_task tdt where (tdt.initiator_id = {employee_id} or "
+                          f"tdt.responsible_id = {employee_id} or tdt.manager_id = {employee_id}) and tdt.task_id = {task_id}"
+            )
+
             list_data = Laboriousness.objects.raw(
                 raw_query=f"select 1 as laboriousness_id, * from tracking_dev_laboriousness tdl "
                           f"where tdl.employee_id = {employee_id} and tdl.task_id = {task_id}"
             )
 
             # This condition are necessary, because we can have the similar record in the table.
-            if len(list(list_data)) == 0:
+            if len(list(list_data)) == 0 and len(list(is_user_exists)) > 0:
+                if capacity_fact is None:
+                    capacity_fact = capacity_plan
                 record = Laboriousness(employee_id=employee_id, capacity_plan=capacity_plan,
-                                       capacity_fact=capacity_plan,
-                                       task_id=task_id)
+                                       capacity_fact=capacity_fact, task_id=task_id)
                 record.save()
 
                 next = request.POST.get('next', '/')
                 return HttpResponseRedirect(next)
             else:
-                messages.error(request, "Трудоёмкость для данного пользователя уже "
-                                        "имеется в системе. Пожалуйста, выберите другого пользователя или отредактируйте"
-                                        " запись для данного")
+                if len(list(list_data)) > 0:
+                    messages.error(request, "Трудоёмкость для данного пользователя уже "
+                                            "имеется в системе. Пожалуйста, выберите другого пользователя или отредактируйте"
+                                            " запись для данного")
+                elif len(list(is_user_exists)) == 0:
+                    messages.error(request, "Данный сотрудник ничего не имеет общего с данной задачей")
         else:
             messages.error(request, "Произошла ошибка при вводе данных. Убедитесь, что информация введена верно")
     else:
@@ -2214,6 +2227,19 @@ def report_by_laboriousness(request, project_id, sprint_id):
                   f"where tde.user_id = {request.user.id};"
     )
 
+    details_data = Laboriousness.objects.raw(
+        raw_query=f"select 1 as laboriousness_id, tdt.code as task_code, tdt.task_id as task_id,"
+                  f"au.first_name as employee_name, au.last_name as surname_employee, "
+                  f"tdl.capacity_plan as plan, tdl.capacity_fact as fact from tracking_dev_laboriousness tdl "
+                  f"join tracking_dev_task tdt on tdl.task_id = tdt.task_id "
+                  f"join tracking_dev_employee tde on tde.employee_id = tdl.employee_id "
+                  f"join auth_user au on au.id = tde.user_id "
+                  f"where tdl.task_id in (select tdst.task_id from "
+                  f"tracking_dev_sprint_task tdst where tdst.sprint_id={sprint_id}) "
+                  f"and tdl.task_id in (select tdt2.task_id from tracking_dev_task "
+                  f"tdt2 where tdt2.project_id = {project_id}) order by au.first_name, au.last_name"
+    )
+
     r = lambda: random.randint(0, 255)
 
     random_color_plan = '#%02X%02X%02X' % (r(), r(), r())
@@ -2229,6 +2255,8 @@ def report_by_laboriousness(request, project_id, sprint_id):
         'random_colors_array_fact': random_colors_array_fact,
         'count_users': len(list(sum_capacity_plan_fact)),
         'list_projects': raw_data,
+        'project_id': project_id,
+        'details_data': details_data
     })
 
 
