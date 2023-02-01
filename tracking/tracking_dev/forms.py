@@ -54,7 +54,7 @@ class CreatePriorityForm(forms.ModelForm):
 class CreateStateForm(forms.ModelForm):
     class Meta:
         model = State
-        fields = ['code', 'name', 'description', 'isClosed']
+        fields = ['code', 'name', 'description', 'percentage', 'isClosed']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -75,6 +75,11 @@ class CreateStateForm(forms.ModelForm):
             'style': 'margin-bottom: 20px'
         }))
 
+        self.fields['percentage'] = forms.IntegerField(widget=forms.TextInput(attrs={
+            'placeholder': 'Процент выполнения задачи при данном состоянии',
+            'style': 'margin-bottom: 20px'
+        }))
+
         self.fields['isClosed'] = forms.BooleanField(required=False, widget=forms.CheckboxInput(attrs={
             'style': 'margin-bottom: 20px'
         }))
@@ -84,6 +89,7 @@ class CreateStateForm(forms.ModelForm):
         self.fields['name'].label = "Название"
         self.fields['description'].label = "Описание"
         self.fields['isClosed'].label = "Состояние является конечным"
+        self.fields['percentage'].label = "Процент выполнения задачи"
 
 
 # This form provides enter the types of the task form

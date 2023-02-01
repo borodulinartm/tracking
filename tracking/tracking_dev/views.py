@@ -1138,21 +1138,33 @@ def create_state(request):
 
         # If the form is valid, then we need to check if the isClosed states exists.
         if creation_form.is_valid():
+            name = creation_form.cleaned_data['name']
+            description = creation_form.cleaned_data['description']
+            percentage = creation_form.cleaned_data['percentage']
+            code = creation_form.cleaned_data['code']
             is_ticked_checkbox = creation_form.cleaned_data['isClosed']
+
             next = request.POST.get('next', '/')
 
             if is_ticked_checkbox:
                 count_closed_states = State.objects.filter(isClosed=True).count()
+
                 if count_closed_states == 0:
-                    creation_form.save()
+                    my_state = State(name=name, code=code, description=description, percentage=100,
+                                     is_ticked_checkbox=is_ticked_checkbox)
+                    my_state.save()
 
                     return HttpResponseRedirect(next)
                 else:
                     messages.error(request, "Состояние закрытой задачи уже существует в системе")
             else:
-                creation_form.save()
-
-                return HttpResponseRedirect(next)
+                # Если % выполнения задачи > 100, то выдаём ошибку, так как процент не может быть больше 99
+                # для незакрытого состояния
+                if percentage >= 100:
+                    messages.error(request, "Процент выполнения задачи не может превышать 99 для не закрытого состояния задачи")
+                else:
+                    creation_form.save()
+                    return HttpResponseRedirect(next)
         else:
             messages.error(request, "Произошла ошибка при вводе данных. Убедитесь, что информация введена верно")
     else:
@@ -1178,6 +1190,7 @@ def edit_states(request, state_id):
     form = CreateStateForm(request.POST or None, instance=instance)
 
     if form.is_valid():
+        percentage = form.cleaned_data['percentage']
         is_checkbox_ticked = form.cleaned_data['isClosed']
 
         next = request.POST.get('next', '/')
@@ -1193,8 +1206,11 @@ def edit_states(request, state_id):
                 messages.error(request,
                                "В базе данных уже имеется состояние, при котором задача может считаться закрытой")
         else:
-            form.save()
-            return HttpResponseRedirect(next)
+            if percentage >= 100:
+                messages.error(request, "Процент выполнения задачи не может превышать 99 для не закрытого состояния задачи")
+            else:
+                form.save()
+                return HttpResponseRedirect(next)
 
     return render(request, "include/base_form.html", {
         'title_page': 'Форма рредактирования текущего состояния',
