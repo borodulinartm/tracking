@@ -11,6 +11,21 @@ from .forms import *
 import random
 
 
+# Данная функция проверяет, что текущий пользователь действительно относится к этому проекту
+def is_user_in_this_project(request, project_id):
+    query = f"select 1 as project_id, COUNT(*) from tracking_dev_employee_projects tdep " \
+            f"join tracking_dev_employee tde ON tdep.employee_id = tde.employee_id " \
+            f"join auth_user au on au.id = tde.user_id " \
+            f"where tdep.project_id = {project_id} and au.id = {request.user.id}"
+
+    raw_data = Project.objects.raw(raw_query=query)
+
+    print(query)
+
+    for data in raw_data:
+        return data.count > 0
+
+
 # This view provides a main page.
 def index(request):
     if request.user.is_authenticated:
@@ -58,34 +73,8 @@ def show_list_tasks_for_project(request, project_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
 
-    # Tasks, which needs to complete (which user is responsible)
-    tasks_personal = Task.objects.raw(
-        raw_query=f"select * from tracking_dev_task tdt "
-                  f"join tracking_dev_employee tde on tdt.responsible_id = tde.employee_id "
-                  f"join tracking_dev_state tds on tds.state_id = tdt.state_id "
-                  f"where tdt.is_activate and tds.\"isClosed\" = false and tde.user_id = {request.user.id} "
-                  f"and tdt.project_id = {project_id};"
-    )
-
-    # Tasks, in which current user is observer
-    tasks_observer = Task.objects.raw(
-        raw_query=f"select * from tracking_dev_task tdt "
-                  f"join tracking_dev_employee tde on tdt.initiator_id = tde.employee_id "
-                  f"join tracking_dev_state tds on tds.state_id = tdt.state_id "
-                  f"where tde.user_id = {request.user.id} and tdt.project_id = {project_id} and tdt.is_activate "
-                  f"and tds.\"isClosed\" = false"
-    )
-
-    # Another tasks
-    tasks_list = Task.objects.raw(
-        raw_query=f"select * from tracking_dev_task tdt "
-                  f"join tracking_dev_employee tde on tdt.initiator_id = tde.employee_id "
-                  f"join tracking_dev_employee tde2 on tdt.responsible_id = tde2.employee_id "
-                  f"join tracking_dev_state tds on tds.state_id = tdt.state_id "
-                  f"where tde.user_id != {request.user.id} and tdt.project_id = {project_id} "
-                  f"and tde2.user_id != {request.user.id} and tdt.is_activate "
-                  f"and tds.\"isClosed\" = false"
-    )
+    if not is_user_in_this_project(request, project_id):
+        return HttpResponseForbidden()
 
     raw_data = Project.objects.raw(
         raw_query=f"select * from tracking_dev_employee_projects tdep "
@@ -97,16 +86,11 @@ def show_list_tasks_for_project(request, project_id):
     return render(request, "include/list_data/tasks_list.html", {
         'title_page': 'Выберите задачу для просмотра',
         'show_list_group': 0,
-        'data_group': tasks_list,
         'show_choose_project': 1,
         'is_project_zone': 1,
         'list_projects': raw_data,
-        'tasks_personal': tasks_personal,
-        'tasks_observer': tasks_observer,
+
         'is_admin': request.user.is_staff,
-        'count_personal_tasks': len(list(tasks_personal)),
-        'count_observer_tasks': len(list(tasks_observer)),
-        'count_tasks_list': len(list(tasks_list)),
         'project_id': project_id,
     })
 
@@ -142,7 +126,7 @@ def project_description(request, project_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
 
-    if not request.user.is_staff:
+    if (not request.user.is_staff) or (not is_user_in_this_project(request, project_id)):
         return HttpResponseForbidden()
 
     raw_data = Project.objects.raw(
@@ -187,9 +171,6 @@ def get_sprint_list_for_project(request, project_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
 
-    if not request.user.is_staff:
-        return HttpResponseForbidden()
-
     raw_data = Sprint.objects.raw(
         raw_query=f"select * from tracking_dev_sprint tds where tds.project_id = {project_id} and tds.is_activate ;"
     )
@@ -217,9 +198,6 @@ def get_sprint_list_for_project(request, project_id):
 def sprint_description(request, project_id, sprint_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
-
-    if not request.user.is_staff:
-        return HttpResponseForbidden()
 
     sprint_desc = Sprint.objects.raw(
         raw_query=f"select * from tracking_dev_sprint tds "
@@ -535,8 +513,11 @@ def task_description(request, project_id, task_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
 
+    if not is_user_in_this_project(request, project_id):
+        return HttpResponseForbidden()
+
     raw_data = Task.objects.raw(
-        raw_query=f"select tdt.task_id, tdt.code, tdt.name, tdt.description, au.first_name  as init_name, "
+        raw_query=f"select tdt.task_id, tdt.code, tdt.name, tdt.description, tds.percentage, au.first_name  as init_name, "
                   f"au.last_name as init_surname, au2.last_name as resp_surname, "
                   f"au2.first_name  as resp_name, tds.name as state_name, tdp.name as project_name, "
                   f"tdp2.name as priority_name, tdt2.name as type_task_name, au3.first_name as manager_name, "
@@ -632,6 +613,9 @@ def form_capacity_table(request, project_id, task_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
 
+    if not is_user_in_this_project(request, project_id):
+        return HttpResponseForbidden()
+
     if request.method == "GET":
         is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
         if is_ajax:
@@ -666,7 +650,7 @@ def project_remove(request, project_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
 
-    if not request.user.is_staff:
+    if (not request.user.is_staff) or (not is_user_in_this_project(request, project_id)):
         return HttpResponseForbidden()
 
     Project.objects.filter(project_id=project_id).update(is_activate=False)
@@ -678,7 +662,7 @@ def sprint_remove(request, project_id, sprint_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
 
-    if not request.user.is_staff:
+    if (not request.user.is_staff) or (not is_user_in_this_project(request, project_id)):
         return HttpResponseForbidden()
 
     Sprint.objects.filter(sprint_id=sprint_id).update(is_activate=False)
@@ -690,7 +674,7 @@ def remove_task_from_sprint(request, project_id, sprint_id, task_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
 
-    if not request.user.is_staff:
+    if (not request.user.is_staff) or (not is_user_in_this_project(request, project_id)):
         return HttpResponseForbidden()
 
     with connection.cursor() as cursor:
@@ -704,9 +688,6 @@ def remove_task_from_sprint(request, project_id, sprint_id, task_id):
 def task_remove(request, project_id, task_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
-
-    if not request.user.is_staff:
-        return HttpResponseForbidden()
 
     Task.objects.filter(task_id=task_id).update(is_activate=False)
     return redirect(reverse('tasks_for_project', kwargs={"project_id": project_id}))
@@ -799,7 +780,7 @@ def remove_user_from_current_project(request, project_id, employee_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
 
-    if not request.user.is_staff:
+    if (not request.user.is_staff) or (not is_user_in_this_project(request, project_id)):
         return HttpResponseForbidden()
 
     # Because the query contains UPDATE, we need use connection.cursor() instead of objects.raw
@@ -815,7 +796,8 @@ def remove_user_from_current_project(request, project_id, employee_id):
 def remove_row_from_capacity_table(request, project_id, task_id, employee_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
-    if not request.user.is_staff:
+
+    if (not request.user.is_staff) or (not is_user_in_this_project(request, project_id)):
         return HttpResponseForbidden()
 
     with connection.cursor() as cursor:
@@ -830,7 +812,7 @@ def remove_all_users_from_current_project(request, project_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
 
-    if not request.user.is_staff:
+    if (not request.user.is_staff) or (not is_user_in_this_project(request, project_id)):
         return HttpResponseForbidden()
 
     # We should delete entirely from the database
@@ -887,7 +869,7 @@ def create_project(request):
             next = request.POST.get('next', '/')
             return HttpResponseRedirect(next)
         else:
-            messages.error(request, "Error")
+            messages.error(request, "Ошибка валидации формы")
     else:
         creation_form = CreateProjectForm()
 
@@ -904,7 +886,7 @@ def edit_project(request, project_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
 
-    if not request.user.is_staff:
+    if (not request.user.is_staff) or (not is_user_in_this_project(request, project_id)):
         return HttpResponseForbidden()
 
     instance = get_object_or_404(Project, project_id=project_id)
@@ -954,7 +936,7 @@ def create_sprint(request, project_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
 
-    if not request.user.is_staff:
+    if (not request.user.is_staff) or (not is_user_in_this_project(request, project_id)):
         return HttpResponseForbidden()
 
     if request.method == "POST":
@@ -989,7 +971,7 @@ def edit_sprint(request, project_id, sprint_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
 
-    if not request.user.is_staff:
+    if (not request.user.is_staff) or (not is_user_in_this_project(request, project_id)):
         return HttpResponseForbidden()
 
     instance = get_object_or_404(Sprint, sprint_id=sprint_id)
@@ -1037,7 +1019,7 @@ def create_laboriousness(request, project_id, task_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
 
-    if not request.user.is_staff:
+    if (not request.user.is_staff) or (not is_user_in_this_project(request, project_id)):
         return HttpResponseForbidden()
 
     if request.method == "POST":
@@ -1105,7 +1087,7 @@ def edit_laboriousness(request, project_id, task_id, laboriousness_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
 
-    if not request.user.is_staff:
+    if (not request.user.is_staff) or (not is_user_in_this_project(request, project_id)):
         return HttpResponseForbidden()
 
     instance = get_object_or_404(Laboriousness, laboriousness_id=laboriousness_id)
@@ -1161,7 +1143,8 @@ def create_state(request):
                 # Если % выполнения задачи > 100, то выдаём ошибку, так как процент не может быть больше 99
                 # для незакрытого состояния
                 if percentage >= 100:
-                    messages.error(request, "Процент выполнения задачи не может превышать 99 для не закрытого состояния задачи")
+                    messages.error(request,
+                                   "Процент выполнения задачи не может превышать 99 для не закрытого состояния задачи")
                 else:
                     creation_form.save()
                     return HttpResponseRedirect(next)
@@ -1207,7 +1190,8 @@ def edit_states(request, state_id):
                                "В базе данных уже имеется состояние, при котором задача может считаться закрытой")
         else:
             if percentage >= 100:
-                messages.error(request, "Процент выполнения задачи не может превышать 99 для не закрытого состояния задачи")
+                messages.error(request,
+                               "Процент выполнения задачи не может превышать 99 для не закрытого состояния задачи")
             else:
                 form.save()
                 return HttpResponseRedirect(next)
@@ -1274,7 +1258,7 @@ def create_task(request, project_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
 
-    if not request.user.is_staff:
+    if (not request.user.is_staff) or (not is_user_in_this_project(request, project_id)):
         return HttpResponseForbidden()
 
     raw_data = Project.objects.filter(project_id=project_id)
@@ -1330,7 +1314,7 @@ def create_subtask_form(request, project_id, task_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
 
-    if not request.user.is_staff:
+    if (not request.user.is_staff) or (not is_user_in_this_project(request, project_id)):
         return HttpResponseForbidden()
 
     raw_data = Project.objects.filter(project_id=project_id)
@@ -1397,7 +1381,7 @@ def edit_task(request, project_id, task_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
 
-    if not request.user.is_staff:
+    if (not request.user.is_staff) or (not is_user_in_this_project(request, project_id)):
         return HttpResponseForbidden()
 
     instance = get_object_or_404(Task, task_id=task_id)
@@ -1487,6 +1471,9 @@ def task_sprint_search(request, project_id, sprint_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
 
+    if not is_user_in_this_project(request, project_id):
+        return HttpResponseForbidden()
+
     results = []
     if request.method == "GET":
         query = request.GET.get('search')
@@ -1525,6 +1512,9 @@ def task_sprint_search(request, project_id, sprint_id):
 def vote(request, project_id, task_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
+
+    if not is_user_in_this_project(request, project_id):
+        return HttpResponseForbidden()
 
     # As we send data to the server we must use the POST.
     if request.method == "POST":
@@ -1646,6 +1636,9 @@ def project_search(request):
 def sprint_search(request, project_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
+
+    if not is_user_in_this_project(request, project_id):
+        return HttpResponseForbidden()
 
     if request.method == "GET":
         is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
@@ -1909,6 +1902,9 @@ def search_tasks(request, project_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
 
+    if not is_user_in_this_project(request, project_id):
+        return HttpResponseForbidden()
+
     if request.method == "GET":
         # If the type is GET, we need check if request is ajax.
         is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
@@ -1922,6 +1918,17 @@ def search_tasks(request, project_id):
                               f"strpos(lower(tdt.description), lower('{series}')) as description_exists "
                               f"from tracking_dev_task tdt "
                               f"join tracking_dev_employee tde on tdt.responsible_id = tde.employee_id "
+                              f"join tracking_dev_state tds on tds.state_id = tdt.state_id "
+                              f"where tdt.is_activate and tds.\"isClosed\" = false and tde.user_id = {request.user.id} "
+                              f"and tdt.project_id = {project_id} and tdt.is_activate=True;"
+                )
+
+                tasks_controller = Task.objects.raw(
+                    raw_query=f"select *, strpos(lower(tdt.code), lower('{series}')) as code_exists, "
+                              f"strpos(lower(tdt.\"name\"), lower('{series}')) as name_exists, "
+                              f"strpos(lower(tdt.description), lower('{series}')) as description_exists "
+                              f"from tracking_dev_task tdt "
+                              f"join tracking_dev_employee tde on tdt.manager_id = tde.employee_id "
                               f"join tracking_dev_state tds on tds.state_id = tdt.state_id "
                               f"where tdt.is_activate and tds.\"isClosed\" = false and tde.user_id = {request.user.id} "
                               f"and tdt.project_id = {project_id} and tdt.is_activate=True;"
@@ -1949,9 +1956,11 @@ def search_tasks(request, project_id):
                               f"from tracking_dev_task tdt "
                               f"join tracking_dev_employee tde on tdt.initiator_id = tde.employee_id "
                               f"join tracking_dev_employee tde2 on tdt.responsible_id = tde2.employee_id "
+                              f"join tracking_dev_employee tde3 on tdt.manager_id = tde3.employee_id "
                               f"join tracking_dev_state tds on tds.state_id = tdt.state_id "
                               f"where tde.user_id != {request.user.id} and tdt.project_id = {project_id} "
                               f"and tde2.user_id != {request.user.id} and tdt.is_activate "
+                              f"and tde3.user_id != {request.user.id} "
                               f"and tds.\"isClosed\" = false and tdt.is_activate=True;"
                 )
             else:
@@ -1961,7 +1970,15 @@ def search_tasks(request, project_id):
                               f"join tracking_dev_employee tde on tdt.responsible_id = tde.employee_id "
                               f"join tracking_dev_state tds on tds.state_id = tdt.state_id "
                               f"where tdt.is_activate and tds.\"isClosed\" = false and tde.user_id = {request.user.id} "
-                              f"and tdt.project_id = {project_id} and tdt.is_activate=True;;"
+                              f"and tdt.project_id = {project_id} and tdt.is_activate=True;"
+                )
+
+                tasks_controller = Task.objects.raw(
+                    raw_query=f"select *, 1 as code_exists, 1 as name_exists, 1 as description_exists from tracking_dev_task tdt "
+                              f"join tracking_dev_employee tde on tdt.manager_id = tde.employee_id "
+                              f"join tracking_dev_state tds on tds.state_id = tdt.state_id "
+                              f"where tdt.is_activate and tds.\"isClosed\" = false and tde.user_id = {request.user.id} "
+                              f"and tdt.project_id = {project_id} and tdt.is_activate=True;"
                 )
 
                 # Tasks, in which current user is observer
@@ -1979,14 +1996,17 @@ def search_tasks(request, project_id):
                               f"from tracking_dev_task tdt "
                               f"join tracking_dev_employee tde on tdt.initiator_id = tde.employee_id "
                               f"join tracking_dev_employee tde2 on tdt.responsible_id = tde2.employee_id "
+                              f"join tracking_dev_employee tde3 on tdt.manager_id = tde3.employee_id "
                               f"join tracking_dev_state tds on tds.state_id = tdt.state_id "
                               f"where tde.user_id != {request.user.id} and tdt.project_id = {project_id} "
                               f"and tde2.user_id != {request.user.id} and tdt.is_activate "
+                              f"and tde3.user_id != {request.user.id} "
                               f"and tds.\"isClosed\" = false and tdt.is_activate=True;"
                 )
 
             if len(tasks_personal) > 0 or len(tasks_observer) > 0 or len(tasks_list) > 0:
                 data = [add_data(tasks_personal, "collapseExample_personal", "Задачи, в которых Вы ответственный"),
+                        add_data(tasks_controller, "collapseExample_controller", "Задачи, в которых Вы проверяющий"),
                         add_data(tasks_observer, "collapseExample_observer", "Задачи, в которых Вы наблюдатель"),
                         add_data(tasks_list, "collapseExample_all", "Все остальные задачи")]
                 res = data
@@ -2000,6 +2020,9 @@ def search_tasks(request, project_id):
 def search_collabarators(request, project_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
+
+    if not is_user_in_this_project(request, project_id):
+        return HttpResponseForbidden()
 
     if request.method == "GET":
         # If the type is GET, we need check if request is ajax.
@@ -2056,7 +2079,7 @@ def add_employee_to_project(request, project_id, employee_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
 
-    if not request.user.is_staff:
+    if (not request.user.is_staff) or (not is_user_in_this_project(request, project_id)):
         return HttpResponseForbidden()
 
     try:
@@ -2074,7 +2097,7 @@ def add_task_to_sprint(request, project_id, sprint_id, task_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
 
-    if not request.user.is_staff:
+    if (not request.user.is_staff) or (not is_user_in_this_project(request, project_id)):
         return HttpResponseForbidden()
 
     try:
@@ -2156,6 +2179,9 @@ def mark_as_completed(request, project_id, task_id):
     # if the user ia not authenticated, then it cannot delete
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
+
+    if not is_user_in_this_project(request, project_id):
+        return HttpResponseForbidden()
 
     with connection.cursor() as cursor:
         cursor.execute(f"UPDATE tracking_dev_task SET state_id=5 WHERE "
