@@ -144,7 +144,8 @@
                                                 <h3 class="mb-1">
                                                     Отчёт по нагруженности сотрудников
                                                     <span class="fw-normal">
-                                                        <img src="{% static 'img/angle-right.svg' %}" alt="Right" rel="icon">
+                                                        <img src="{% static 'img/angle-right.svg' %}" alt="Right"
+                                                             rel="icon">
                                                     </span>
                                                 </h3>
                                             </div>
@@ -201,58 +202,92 @@
                 </div>
             </div>
 
-            {% for task in tasks %}
-                <div class="position_block justify-content-between">
-                    <div class="row">
-                        <div class="col-sm">
-                            <div class="d-flex justify-content-center">
-                                <div class="row w-100">
-                                    <div class="position_block">
-                                        <div class="d-flex justify-content-between">
-                                            <a href="{% url 'task_description' project_id=task.project_id task_id=task.task_id %}"
-                                               class="list-group-item list-group-item-action text_button rounded-2"
-                                               aria-current="true">
-                                                <div class="d-flex w-100 justify-content-between">
-                                                    <h3 class="mb-1">
-                                                        <img src="{% static 'img/pencil.svg' %}" alt="pencil"
-                                                             rel="icon">
-                                                        {{ task.code }}
-                                                    </h3>
-                                                    <small>{{ task.date_create }}</small>
-                                                </div>
+            <div class="position_block" id="collapseExample_tasks"></div>
 
-                                                <p class="mb-1" style="margin-top: 10px">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" id="Outline"
-                                                         viewBox="0 0 24 24" width="24"
-                                                         height="24">
-                                                        <path d="M12,0A12,12,0,1,0,24,12,12.013,12.013,0,0,0,12,0Zm0,22A10,10,0,1,1,22,12,10.011,10.011,0,0,1,12,22Z"></path>
-                                                        <path d="M12,10H11a1,1,0,0,0,0,2h1v6a1,1,0,0,0,2,0V12A2,2,0,0,0,12,10Z"></path>
-                                                        <circle cx="12" cy="6.5" r="1.5"></circle>
-                                                    </svg>
-                                                    {{ task.description|truncatechars:100 }}
-                                                </p>
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-sm">
-                            <div class="d-flex justify-content-center">
-                                <div class="row w-100">
-                                    <div class="position_block">
-                                        <a href="{% url 'remove_task_from_sprint' project_id=project_id sprint_id=content_list.sprint_id task_id=task.task_id %}"
-                                           class="btn btn-danger text_button">Удалить задачу
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            {% endfor %}
         {% endfor %}
     </div>
 {% endblock content %}
+
+{% block script %}
+    <script>
+        $.ajax({
+            type: 'GET',
+            url: '{% url 'list_tasks_for_sprint' project_id=project_id sprint_id=sprint_id %}',
+
+            success: function (response) {
+                let data = response.data;
+
+                let selector = document.getElementById("collapseExample_tasks")
+                selector.innerHTML = "";
+
+                let temp = `
+                <table class="table table-bordered">
+                    <tr>
+                        <th class="text_button fw-bold">Код</th>
+                        <th class="text_button fw-bold">Название</th>
+                        <th class="text_button fw-bold">Состояние</th>
+                        <th class="text_button fw-bold">Ответственный</th>`
+
+                if (response.is_staff) {
+                    temp += `<th class="text_button"></th>`
+                }
+
+                temp += '</tr>'
+
+                let i = 0;
+                data.forEach(element => {
+                    let id = "exampleModalEditing" + i;
+
+                    let link = `/main_page/projects/{{ project_id }}/sprints/{{ sprint_id }}/delete_task/${element.task_id}`
+                    let link_to_task = `/main_page/projects/{{ project_id }}/tasks/${element.task_id}`
+
+                    temp += `
+                        <tr>
+                            <th class="text_button fw-normal">
+                                    <a class="btn btn-outline-primary text_button" href="${link_to_task}">
+                                        ${element.code}
+                                    </a>
+                            </th>
+                            <th class="text_button fw-normal">${element.task_name}</th>
+                            <th class="text_button fw-normal">${element.state_name}</th>
+                            <th class="text_button fw-normal">${element.user_name}</th>
+                    `
+                    if (response.is_staff) {
+                        temp += `
+                            <th class="text_button">
+                                    <a href="#" data-bs-toggle="modal" data-bs-target="#` + id + `"
+                                       class="btn btn-outline-danger text_button">Удалить задачу
+                                    </a>
+                            </th>
+                            <div class="modal fade" id="` + id + `" tabindex="-1" aria-labelledby="exampleModalEditing"
+                                    aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="exampleModalLabel">Внимание</h5>
+                                            <a type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></a>
+                                        </div>
+                                        <div class="modal-body text_button">Вы действительно хотите удалить задачу?</div>
+                                            <div class="modal-body text_button">Удаляемые данные: Код задачи - ${element.code}</div>
+                                            <div class="modal-footer">
+                                                <a type="button" class="btn btn-primary" data-bs-dismiss="modal">Отмена</a>
+                                                <a type="button"
+                                                    href="` + link + `"
+                                                    class="btn btn-danger">Подтвердить удаление</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                        `
+                    }
+
+                    temp += `</tr>`
+                    i++;
+                })
+
+                temp += `</table>`
+                $("#collapseExample_tasks").append(temp)
+            }
+        })
+    </script>
+{% endblock script %}

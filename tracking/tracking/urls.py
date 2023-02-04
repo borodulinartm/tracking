@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.urls import path
 
 from tracking_dev.views import *
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     # Страница - картотека проектов
@@ -14,17 +15,20 @@ urlpatterns = [
 
     path('main_page/projects/<int:project_id>/sprints', get_sprint_list_for_project, name="sprints"),
     path('main_page/projects/<int:project_id>/sprints/<int:sprint_id>', sprint_description,
-            name="sprint_description"),
+         name="sprint_description"),
     path('main_page/projects/<int:project_id>/sprints/<int:sprint_id>/edit', edit_sprint, name="sprint_edit"),
     path('main_page/projects/<int:project_id>/sprints/<int:sprint_id>/delete', sprint_remove, name="sprint_remove"),
-    path('main_page/projects/<int:project_id>/sprints/<int:sprint_id>/delete_task/<int:task_id>', remove_task_from_sprint,
+    path('main_page/projects/<int:project_id>/sprints/<int:sprint_id>/delete_task/<int:task_id>',
+         remove_task_from_sprint,
          name="remove_task_from_sprint"),
+    path('main_page/projects/<int:project_id>/sprints/<int:sprint_id>/list_tasks', get_list_sprint_task,
+         name="list_tasks_for_sprint"),
 
     path('main_page/projects/<int:project_id>/sprints/create', create_sprint, name="create_sprint"),
     path('main_page/projects/<int:project_id>/report_employee/<int:employee_id>', report_by_employee,
          name="employee_report"),
     path('main_page/projects/<int:project_id>/report_laboriousness/<int:sprint_id>',
-            report_by_laboriousness, name="report_laboriousness"),
+         report_by_laboriousness, name="report_laboriousness"),
     path('main_page/projects/<int:project_id>/employee/<int:employee_id>/tasks/<str:sort>',
          show_uncompleted_tasks_by_user, name="uncompleted_tasks_by_user"),
     path('main_page/projects/<int:project_id>/delete', project_remove, name="project_delete"),
@@ -92,9 +96,9 @@ urlpatterns = [
     path('main_page/projects/<int:project_id>/tasks/<int:task_id>/capacity_delete/<int:employee_id>',
          remove_row_from_capacity_table, name="remove_capacity"),
     path('main_page/projects/<int:project_id>/tasks/<int:task_id>/create_capacity', create_laboriousness,
-            name="create_capacity"),
+         name="create_capacity"),
     path('main_page/projects/<int:project_id>/tasks/<int:task_id>/edit/<int:laboriousness_id>', edit_laboriousness,
-            name="edit_laboriousness"),
+         name="edit_laboriousness"),
 
     path('login/', login, name="login"),
     path('logout/', logout, name="logout"),

@@ -20,8 +20,6 @@ def is_user_in_this_project(request, project_id):
 
     raw_data = Project.objects.raw(raw_query=query)
 
-    print(query)
-
     for data in raw_data:
         return data.count > 0
 
@@ -208,11 +206,6 @@ def sprint_description(request, project_id, sprint_id):
         raw_query=f"SELECT * FROM tracking_dev_sprint tds where is_activate=True and tds.project_id = {project_id}"
     )
 
-    list_tasks = Task.objects.raw(
-        raw_query=f"select * from tracking_dev_sprint_task tdst "
-                  f"join tracking_dev_task tdt on tdst.task_id = tdt.task_id where tdst.sprint_id = {sprint_id}"
-    )
-
     all_projects = Project.objects.raw(
         raw_query=f"select * from tracking_dev_employee_projects tdep "
                   f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
@@ -230,12 +223,50 @@ def sprint_description(request, project_id, sprint_id):
         'data_group': data,
         'what_open': 7,
         'is_project_zone': 1,
-        'tasks': list_tasks,
         'project_id': project_id,
         'sprint_id': sprint_id,
         'show_choose_project': 1,
         'list_projects': all_projects
     })
+
+
+# Данная функция предоставляет пользователю таблицу с задачами для спринта (AJAX)
+def get_list_sprint_task(request, project_id, sprint_id):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    if not is_user_in_this_project(request, project_id):
+        return HttpResponseForbidden()
+
+    if request.method == "GET":
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        if is_ajax:
+            # The user capacity
+            list_tasks = Task.objects.raw(
+                raw_query=f"select tdst.sprint_id, tdst.task_id, tdt.code, tdt.\"name\" as task_name, tdt.description, tdt.date_create, "
+                          f"tds.\"name\" as state_name, au.first_name, au.last_name "
+                          f"from tracking_dev_sprint_task tdst "
+                          f"join tracking_dev_task tdt on tdst.task_id = tdt.task_id "
+                          f"join tracking_dev_state tds on tdt.state_id = tds.state_id "
+                          f"join tracking_dev_employee tde on tde.employee_id = tdt.responsible_id "
+                          f"join auth_user au on au.id = tde.user_id "
+                          f"where tdst.sprint_id = {sprint_id}"
+            )
+
+            data = []
+            for element in list_tasks:
+                item = {
+                    "task_id": element.task_id,
+                    "code": element.code,
+                    "task_name": element.task_name,
+                    "state_name": element.state_name,
+                    "user_name": element.first_name + " " + element.last_name
+                }
+
+                data.append(item)
+
+            return JsonResponse({'data': data, 'is_staff': request.user.is_staff})
+    return JsonResponse({'data': []})
 
 
 # This view provides list of the states
@@ -2240,6 +2271,7 @@ def calculate_report_tasks(request, project_id):
         'completed_tasks': completed_tasks,
         'count_tasks_by_states': count_tasks_by_states,
         'is_project_zone': 1,
+        'project_id': project_id,
         'list_projects': raw_data,
         'colors': random_colors_array
     })
@@ -2393,6 +2425,12 @@ def show_uncompleted_tasks_by_user(request, project_id, employee_id, sort):
 
 # This view provides a kanban board manager
 def kanban_board_manager(request, project_id):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    if not is_user_in_this_project(request, project_id):
+        return HttpResponseForbidden()
+
     data = State.objects.filter(is_activate=True).order_by('isClosed')
     tasks_by_state = []
     for elem in data:
