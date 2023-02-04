@@ -130,34 +130,78 @@
                 </div>
             </div>
 
-            <div class="position_block justify-content-between">
-                <div class="row">
-                    <div class="col-sm">
-                        <div class="d-flex justify-content-center">
-                            <div class="row w-100">
-                                <div class="position_block">
-                                    <div class="d-flex justify-content-between">
-                                        <a href="{% url 'report_laboriousness' project_id=project_id sprint_id=sprint_id %}"
-                                           class="list-group-item list-group-item-action text_button"
-                                           aria-current="true">
-                                            <div class="d-flex w-75 justify-content-between">
-                                                <h3 class="mb-1">
-                                                    Отчёт по нагруженности сотрудников
-                                                    <span class="fw-normal">
-                                                        <img src="{% static 'img/angle-right.svg' %}" alt="Right"
-                                                             rel="icon">
-                                                    </span>
-                                                </h3>
-                                            </div>
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
+        {% endfor %}
+
+
+        <!-- Добавляем под спойлер раздел "Трудоёмкость"-->
+        <div class="row">
+            <div class="col-sm">
+                <div class="d-flex justify-content-center">
+                    <div class="row w-100">
+                        <div class="position_block">
+                            <a class="text-dark fw-bolder text_button text-decoration-none dropdown-toggle"
+                               data-bs-toggle="collapse" href="#collapseExample_capacity" role="button"
+                               aria-expanded="false" aria-controls="collapseCapacity_personal">
+                                Трудоёмкость спринта
+                            </a>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
 
+        <div class="position_block rounded-2 collapse" id="collapseExample_capacity">
+            <a href="{% url 'report_laboriousness' project_id=project_id sprint_id=sprint_id %}"
+               class="list-group-item list-group-item-action text_button"
+               aria-current="true">
+                <div class="d-flex w-75 justify-content-between">
+                    <h3 class="mb-1">
+                        Отчёт нагруженности сотрудников
+                        <span class="fw-normal">
+                            <img src="{% static 'img/angle-right.svg' %}" alt="Right" rel="icon">
+                        </span>
+                    </h3>
+                </div>
+            </a>
+
+            <div class="position_block">
+                <p class="text_button fw-normal" style="margin-top: 50px">Суммарная трудоёмкость по сотрудникам</p>
+                <table class="table table-bordered">
+                    <tr>
+                        <th class="text_button fw-bold">ФИО сотрудника</th>
+                        <th class="text_button fw-bold">Плановая трудоёмкость, ч.</th>
+                        <th class="text_button fw-bold">Фактическая трудоёмкость, ч.</th>
+                    </tr>
+
+                    {% for data in capacity_sum_user %}
+                        <tr>
+                            <th class="text_button fw-normal">{{ data.first_name }} {{ data.last_name }}</th>
+                            <th class="text_button fw-normal">{{ data.capacity_sum_plan }}</th>
+                            <th class="text_button fw-normal">{{ data.capacity_sum_fact }}</th>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+
+        <!-- Добавляем под спойлер раздел "Задачи спринта"-->
+        <div class="row">
+            <div class="col-sm">
+                <div class="d-flex justify-content-center">
+                    <div class="row w-100">
+                        <div class="position_block">
+                            <a class="text-dark fw-bolder text_button text-decoration-none dropdown-toggle"
+                               data-bs-toggle="collapse" href="#collapseExample_tasks_list" role="button"
+                               aria-expanded="false" aria-controls="collapseCapacity_personal">
+                                Задачи спринта
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="position_block rounded-2 collapse" id="collapseExample_tasks_list">
             <div class="block_title" style="margin-top: 50px">
                 <h2 class="title">Задачи спринта</h2>
             </div>
@@ -188,7 +232,7 @@
                             </button>
                         </div>
                         <div class="modal-body text_button">
-                            <form action="{% url 'task_sprint_search' project_id=project_id sprint_id=content_list.sprint_id %}"
+                            <form action="{% url 'task_sprint_search' project_id=project_id sprint_id=sprint_id %}"
                                   class="form-inline" method="get">
                                 <div class="form-group mx-sm-3 mb-2">
                                     <label for="" class="sr-only text_button"></label>
@@ -203,8 +247,7 @@
             </div>
 
             <div class="position_block" id="collapseExample_tasks"></div>
-
-        {% endfor %}
+        </div>
     </div>
 {% endblock content %}
 

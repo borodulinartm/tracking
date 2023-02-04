@@ -206,6 +206,17 @@ def sprint_description(request, project_id, sprint_id):
         raw_query=f"SELECT * FROM tracking_dev_sprint tds where is_activate=True and tds.project_id = {project_id}"
     )
 
+    query = f"select 1 as laboriousness_id, au.first_name, au.last_name, SUM(tdl.capacity_plan) as capacity_sum_plan, " \
+                  f"SUM(tdl.capacity_fact) as capacity_sum_fact " \
+                  f"from tracking_dev_laboriousness tdl " \
+                  f"join tracking_dev_employee tde on tdl.employee_id = tde.employee_id " \
+                  f"join auth_user au on au.id = tde.user_id  "\
+                  f"where tdl.task_id in (select tdst.task_id  "\
+                  f"from tracking_dev_sprint_task tdst where tdst.sprint_id = {sprint_id}) "\
+                  f"group by au.first_name, au.last_name "\
+
+    capacity_sum_by_user = Laboriousness.objects.raw(raw_query=query)
+
     all_projects = Project.objects.raw(
         raw_query=f"select * from tracking_dev_employee_projects tdep "
                   f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
@@ -226,7 +237,8 @@ def sprint_description(request, project_id, sprint_id):
         'project_id': project_id,
         'sprint_id': sprint_id,
         'show_choose_project': 1,
-        'list_projects': all_projects
+        'list_projects': all_projects,
+        'capacity_sum_user': capacity_sum_by_user
     })
 
 
