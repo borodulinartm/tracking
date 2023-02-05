@@ -59,14 +59,16 @@
                     <div class="modal-body text_button">
                         <form action="{% url 'search' project_id=project_id %}" class="form-inline" method="get">
                             <div class="form-group mx-sm-3 mb-2">
-                                <label for="" class="sr-only text_button"></label>
-                                <input name="search" class="form-control" id=""
-                                       placeholder="Введите имя пользователя">
+                                <label for="search-user-input"></label>
+                                <input name="search" class="form-control" id="search-user-input"
+                                                  placeholder="Введите имя пользователя">
                             </div>
 
                             <div class="position_block">
                                 <button type="submit" class="btn btn-primary btn-lg mb-2">Поиск</button>
                             </div>
+
+                            <div class="container-fluid" id="user_list_row"></div>
                         </form>
                     </div>
                 </div>
@@ -104,10 +106,6 @@
 
 {% block script %}
     <script>
-        function addData(element, response) {
-            let temp = "";
-        }
-
         const search_data = (series) => {
             $.ajax({
                 type: 'GET',
@@ -176,7 +174,6 @@
                                     </div>`
                             if (response.is_admin_zone) {
                                 if (element.user_id !== response.user_id) {
-                                    console.log(element.first_name + " " + element.last_name)
                                     temp += `
                                             <div>
                                                 <a href="#" data-bs-toggle="modal" data-bs-target="#` + id + `"
@@ -218,9 +215,53 @@
                     });
                 },
                 error: function (error) {
-                    console.log(error)
+                    console.log("An error occured. Text error is " + String(error))
                 }
             });
+        }
+
+        const search_new_users = (series) => {
+            $.ajax({
+                type: 'GET',
+                url: '{% url "search" project_id=project_id %}',
+                data: {
+                    'series': series
+                }, success: function (response) {
+                    console.log(response.data)
+                    $("#user_list_row").empty()
+
+                    let temp = ""
+                    let data = response.data;
+
+                    data.forEach(element => {
+                        let link = `/main_page/projects/{{ project_id }}/collobarators/add/${element.employee_id}`
+
+                        temp += `
+                            <div class="d-flex justify-content-between">
+                                <div class="row w-100">
+                                    <a href="${link}"
+                                       class="list-group-item list-group-item-action rounded-2" aria-current="true" style="margin-top: 25px">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <p class="text_button position_block">
+                                                <span class="fw-bolder">
+                                                    <img src="{% static 'img/user.svg' %}" alt="user" rel="icon">
+                                                    ${element.first_name} ${element.last_name}
+                                                </span>
+                                            </p>
+                                        </div>
+                                        <p class="mb-1">@${element.username}, ${element.post}</p>
+                                    </a>
+                                </div>
+                            </div>
+                        `
+                    });
+
+                    $("#user_list_row").append(temp);
+
+                }, error: function (error) {
+                    console.log("An error occured. Text error: " + String(error));
+                }
+            })
         }
 
         // By default, we should set this value to default to display all projects.
@@ -228,8 +269,13 @@
 
         const search_input = document.getElementById("search-input")
         search_input.addEventListener('keyup', e => {
-            console.log(e.target.value)
             search_data(e.target.value)
         })
+
+        const search_input_users = document.getElementById("search-user-input")
+        search_input_users.addEventListener('keyup', e => {
+            search_new_users(e.target.value)
+        })
+
     </script>
 {% endblock script %}

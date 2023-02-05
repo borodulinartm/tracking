@@ -1480,37 +1480,43 @@ def search(request, project_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
 
-    results = []
     if request.method == "GET":
-        query = request.GET.get('search')
-        if query == '':
-            query = 'None'
+        # If the type is GET, we need check if request is ajax.
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        if is_ajax:
+            query_se = None
+            series = request.GET.get('series')
+            if series != '':
+                query_se = Employee.objects.raw(
+                    raw_query=f"select *, au.id as user_id, au.username "
+                              f"from tracking_dev_employee tde "
+                              f"join auth_user au on tde.user_id = au.id "
+                              f"where tde.is_activate and (strpos(lower(au.first_name), lower('{series}')) > 0 or "
+                              f"strpos(lower(au.last_name), lower('{series}')) > 0 or "
+                              f"strpos(lower(au.username), lower('{series}')) > 0 )"
+                )
 
-        results = Employee.objects.raw(
-            raw_query=f"select *, au.id as user_id  "
-                      f"from tracking_dev_employee tde "
-                      f"join auth_user au on tde.user_id = au.id "
-                      f"where tde.is_activate and (strpos(lower(au.first_name), lower('{query}')) > 0 or "
-                      f"strpos(lower(au.last_name), lower('{query}')) > 0 or "
-                      f"strpos(lower(au.username), lower('{query}')) > 0 )"
-        )
+            if query_se is not None and len(query_se) > 0:
+                data = []
+                for position in query_se:
+                    item = {
+                        "employee_id": position.employee_id,
+                        "username": position.username,
+                        "user_id": position.user_id,
+                        "first_name": position.first_name,
+                        "last_name": position.last_name,
+                        "post": position.post
+                    }
 
-    raw_data = Project.objects.raw(
-        raw_query=f"select * from tracking_dev_employee_projects tdep "
-                  f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
-                  f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "
-                  f"where tde.user_id = {request.user.id};"
-    )
+                    data.append(item)
+                res = data
+            else:
+                res = []
 
-    return render(request, 'include/user_search.html', {
-        'title_page': 'Найденные сотрудники',
-        'participants': results,
-        'show_choose_project': 0,
-        'list_projects': raw_data,
-        'show_list_group': 0,
-        'is_project_zone': 1,
-        'project_id': project_id
-    })
+            return JsonResponse({'data': res, 'project_id': project_id, "user_id": request.user.id,
+                                 'is_admin_zone': request.user.is_staff})
+    return JsonResponse({'data': [], 'project_id': project_id, "user_id": request.user.id,
+                         'is_admin_zone': request.user.is_staff})
 
 
 # This view allows user search tasks for the sprint
