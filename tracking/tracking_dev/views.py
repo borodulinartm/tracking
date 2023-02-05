@@ -1487,8 +1487,12 @@ def search(request, project_id):
             query = 'None'
 
         results = Employee.objects.raw(
-            raw_query=f"select * from tracking_dev_employee tde join auth_user au "
-                      f"on tde.user_id = au.id where tde.is_activate and au.username='{query}';"
+            raw_query=f"select *, au.id as user_id  "
+                      f"from tracking_dev_employee tde "
+                      f"join auth_user au on tde.user_id = au.id "
+                      f"where tde.is_activate and (strpos(lower(au.first_name), lower('{query}')) > 0 or "
+                      f"strpos(lower(au.last_name), lower('{query}')) > 0 or "
+                      f"strpos(lower(au.username), lower('{query}')) > 0 )"
         )
 
     raw_data = Project.objects.raw(
@@ -2125,14 +2129,11 @@ def add_employee_to_project(request, project_id, employee_id):
     if (not request.user.is_staff) or (not is_user_in_this_project(request, project_id)):
         return HttpResponseForbidden()
 
-    try:
-        with connection.cursor() as cursor:
-            cursor.execute(f"insert into tracking_dev_employee_projects(employee_id, project_id, is_activate) "
-                           f"values ({employee_id}, {project_id}, True)")
-    except:
-        print("Can not add the participant")
-    finally:
-        return redirect(reverse("collabs", kwargs={'project_id': project_id}))
+    with connection.cursor() as cursor:
+        cursor.execute(f"insert into tracking_dev_employee_projects(employee_id, project_id, is_activate) "
+                       f"values ({employee_id}, {project_id}, True)")
+
+    return redirect(reverse("collabs", kwargs={'project_id': project_id}))
 
 
 # This view allows user add the task to sprint

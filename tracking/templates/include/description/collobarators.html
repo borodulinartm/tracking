@@ -63,7 +63,10 @@
                                 <input name="search" class="form-control" id=""
                                        placeholder="Введите имя пользователя">
                             </div>
-                            <button type="submit" class="btn btn-primary btn-lg mb-2">Поиск</button>
+
+                            <div class="position_block">
+                                <button type="submit" class="btn btn-primary btn-lg mb-2">Поиск</button>
+                            </div>
                         </form>
                     </div>
                 </div>
@@ -101,6 +104,10 @@
 
 {% block script %}
     <script>
+        function addData(element, response) {
+            let temp = "";
+        }
+
         const search_data = (series) => {
             $.ajax({
                 type: 'GET',
@@ -113,10 +120,10 @@
 
                     let temp = ""
                     let data = response.data;
+                    let i = 0;
 
                     data.forEach(element => {
-                        console.log(element)
-                        //console.log(element);
+                        let id = "exampleModalDeleting" + i;
                         if (element.name_exists > 0 || element.last_name_exists > 0) {
                             temp += `
                             <div class="position_block">
@@ -169,10 +176,32 @@
                                     </div>`
                             if (response.is_admin_zone) {
                                 if (element.user_id !== response.user_id) {
+                                    console.log(element.first_name + " " + element.last_name)
                                     temp += `
                                             <div>
-                                                <a type="button"
-                                                   href="` + delete_employee_url + `"class="btn btn-outline-danger text_button">Удалить</a>
+                                                <a href="#" data-bs-toggle="modal" data-bs-target="#` + id + `"
+                                                    class="btn btn-outline-danger text_button">Удалить участника
+                                                </a>
+
+                                                <div class="modal fade" id="` + id + `" tabindex="-1" aria-labelledby="exampleModalDeleting"
+                                                        aria-hidden="true">
+                                                    <div class="modal-dialog">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title" id="exampleModalLabel">Внимание</h5>
+                                                                <a type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></a>
+                                                            </div>
+                                                            <div class="modal-body text_button">Вы действительно хотите удалить участника?</div>
+                                                                <div class="modal-body text_button">Удаляемые данные: ФИО - ${element.first_name} ${element.last_name}</div>
+                                                                <div class="modal-footer">
+                                                                    <a type="button" class="btn btn-primary" data-bs-dismiss="modal">Отмена</a>
+                                                                    <a type="button"
+                                                                        href="` + delete_employee_url + `"
+                                                                        class="btn btn-danger">Подтвердить удаление</a>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                             </div>`
                                 }
                             }
@@ -184,6 +213,8 @@
                             $("#my_row").append(temp)
                             temp = ""
                         }
+
+                        i++;
                     });
                 },
                 error: function (error) {
