@@ -235,11 +235,13 @@
                             <form action="{% url 'task_sprint_search' project_id=project_id sprint_id=sprint_id %}"
                                   class="form-inline" method="get">
                                 <div class="form-group mx-sm-3 mb-2">
-                                    <label for="" class="sr-only text_button"></label>
-                                    <input name="search" class="form-control" id=""
-                                           placeholder="Введите название задачи">
+                                    <label for="search-task-input"></label>
+                                    <input name="search" class="form-control" id="search-task-input"
+                                               placeholder="Введите название задачи">
                                 </div>
                                 <button type="submit" class="btn btn-primary btn-lg mb-2">Поиск</button>
+
+                                <div class="container-fluid" id="task_list_row"></div>
                             </form>
                         </div>
                     </div>
@@ -331,6 +333,61 @@
                 temp += `</table>`
                 $("#collapseExample_tasks").append(temp)
             }
+        })
+
+        const search_new_tasks = (series) => {
+            $.ajax({
+                type: 'GET',
+                url: '{% url "task_sprint_search" project_id=project_id sprint_id=sprint_id %}',
+                data: {
+                    'series': series
+                }, success: function (response) {
+                    $("#task_list_row").empty()
+
+                    let temp = ""
+                    let data = response.data
+
+                    data.forEach(element => {
+                        let link_to_add_task = `/main_page/projects/{{ project_id }}/sprints/{{ sprint_id }}/add/${element.task_id}`
+                        temp += `
+                            <div class="d-flex justify-content-between">
+                                <div class="row w-100">
+                                    <a href="${link_to_add_task}"
+                                       class="list-group-item list-group-item-action rounded-2" aria-current="true" style="margin-top: 25px">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <h3 class="mb-1">
+                                                <span>
+                                                    <img src="{% static 'img/pencil.svg' %}" alt="task" rel="icon">
+                                                    ${element.code}
+                                                </span>
+                                            </h3>
+                                        </div>
+                                        <p class="mb-1" style="margin-top: 10px">
+                                            <svg xmlns="http://www.w3.org/2000/svg" id="Outline" viewBox="0 0 24 24" width="24"
+                                                 height="24">
+                                                <path d="M12,0A12,12,0,1,0,24,12,12.013,12.013,0,0,0,12,0Zm0,22A10,10,0,1,1,22,12,10.011,10.011,0,0,1,12,22Z"></path>
+                                                <path d="M12,10H11a1,1,0,0,0,0,2h1v6a1,1,0,0,0,2,0V12A2,2,0,0,0,12,10Z"></path>
+                                                <circle cx="12" cy="6.5" r="1.5"></circle>
+                                            </svg>
+                                            ${element.name}
+                                        </p>
+                                    </a>
+                                </div>
+                            </div>
+                        `
+                    })
+
+                    $("#task_list_row").append(temp);
+
+                }, error: function (error) {
+                    console.log("An error occured. Text error is " + String(error))
+                }
+            })
+        }
+
+        const search_input_users = document.getElementById("search-task-input")
+        search_input_users.addEventListener('keyup', e => {
+            search_new_tasks(e.target.value);
         })
     </script>
 {% endblock script %}

@@ -1527,38 +1527,40 @@ def task_sprint_search(request, project_id, sprint_id):
     if not is_user_in_this_project(request, project_id):
         return HttpResponseForbidden()
 
-    results = []
     if request.method == "GET":
-        query = request.GET.get('search')
-        if query == '':
-            query = 'None'
+        # If the type is GET, we need check if request is ajax.
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        if is_ajax:
+            query_se = None
+            series = request.GET.get('series')
+            if series != '':
+                query_se = Task.objects.raw(
+                    raw_query=f"select * from tracking_dev_task tdt "
+                              f"join tracking_dev_state tds on tdt.state_id = tds.state_id "
+                              f"where tds.\"isClosed\" = false and tdt.is_activate "
+                              f"and (strpos(lower(tdt.code), lower('{series}')) > 0 or strpos(lower(tdt.\"name\"), "
+                              f"lower('{series}')) > 0 "
+                              f"or strpos(lower(tdt.description), lower('{series}')) > 0);"
+                )
 
-        results = Task.objects.raw(
-            raw_query=f"select * from tracking_dev_task tdt "
-                      f"join tracking_dev_state tds on tdt.state_id = tds.state_id "
-                      f"where tds.\"isClosed\" = false and tdt.is_activate "
-                      f"and (strpos(lower(tdt.code), lower('{query}')) > 0 or strpos(lower(tdt.\"name\"), "
-                      f"lower('{query}')) > 0 "
-                      f"or strpos(lower(tdt.description), lower('{query}')) > 0);"
-        )
+            if query_se is not None and len(query_se) > 0:
+                data = []
+                for position in query_se:
+                    item = {
+                        "task_id": position.task_id,
+                        "code": position.code,
+                        "name": position.name,
+                    }
 
-    raw_data = Project.objects.raw(
-        raw_query=f"select * from tracking_dev_employee_projects tdep "
-                  f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
-                  f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "
-                  f"where tde.user_id = {request.user.id};"
-    )
+                    data.append(item)
+                res = data
+            else:
+                res = []
 
-    return render(request, 'include/task_search.html', {
-        'title_page': 'Найденные задачи',
-        'tasks': results,
-        'show_choose_project': 0,
-        'list_projects': raw_data,
-        'show_list_group': 0,
-        'is_project_zone': 1,
-        'project_id': project_id,
-        'sprint_id': sprint_id
-    })
+            return JsonResponse({'data': res, 'project_id': project_id, "user_id": request.user.id,
+                                 'is_admin_zone': request.user.is_staff, "sprint_id": sprint_id})
+    return JsonResponse({'data': [], 'project_id': project_id, "user_id": request.user.id,
+                         'is_admin_zone': request.user.is_staff, "sprint_id": sprint_id})
 
 
 # This function provides ajax for the vote button
