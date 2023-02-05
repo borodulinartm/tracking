@@ -7,25 +7,24 @@
             <div class="title_block d-flex justify-content-center">
                 <h1>Ваши проекты</h1>
             </div>
-            {% for project in list_projects %}
+
+            <div class="container-fluid">
                 <div class="d-flex justify-content-center">
                     <div class="row w-75">
-                        <a href="{% url 'project_extra_function' project_id=project.project_id %}"
-                           class="list-group-item list-group-item-action text_button" aria-current="true">
-                            <div class="d-flex w-100 justify-content-between">
-                                <h3 class="mb-1">
-                                    <span class="fw-normal">
-                                        <img src="{% static 'img/project.svg' %}" alt="type" rel="icon">
-                                    </span>
-                                    {{ project.name }}
-                                </h3>
-                                <small>{{ project.date_create }}</small>
+                        <form action="{% url 'project_search_for_current_user' %}"
+                              class="form-inline search-form" method="get">
+                            <div class="d-flex">
+                                <label for="search-input" class="sr-only text_button"></label>
+                                <input name="search" class="form-control me-2" id="search-input"
+                                       placeholder="Введите текст для поиска" value="{{ value_in_the_search_form }}">
                             </div>
-                            <p class="mb-1">{{ project.description|truncatechars:100 }}</p>
-                        </a>
+                        </form>
                     </div>
                 </div>
-            {% endfor %}
+            </div>
+
+            <div class="container-fluid" id="list_projects"></div>
+
         {% else %}
             <div class="title_block d-flex justify-content-center">
                 <h1>Добро пожаловать</h1>
@@ -50,7 +49,8 @@
 
             <div class="d-flex justify-content-center">
                 <div class="row w-75">
-                    <a href="{% url 'signup' %}" class="list-group-item list-group-item-action text_button" aria-current="true">
+                    <a href="{% url 'signup' %}" class="list-group-item list-group-item-action text_button"
+                       aria-current="true">
                         <div class="d-flex w-100 justify-content-between">
                             <h3 class="mb-1">
                                 <span class="fw-normal">
@@ -66,3 +66,57 @@
         {% endif %}
     </div>
 {% endblock content %}
+
+{% block script %}
+    <script>
+        const search_data = (series) => {
+            $.ajax({
+                url: '{% url "project_search_for_current_user" %}',
+                type: 'GET',
+                data: {
+                    'series': series
+                }, success: function (response) {
+                    $("#list_projects").empty();
+
+                    let data = response.data;
+                    let temp = "";
+
+                    data.forEach(element => {
+                        let link_to_project_descripton = `/main_page/projects/${element.project_id}`
+                        temp += `
+                            <div class="d-flex justify-content-center">
+                                <div class="row w-75">
+                                    <a href="${link_to_project_descripton}"
+                                       class="list-group-item list-group-item-action text_button" aria-current="true">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <h3 class="mb-1">
+                                                <span class="fw-normal">
+                                                    <img src="{% static 'img/project.svg' %}" alt="type" rel="icon">
+                                                </span>
+                                                ${element.name}
+                                            </h3>
+                                            <small>${element.date_create}</small>
+                                        </div>
+                                        <p class="mb-1">${element.description}</p>
+                                    </a>
+                                </div>
+                            </div>
+                        `
+                    })
+
+                    $("#list_projects").append(temp);
+                }, error: function (error) {
+                    console.log("An error occured. Text error is " + String(error))
+                }
+            })
+        }
+
+        // По умолчанию, оставляем полный список
+        search_data('')
+
+        const search_input = document.getElementById("search-input")
+        search_input.addEventListener('keyup', e => {
+            search_data(e.target.value)
+        })
+    </script>
+{% endblock script %}

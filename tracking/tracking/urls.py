@@ -9,6 +9,8 @@ urlpatterns = [
     path('main_page', index, name="main_page"),
 
     path('main_page/projects', get_list_projects, name="projects"),
+    path('main_page/projects/search_project_for_user', project_search_for_current_user,
+         name="project_search_for_current_user"),
     path('main_page/projects/<int:project_id>', show_extra_functions, name="project_extra_function"),
     path('main_page/projects/<int:project_id>/description', project_description, name="project_description"),
     path('main_page/projects/<int:project_id>/report', calculate_report_tasks, name="project_report"),

@@ -45,6 +45,57 @@ def index(request):
     })
 
 
+# Данный метод предоставляет пользователю поиск по списку проектов
+def project_search_for_current_user(request):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    if request.method == "GET":
+        # If the type is GET, we need check if request is ajax.
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        if is_ajax:
+            series = request.GET.get('series')
+            if series != '':
+                query_se = Project.objects.raw(
+                    raw_query=f"select tdp.project_id, tdp.\"name\"  "
+                              f"from tracking_dev_project tdp WHERE tdp.is_activate=True and "
+                              f"tdp.project_id in (select tdep.project_id from tracking_dev_employee_projects tdep "
+                              f"join tracking_dev_employee tde on tde.employee_id = tdep.employee_id "
+                              f"join auth_user au on tde.user_id=tde.user_id "
+                              f"where au.id={request.user.id}) and (strpos(lower(tdp.code), lower('{series}')) > 0 "
+                              f"or strpos(lower(tdp.code), lower('{series}')) > 0 or "
+                              f"strpos(lower(tdp.description), lower('{series}')) > 0) "
+                )
+            else:
+                query_se = Project.objects.raw(
+                    raw_query=f"select tdp.project_id, tdp.\"name\""
+                              f"from tracking_dev_project tdp WHERE tdp.is_activate=True "
+                              f"and tdp.project_id in (select tdep.project_id from tracking_dev_employee_projects tdep "
+                              f"join tracking_dev_employee tde on tde.employee_id = tdep.employee_id "
+                              f"join auth_user au on tde.user_id=tde.user_id "
+                              f"where au.id={request.user.id})"
+                )
+
+            if len(query_se) > 0:
+                data = []
+                for position in query_se:
+                    item = {
+                        "project_id": position.project_id,
+                        "code": position.code,
+                        "name": position.name,
+                        "date_create": position.date_create,
+                        "description": position.description
+                    }
+
+                    data.append(item)
+                res = data
+            else:
+                res = []
+
+            return JsonResponse({'data': res})
+    return JsonResponse({'data': []})
+
+
 # This view allows admin show and create tasks
 def show_extra_functions(request, project_id):
     if not request.user.is_authenticated:
@@ -207,13 +258,13 @@ def sprint_description(request, project_id, sprint_id):
     )
 
     query = f"select 1 as laboriousness_id, au.first_name, au.last_name, SUM(tdl.capacity_plan) as capacity_sum_plan, " \
-                  f"SUM(tdl.capacity_fact) as capacity_sum_fact " \
-                  f"from tracking_dev_laboriousness tdl " \
-                  f"join tracking_dev_employee tde on tdl.employee_id = tde.employee_id " \
-                  f"join auth_user au on au.id = tde.user_id  "\
-                  f"where tdl.task_id in (select tdst.task_id  "\
-                  f"from tracking_dev_sprint_task tdst where tdst.sprint_id = {sprint_id}) "\
-                  f"group by au.first_name, au.last_name "\
+            f"SUM(tdl.capacity_fact) as capacity_sum_fact " \
+            f"from tracking_dev_laboriousness tdl " \
+            f"join tracking_dev_employee tde on tdl.employee_id = tde.employee_id " \
+            f"join auth_user au on au.id = tde.user_id  " \
+            f"where tdl.task_id in (select tdst.task_id  " \
+            f"from tracking_dev_sprint_task tdst where tdst.sprint_id = {sprint_id}) " \
+            f"group by au.first_name, au.last_name " \
 
     capacity_sum_by_user = Laboriousness.objects.raw(raw_query=query)
 
@@ -2452,14 +2503,20 @@ def kanban_board_manager(request, project_id):
     if not is_user_in_this_project(request, project_id):
         return HttpResponseForbidden()
 
-    data = State.objects.filter(is_activate=True).order_by('isClosed')
+    data = State.objects.raw(
+        raw_query=f"select * from tracking_dev_state tds "
+                  f"where tds.is_activate "
+                  f"order by tds.\"isClosed\", tds.percentage"
+    )
+
     tasks_by_state = []
     for elem in data:
         tasks_query = Task.objects.raw(
             raw_query=f"select * from tracking_dev_task tdt "
                       f"join tracking_dev_employee tde on tde.employee_id = tdt.responsible_id "
                       f"join auth_user au on au.id = tde.user_id "
-                      f"where tdt.state_id = {elem.state_id} and tdt.project_id = {project_id} and tdt.is_activate = true;"
+                      f"where tdt.state_id = {elem.state_id} and tdt.project_id = {project_id} "
+                      f"and tdt.is_activate = true;"
         )
 
         my_dict = {
