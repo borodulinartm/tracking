@@ -264,7 +264,7 @@ def sprint_description(request, project_id, sprint_id):
             f"join auth_user au on au.id = tde.user_id  " \
             f"where tdl.task_id in (select tdst.task_id  " \
             f"from tracking_dev_sprint_task tdst where tdst.sprint_id = {sprint_id}) " \
-            f"group by au.first_name, au.last_name " \
+            f"group by au.first_name, au.last_name "
 
     capacity_sum_by_user = Laboriousness.objects.raw(raw_query=query)
 
@@ -771,11 +771,16 @@ def remove_task_from_sprint(request, project_id, sprint_id, task_id):
     if (not request.user.is_staff) or (not is_user_in_this_project(request, project_id)):
         return HttpResponseForbidden()
 
-    with connection.cursor() as cursor:
-        cursor.execute(f"delete from tracking_dev_sprint_task tdst where tdst.sprint_id = {sprint_id} "
-                       f"and tdst.task_id = {task_id}")
-
-    return redirect(reverse('sprint_description', kwargs={'project_id': project_id, 'sprint_id': sprint_id}))
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(f"delete from tracking_dev_sprint_task tdst where tdst.sprint_id = {sprint_id} "
+                           f"and tdst.task_id = {task_id}")
+        messages.success(request, "Задача из текущего спринта была успешно удалена")
+    except:
+        messages.error(request, "К сожалению, не удалось удалить задачу из спринта")
+        print("Unable to remove the task from sprint")
+    finally:
+        return redirect(reverse('sprint_description', kwargs={'project_id': project_id, 'sprint_id': sprint_id}))
 
 
 # This view allows you remove the task
@@ -2207,10 +2212,15 @@ def add_task_to_sprint(request, project_id, sprint_id, task_id):
         with connection.cursor() as cursor:
             cursor.execute(f"insert into tracking_dev_sprint_task(sprint_id, task_id) "
                            f"values ({sprint_id}, {task_id})")
+        messages.success(request, 'Задача была успешно добавлена в текущий спринт')
+
     except:
         print("Can not add the task to the sprint")
+        messages.error(request, 'Задача не была добавлена в данный спринт. Возможно, она уже есть в спринте')
+
     finally:
-        return redirect(reverse('sprint_description', kwargs={'project_id': project_id, 'sprint_id': sprint_id}))
+        return redirect(reverse('sprint_description',
+                                kwargs={'project_id': project_id, 'sprint_id': sprint_id}))
 
 
 # This method allows users login
