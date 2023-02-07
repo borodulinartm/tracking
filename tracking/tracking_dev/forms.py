@@ -1,5 +1,5 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, UsernameField
 
 from .models import *
 
@@ -332,3 +332,19 @@ class CreateLaboriousnessForm(forms.ModelForm):
 
         # The capacity fact is non-required field
         self.fields['capacity_fact'].required = False
+
+
+class CustomAuthenticationForm(AuthenticationForm):
+    username = UsernameField(label="Введите имя пользователя", widget=forms.TextInput(attrs={
+        "auto_focus": True,
+        "style": "margin-bottom: 20px",
+        "placeholder": "Ваш логин"
+    }))
+
+    password = forms.CharField(
+        strip=False, label="Введите пароль",
+        widget=forms.PasswordInput(attrs={
+            "style": "margin-bottom: 20px",
+            "placeholder": "Ваш пароль"
+        })
+    )

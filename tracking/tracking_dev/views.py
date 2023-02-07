@@ -748,6 +748,7 @@ def project_remove(request, project_id):
         return HttpResponseForbidden()
 
     Project.objects.filter(project_id=project_id).update(is_activate=False)
+    messages.success(request, "Проект был успешно удалён")
     return redirect(reverse('projects'))
 
 
@@ -760,6 +761,7 @@ def sprint_remove(request, project_id, sprint_id):
         return HttpResponseForbidden()
 
     Sprint.objects.filter(sprint_id=sprint_id).update(is_activate=False)
+    messages.success(request, "Спринт был успешно удалён")
     return redirect(reverse('sprints', kwargs={'project_id': project_id}))
 
 
@@ -789,6 +791,7 @@ def task_remove(request, project_id, task_id):
         return HttpResponseNotFound()
 
     Task.objects.filter(task_id=task_id).update(is_activate=False)
+    messages.success(request, "Задача была успешно удалена")
     return redirect(reverse('tasks_for_project', kwargs={"project_id": project_id}))
 
 
@@ -801,6 +804,7 @@ def priority_remove(request, priority_id):
         return HttpResponseForbidden()
 
     Priority.objects.filter(priority_id=priority_id).update(is_activate=False)
+    messages.success(request, "Приоритет задачи был успешно удалён")
     return redirect(reverse('priorities'))
 
 
@@ -814,6 +818,7 @@ def state_remove(request, state_id):
         return HttpResponseForbidden()
 
     State.objects.filter(state_id=state_id).update(is_activate=False)
+    messages.success(request, "Состояние задачи было успешно удалено")
     return redirect(reverse('states'))
 
 
@@ -826,6 +831,7 @@ def employee_remove(request, employee_id):
         return HttpResponseForbidden()
 
     Employee.objects.filter(employee_id=employee_id).update(is_activate=False)
+    messages.success(request, "Сотрудник был успешно удалён")
     return redirect(reverse('employees'))
 
 
@@ -838,6 +844,7 @@ def type_remove(request, type_id):
         return HttpResponseForbidden()
 
     TypeTask.objects.filter(type_id=type_id).update(is_activate=False)
+    messages.success(request, "Тип задачи был успешно удалён")
     return redirect(reverse('types'))
 
 
@@ -886,6 +893,7 @@ def remove_user_from_current_project(request, project_id, employee_id):
     with connection.cursor() as cursor:
         cursor.execute(f"delete from tracking_dev_employee_projects where "
                        f"project_id={project_id} and employee_id={employee_id}")
+        messages.success(request, "Пользователь успешно удалён из проекта")
 
     # Redirect to the website with projects
     return redirect(reverse("collabs", kwargs={'project_id': project_id}))
@@ -902,6 +910,7 @@ def remove_row_from_capacity_table(request, project_id, task_id, employee_id):
     with connection.cursor() as cursor:
         cursor.execute(f"delete from tracking_dev_laboriousness tdl "
                        f"where tdl.employee_id = {employee_id} and tdl.task_id = {task_id};")
+        messages.success(request, "Запись трудоёмкости была успешно удалена")
 
     return redirect(reverse('task_description', kwargs={'project_id': project_id, 'task_id': task_id}))
 
@@ -921,6 +930,7 @@ def remove_all_users_from_current_project(request, project_id):
                        f"from tracking_dev_employee tde "
                        f"where tde.employee_id = tdep.employee_id and tde.user_id != {request.user.id} "
                        f"and tdep.project_id = {project_id}")
+        messages.success(request, "Все пользователи были удалены из проекта")
 
     # Redirect to the website with project
     return redirect(reverse('collabs', kwargs={"project_id": project_id}))
@@ -966,6 +976,7 @@ def create_project(request):
                                f"values ({employee_id}, {project_id}, True)")
 
             next = request.POST.get('next', '/')
+            messages.success(request, "Проект был успешно создан")
             return HttpResponseRedirect(next)
         else:
             messages.error(request, "Ошибка валидации формы")
@@ -994,6 +1005,7 @@ def edit_project(request, project_id):
         form.save()
 
         next = request.POST.get('next', '/')
+        messages.success(request, "Информация о проекте была успешно обновлена")
         return HttpResponseRedirect(next)
 
     return render(request, 'include/base_form.html', {
@@ -1018,6 +1030,7 @@ def create_priority(request):
             creation_form.save()
 
             next = request.POST.get('next', '/')
+            messages.success(request, "Приоритет была успешно создана")
             return HttpResponseRedirect(next)
     else:
         creation_form = CreateProjectForm()
@@ -1053,6 +1066,8 @@ def create_sprint(request, project_id):
             SprintData.save()
 
             next = request.POST.get('next', '/')
+            messages.success(request, "Спринт был успешно создан")
+
             return HttpResponseRedirect(next)
     else:
         creation_form = CreateSprintForm()
@@ -1080,6 +1095,8 @@ def edit_sprint(request, project_id, sprint_id):
         form.save()
 
         next = request.POST.get('next', '/')
+
+        messages.success(request, "Сведения о спринте были обновлены")
         return HttpResponseRedirect(next)
 
     return render(request, 'include/base_form.html', {
@@ -1103,6 +1120,7 @@ def edit_priority(request, priority_id):
         form.save()
 
         next = request.POST.get('next', '/')
+        messages.success(request, "Приоритет был успешно обновлён")
         return HttpResponseRedirect(next)
 
     return render(request, 'include/base_form.html', {
@@ -1160,6 +1178,7 @@ def create_laboriousness(request, project_id, task_id):
                 record.save()
 
                 next = request.POST.get('next', '/')
+                messages.success(request, "Трудоёмкость для данного пользователя успешно добавлена")
                 return HttpResponseRedirect(next)
             else:
                 if len(list(list_data)) > 0:
@@ -1196,6 +1215,7 @@ def edit_laboriousness(request, project_id, task_id, laboriousness_id):
         form.save()
 
         next = request.POST.get('next', '/')
+        messages.success(request, "Запись трудоёмкости была успешно обновлена")
         return HttpResponseRedirect(next)
 
     return render(request, 'include/base_form.html', {
@@ -1235,6 +1255,7 @@ def create_state(request):
                                      is_ticked_checkbox=is_ticked_checkbox)
                     my_state.save()
 
+                    messages.success(request, "Состояние успешно создано")
                     return HttpResponseRedirect(next)
                 else:
                     messages.error(request, "Состояние закрытой задачи уже существует в системе")
@@ -1293,6 +1314,8 @@ def edit_states(request, state_id):
                                "Процент выполнения задачи не может превышать 99 для не закрытого состояния задачи")
             else:
                 form.save()
+
+                messages.success(request, "Состояние задачи было успешно изменено")
                 return HttpResponseRedirect(next)
 
     return render(request, "include/base_form.html", {
@@ -1316,6 +1339,8 @@ def create_type_task(request):
             creation_form.save()
 
             next = request.POST.get('next', '/')
+
+            messages.success(request, "Тип задачи был успешно создан")
             return HttpResponseRedirect(next)
     else:
         creation_form = CreateTypeTaskForm()
@@ -1342,6 +1367,8 @@ def edit_type_task(request, type_id):
         form.save()
 
         next = request.POST.get('next', '/')
+
+        messages.success(request, "Тип задачи был успешно изменён")
         return HttpResponseRedirect(next)
 
     return render(request, 'include/base_form.html', {
@@ -1391,6 +1418,8 @@ def create_task(request, project_id):
             task.save()
 
             next = request.POST.get('next', '/')
+
+            messages.success(request, "Задача была успешно создана")
             return HttpResponseRedirect(next)
     else:
         creation_form = CreateTaskForm()
@@ -1456,6 +1485,8 @@ def create_subtask_form(request, project_id, task_id):
             subtask.save()
 
             next = request.POST.get('next', '/')
+
+            messages.success(request, "Подзадача была успешно создана")
             return HttpResponseRedirect(next)
         else:
             messages.error(request, "Ошибка при вводе данных")
@@ -1490,11 +1521,9 @@ def edit_task(request, project_id, task_id):
         form.save()
 
         next = request.POST.get('next', '/')
-        return HttpResponseRedirect(next)
 
-    raw_data = Task.objects.raw(
-        raw_query=f"SELECT * FROM tracking_dev_task where is_activate=True and project_id={project_id}"
-    )
+        messages.success(request, "Задача была успешно изменена")
+        return HttpResponseRedirect(next)
 
     return render(request, 'include/base_form.html', {
         'title_page': 'Форма редактирования задачи',
@@ -1519,6 +1548,7 @@ def create_employee(request):
             employee = Employee(post=post, description=description, user_id=request.user.id)
             employee.save()
 
+            messages.success(request, "Поздравляю! Вы успешно создали свой аккаунт")
             return redirect(reverse('main_page'))
     else:
         creation_form = CreateEmployeeForm()
@@ -2196,6 +2226,7 @@ def add_employee_to_project(request, project_id, employee_id):
     with connection.cursor() as cursor:
         cursor.execute(f"insert into tracking_dev_employee_projects(employee_id, project_id, is_activate) "
                        f"values ({employee_id}, {project_id}, True)")
+        messages.success(request, "Пользователь был успешнот добавлен в проект")
 
     return redirect(reverse("collabs", kwargs={'project_id': project_id}))
 
@@ -2229,18 +2260,18 @@ def login(request):
         return HttpResponseNotFound()
 
     if request.method == "POST":
-        form = LoginForm(request.POST)
+        form = CustomAuthenticationForm(request.POST)
         if form.is_valid():
             user = auth.authenticate(request, **form.cleaned_data)
             if user is not None:
                 auth.login(request, user)
                 return redirect(reverse('main_page'))
             else:
-                messages.error(request, "Incorrect name or password")
+                messages.error(request, "Неверное имя или пароль")
         else:
-            messages.error(request, "Error in the inputting login data")
+            messages.error(request, "Ошибка в вводе пользовательских данных")
     else:
-        form = LoginForm()
+        form = CustomAuthenticationForm()
 
     return render(request, "include/base_form.html", {
         'form': form,
@@ -2299,6 +2330,7 @@ def mark_as_completed(request, project_id, task_id):
     with connection.cursor() as cursor:
         cursor.execute(f"UPDATE tracking_dev_task SET state_id=5 WHERE "
                        f"project_id={project_id} and task_id={task_id}")
+        messages.success(request, "Успех! Теперь задача является закрытой")
 
     return redirect(reverse('tasks_for_project', kwargs={'project_id': project_id}))
 

@@ -33,12 +33,6 @@
                     {{ form | crispy }}
                     <button type="submit" class="btn btn-primary mt-3 text_button">{{ text_button }}</button>
                 </form>
-
-                {% for message in messages %}
-                    <div class="alert alert-danger" role="alert">
-                        {{ message }}
-                    </div>
-                {% endfor %}
             </div>
         </div>
     </div>
