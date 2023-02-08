@@ -611,7 +611,9 @@ def task_description(request, project_id, task_id):
         return HttpResponseForbidden()
 
     raw_data = Task.objects.raw(
-        raw_query=f"select tdt.task_id, tdt.code, tdt.name, tdt.description, tds.percentage, au.first_name  as init_name, "
+        raw_query=f"select tdt.task_id, tdt.code, tdt.name, tdt.description, tds.percentage, tds.state_id, "
+                  f"tdp.project_id, tdp2.priority_id, tde.employee_id as emp_1, tde2.employee_id as emp_2,"
+                  f"tde3.employee_id as emp_3, au.first_name  as init_name, "
                   f"au.last_name as init_surname, au2.last_name as resp_surname, "
                   f"au2.first_name  as resp_name, tds.name as state_name, tdp.name as project_name, "
                   f"tdp2.name as priority_name, tdt2.name as type_task_name, au3.first_name as manager_name, "
@@ -2268,8 +2270,6 @@ def login(request):
                 return redirect(reverse('main_page'))
             else:
                 messages.error(request, "Неверное имя или пароль")
-        else:
-            messages.error(request, "Ошибка в вводе пользовательских данных")
     else:
         form = CustomAuthenticationForm()
 

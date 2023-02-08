@@ -334,7 +334,7 @@ class CreateLaboriousnessForm(forms.ModelForm):
         self.fields['capacity_fact'].required = False
 
 
-class CustomAuthenticationForm(AuthenticationForm):
+class CustomAuthenticationForm(LoginForm):
     username = UsernameField(label="Введите имя пользователя", widget=forms.TextInput(attrs={
         "auto_focus": True,
         "style": "margin-bottom: 20px",

@@ -21,6 +21,7 @@
                         </div>
                     </div>
                 </div>
+
                 <div class="col-sm">
                     <div class="d-flex justify-content-center">
                         <div class="row w-100">
@@ -44,6 +45,7 @@
                         </div>
                     </div>
                 </div>
+
                 <div class="col-sm">
                     <div class="row">
                         <div class="col-sm">
@@ -59,45 +61,69 @@
                     </div>
                 </div>
             </div>
+
             <div class="row">
                 <div class="col-sm">
                     <div class="d-flex justify-content-center">
                         <div class="row w-100">
                             <div class="position_block">
                                 <span class="fw-bolder text_button">Наблюдатель:</span>
-                                <span class="fw-normal text_button">{{ content_list.init_name }} {{ content_list.init_surname }}</span>
+                                <span class="fw-normal">
+                                    <a href="{% url 'employee_description' employee_id=content_list.emp_1 %}"
+                                        class="text_button link_inactive">
+                                        {{ content_list.init_name }} {{ content_list.init_surname }}
+                                    </a>
+                                </span>
                             </div>
                         </div>
                     </div>
                 </div>
+
                 <div class="col-sm">
                     <div class="d-flex justify-content-center">
                         <div class="row w-100">
                             <div class="position_block">
                                 <span class="fw-bolder text_button">Ответственный:</span>
-                                <span class="fw-normal text_button">{{ content_list.resp_name }} {{ content_list.resp_surname }}</span>
+                                <span class="fw-normal">
+                                    <a href="{% url 'employee_description' employee_id=content_list.emp_2 %}"
+                                        class="link_inactive text_button">
+                                        {{ content_list.resp_name }} {{ content_list.resp_surname }}
+                                    </a>
+                                </span>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+
             <div class="row">
                 <div class="col-sm">
                     <div class="d-flex justify-content-center">
                         <div class="row w-100">
                             <div class="position_block">
                                 <span class="fw-bolder text_button">Состояние:</span>
-                                <span class="fw-normal text_button">{{ content_list.state_name }}</span>
+                                <span class="fw-normal text_button">
+                                    <a href="{% url 'state_description' state_id=content_list.state_id %}"
+                                       class="text_button link_inactive">
+                                        {{ content_list.state_name }}
+                                    </a>
+                                </span>
                             </div>
                         </div>
                     </div>
                 </div>
+
                 <div class="col-sm">
                     <div class="d-flex justify-content-center">
                         <div class="row w-100">
                             <div class="position_block">
                                 <span class="fw-bolder text_button">Проверяющий:</span>
-                                <span class="fw-normal text_button">{{ content_list.manager_name }} {{ content_list.manager_last_name }}</span>
+                                <span class="fw-normal">
+                                    <a href="{% url 'employee_description' employee_id=content_list.emp_3 %}"
+                                        class="text_button link_inactive">
+                                        {{ content_list.manager_name }} {{ content_list.manager_last_name }}
+                                    </a>
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -110,17 +136,28 @@
                         <div class="row w-100">
                             <div class="position_block">
                                 <span class="fw-bolder text_button">Проект:</span>
-                                <span class="fw-normal text_button">{{ content_list.project_name }}</span>
+                                <span class="fw-normal">
+                                    <a href="{% url 'project_description' project_id=content_list.project_id %}"
+                                        class="text_button link_inactive">
+                                        {{ content_list.project_name }}
+                                    </a>
+                                </span>
                             </div>
                         </div>
                     </div>
                 </div>
+
                 <div class="col-sm">
                     <div class="d-flex justify-content-center">
                         <div class="row w-100">
                             <div class="position_block">
                                 <span class="fw-bolder text_button">Приоритет:</span>
-                                <span class="fw-normal text_button">{{ content_list.priority_name }}</span>
+                                <span class="fw-normal">
+                                    <a href="{% url 'priority_description' priority_id=content_list.priority_id %}"
+                                        class="link_inactive text_button">
+                                        {{ content_list.priority_name }}
+                                    </a>
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -133,17 +170,25 @@
                         <div class="row w-100">
                             <div class="position_block">
                                 <span class="fw-bolder text_button">Тип:</span>
-                                <span class="fw-normal text_button">{{ content_list.type_task_name }}</span>
+                                <span class="fw-normal">
+                                    <a href="{% url 'type_description' type_id=content_list.type_id %}"
+                                        class="text_button link_inactive">
+                                        {{ content_list.type_task_name }}
+                                    </a>
+                                </span>
                             </div>
                         </div>
                     </div>
                 </div>
+
                 <div class="col-sm">
                     <div class="d-flex justify-content-center">
                         <div class="row w-100">
                             <div class="position_block">
                                 <span class="fw-bolder text_button">Срок сдачи:</span>
-                                <span class="fw-normal text_button">{{ content_list.date_deadline }}</span>
+                                <span class="fw-normal text_button">
+                                    {{ content_list.date_deadline }}
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -161,6 +206,7 @@
                         </div>
                     </div>
                 </div>
+
                 <div class="col-sm">
                     <div class="d-flex justify-content-center">
                         <div class="row w-100">
