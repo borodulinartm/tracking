@@ -284,18 +284,29 @@
 
                     let link = `/main_page/projects/{{ project_id }}/sprints/{{ sprint_id }}/delete_task/${element.task_id}`
                     let link_to_task = `/main_page/projects/{{ project_id }}/tasks/${element.task_id}`
+                    let link_to_state = `/main_page/states/${element.state_id}`
+                    let link_to_employee = `/main_page/employees/${element.employee_id}`
 
                     temp += `
                         <tr>
-                            <th class="text_button fw-normal">
-                                    <a class="btn btn-outline-primary text_button" href="${link_to_task}">
+                            <th class="fw-normal">
+                                    <a class="text_button link_inactive" href="${link_to_task}">
                                         ${element.code}
                                     </a>
                             </th>
                             <th class="text_button fw-normal">${element.task_name}</th>
-                            <th class="text_button fw-normal">${element.state_name}</th>
-                            <th class="text_button fw-normal">${element.user_name}</th>
+                            <th class="fw-normal">
+                                    <a class="text_button link_inactive" href="${link_to_state}">
+                                        ${element.state_name}
+                                    </a>
+                            </th>
+                            <th class="fw-normal">
+                                <a class="text_button link_inactive" href="${link_to_employee}">
+                                        ${element.user_name}
+                                </a>
+                            </th>
                     `
+
                     if (response.is_staff) {
                         temp += `
                             <th class="text_button">

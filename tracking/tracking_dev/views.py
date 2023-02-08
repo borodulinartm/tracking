@@ -306,8 +306,9 @@ def get_list_sprint_task(request, project_id, sprint_id):
         if is_ajax:
             # The user capacity
             list_tasks = Task.objects.raw(
-                raw_query=f"select tdst.sprint_id, tdst.task_id, tdt.code, tdt.\"name\" as task_name, tdt.description, tdt.date_create, "
-                          f"tds.\"name\" as state_name, au.first_name, au.last_name "
+                raw_query=f"select tdst.sprint_id, tdst.task_id, tdt.code, tdt.\"name\" as task_name, "
+                          f"tdt.description, tdt.date_create, tds.state_id, "
+                          f"tds.\"name\" as state_name, au.first_name, au.last_name, tde.employee_id "
                           f"from tracking_dev_sprint_task tdst "
                           f"join tracking_dev_task tdt on tdst.task_id = tdt.task_id "
                           f"join tracking_dev_state tds on tdt.state_id = tds.state_id "
@@ -320,7 +321,9 @@ def get_list_sprint_task(request, project_id, sprint_id):
             for element in list_tasks:
                 item = {
                     "task_id": element.task_id,
+                    "employee_id": element.employee_id,
                     "code": element.code,
+                    "state_id": element.state_id,
                     "task_name": element.task_name,
                     "state_name": element.state_name,
                     "user_name": element.first_name + " " + element.last_name
