@@ -108,29 +108,31 @@
                 </div>
             </div>
 
-            <div class="row">
-                <div class="col-sm">
-                    <div class="d-flex justify-content-center">
-                        <div class="row w-100">
-                            <div class="position_block">
-                                <a href="{% url 'state_edit' state_id=content_list.state_id %}?next={{ request.path|urlencode }}"
-                                   class="btn btn-primary text_button">Редактировать
-                                </a>
+            {% if request.user.is_staff %}
+                <div class="row">
+                    <div class="col-sm">
+                        <div class="d-flex justify-content-center">
+                            <div class="row w-100">
+                                <div class="position_block">
+                                    <a href="{% url 'state_edit' state_id=content_list.state_id %}?next={{ request.path|urlencode }}"
+                                       class="btn btn-primary text_button">Редактировать
+                                    </a>
 
-                                {% if count_tasks == 0 %}
-                                    <a type="button" data-bs-toggle="modal" data-bs-target="#exampleModal" href="#"
-                                       class="btn btn-danger text_button"> Удалить
-                                    </a>
-                                {% else %}
-                                    <a type="button" data-bs-toggle="modal" data-bs-target="#errorModal" href="#"
-                                       class="btn btn-danger text_button"> Удалить
-                                    </a>
-                                {% endif %}
+                                    {% if count_tasks == 0 %}
+                                        <a type="button" data-bs-toggle="modal" data-bs-target="#exampleModal" href="#"
+                                           class="btn btn-danger text_button"> Удалить
+                                        </a>
+                                    {% else %}
+                                        <a type="button" data-bs-toggle="modal" data-bs-target="#errorModal" href="#"
+                                           class="btn btn-danger text_button"> Удалить
+                                        </a>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            {% endif %}
 
             <!-- Remove modal window -->
             <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"

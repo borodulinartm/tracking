@@ -175,7 +175,7 @@ def project_description(request, project_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
 
-    if (not request.user.is_staff) or (not is_user_in_this_project(request, project_id)):
+    if not is_user_in_this_project(request, project_id):
         return HttpResponseForbidden()
 
     raw_data = Project.objects.raw(
@@ -365,9 +365,6 @@ def state_description(request, state_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
 
-    if not request.user.is_staff:
-        return HttpResponseForbidden()
-
     raw_data = State.objects.raw(
         raw_query=f"SELECT * FROM tracking_dev_state WHERE state_id = {state_id} and is_activate=True"
     )
@@ -431,9 +428,6 @@ def get_priority_list(request):
 def priority_description(request, priority_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
-
-    if not request.user.is_staff:
-        return HttpResponseForbidden()
 
     raw_data = Priority.objects.raw(
         raw_query=f"SELECT * FROM tracking_dev_priority WHERE priority_id = {priority_id} and is_activate=True"
@@ -500,9 +494,6 @@ def type_task_list(request):
 def type_task_description(request, type_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
-
-    if not request.user.is_staff:
-        return HttpResponseForbidden()
 
     # Select the task by ID
     raw_data = TypeTask.objects.raw(
@@ -571,9 +562,6 @@ def employee_list(request):
 def employee_description(request, employee_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
-
-    if not request.user.is_staff:
-        return HttpResponseForbidden()
 
     raw_data = Employee.objects.raw(
         raw_query=f"select * from tracking_dev_employee tde join auth_user au on au.id = tde.user_id "
