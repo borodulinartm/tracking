@@ -498,14 +498,14 @@ def type_task_description(request, type_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
 
-    # Select the task by ID
+    # Select the type task by ID
     raw_data = TypeTask.objects.raw(
         raw_query=f"SELECT * FROM tracking_dev_typetask WHERE type_id = {type_id} and is_activate=True"
     )
 
-    # Select all tasks
+    # Select all type of the tasks
     data = TypeTask.objects.raw(
-        raw_query=f"SELECT * FROM tracking_dev_typetask"
+        raw_query=f"SELECT * FROM tracking_dev_typetask where is_activate=TRUE"
     )
 
     count_tasks = Task.objects.raw(
@@ -1393,7 +1393,7 @@ def create_task(request, project_id):
         employee_arr = data
 
     if request.method == "POST":
-        creation_form = CreateTaskForm(data=request.POST)
+        creation_form = CreateTaskForm(data=request.POST, initial={'project': raw_data})
         if creation_form.is_valid():
             code = creation_form.cleaned_data['code']
             name = creation_form.cleaned_data['name']
@@ -1415,7 +1415,7 @@ def create_task(request, project_id):
             messages.success(request, "Задача была успешно создана")
             return HttpResponseRedirect(next)
     else:
-        creation_form = CreateTaskForm()
+        creation_form = CreateTaskForm(initial={'project': project_id})
 
         # Use a many-to-many query
         creation_form.fields['responsible'].queryset = Employee.objects.filter(projects=project_id)
@@ -1508,7 +1508,7 @@ def edit_task(request, project_id, task_id):
         return HttpResponseForbidden()
 
     instance = get_object_or_404(Task, task_id=task_id)
-    form = CreateTaskForm(request.POST or None, instance=instance)
+    form = CreateTaskForm(request.POST or None, instance=instance, initial={'project': project_id})
 
     if form.is_valid():
         form.save()

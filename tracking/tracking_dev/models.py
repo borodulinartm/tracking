@@ -78,6 +78,9 @@ class TypeTask(models.Model):
     date_change = models.DateTimeField(auto_now=True)
     is_activate = models.BooleanField(default=True)
 
+    # Добавляем связь "многие-ко многим" к проектам
+    projects = models.ManyToManyField(Project, related_name="typetask_projects")
+
     def __str__(self):
         return str(self.name)
 

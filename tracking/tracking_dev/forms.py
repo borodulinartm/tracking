@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, UsernameField
+from django.db.models import Q
 
 from .models import *
 
@@ -96,25 +97,33 @@ class CreateStateForm(forms.ModelForm):
 class CreateTypeTaskForm(forms.ModelForm):
     class Meta:
         model = TypeTask
-        fields = ['code', 'name', 'description']
+        fields = ['code', 'name', 'description', 'projects']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['name'] = forms.CharField(widget=forms.TextInput(attrs={
             'placeholder': 'Введите название',
             'style': 'margin-bottom: 20px'}))
+
         self.fields['description'] = forms.CharField(widget=forms.Textarea(attrs={
             'placeholder': 'Введите описание',
             'rows': '3',
             'style': 'margin-bottom: 20px'}))
+
         self.fields['code'] = forms.CharField(widget=forms.TextInput(attrs={
             'placeholder': 'Введите код',
             'style': 'margin-bottom: 20px'}))
+
+        self.fields['projects'] = forms.ModelMultipleChoiceField(
+            queryset=Project.objects.all(),
+            widget=forms.CheckboxSelectMultiple, required=False
+        )
 
         # Enter the label of the fields
         self.fields['code'].label = "Код"
         self.fields['name'].label = "Название"
         self.fields['description'].label = "Описание"
+        self.fields['projects'].label = "Проекты"
 
 
 # This form provides sprint form
@@ -219,6 +228,7 @@ class CreateTaskForm(forms.ModelForm):
                   'date_deadline']
 
     def __init__(self, *args, **kwargs):
+        assert 'initial' in kwargs and 'project' in kwargs['initial']
         super().__init__(*args, **kwargs)
 
         self.fields['code'] = forms.CharField(widget=forms.TextInput(attrs={
@@ -241,7 +251,8 @@ class CreateTaskForm(forms.ModelForm):
         self.fields['initiator'].queryset = Employee.objects.filter(is_activate=True)
         self.fields['manager'].querysetr = Employee.objects.filter(is_activate=True)
         self.fields['priority'].queryset = Priority.objects.filter(is_activate=True)
-        self.fields['type'].queryset = TypeTask.objects.filter(is_activate=True)
+        self.fields['type'].queryset = TypeTask.objects.filter(Q(is_activate=True) &
+                                                               Q(projects=kwargs['initial']['project']))
         self.fields['state'].queryset = State.objects.filter(is_activate=True)
         # self.fields['project'].queryset = Project.objects.filter(is_activate=True)
 
