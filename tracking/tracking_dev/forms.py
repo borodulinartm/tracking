@@ -32,7 +32,7 @@ class CreateProjectForm(forms.ModelForm):
 class CreatePriorityForm(forms.ModelForm):
     class Meta:
         model = Priority
-        fields = ['code', 'name', 'description']
+        fields = ['code', 'name', 'description', 'projects']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -46,16 +46,22 @@ class CreatePriorityForm(forms.ModelForm):
         self.fields['code'] = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'Введите код',
                                                                             'style': 'margin-bottom: 20px'}))
 
+        self.fields['projects'] = forms.ModelMultipleChoiceField(
+            queryset=Project.objects.all(),
+            widget=forms.CheckboxSelectMultiple, required=False
+        )
+
         self.fields['name'].label = "Название"
         self.fields['description'].label = "Описание"
         self.fields['code'].label = "Код"
+        self.fields['projects'].label = "Проекты"
 
 
 # This class allows users create a states form
 class CreateStateForm(forms.ModelForm):
     class Meta:
         model = State
-        fields = ['code', 'name', 'description', 'percentage', 'isClosed']
+        fields = ['code', 'name', 'description', 'percentage', 'isClosed', 'projects']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -85,12 +91,18 @@ class CreateStateForm(forms.ModelForm):
             'style': 'margin-bottom: 20px'
         }))
 
+        self.fields['projects'] = forms.ModelMultipleChoiceField(
+            queryset=Project.objects.all(),
+            widget=forms.CheckboxSelectMultiple, required=False
+        )
+
         # Enter the label of the fields
         self.fields['code'].label = "Код"
         self.fields['name'].label = "Название"
         self.fields['description'].label = "Описание"
         self.fields['isClosed'].label = "Состояние является конечным"
         self.fields['percentage'].label = "Процент выполнения задачи"
+        self.fields['projects'].label = "Проекты"
 
 
 # This form provides enter the types of the task form
@@ -250,10 +262,12 @@ class CreateTaskForm(forms.ModelForm):
         self.fields['responsible'].queryset = Employee.objects.filter(is_activate=True)
         self.fields['initiator'].queryset = Employee.objects.filter(is_activate=True)
         self.fields['manager'].querysetr = Employee.objects.filter(is_activate=True)
-        self.fields['priority'].queryset = Priority.objects.filter(is_activate=True)
+        self.fields['priority'].queryset = Priority.objects.filter(Q(is_activate=True) &
+                                                                   Q(projects=kwargs['initial']['project']))
         self.fields['type'].queryset = TypeTask.objects.filter(Q(is_activate=True) &
                                                                Q(projects=kwargs['initial']['project']))
-        self.fields['state'].queryset = State.objects.filter(is_activate=True)
+        self.fields['state'].queryset = State.objects.filter(Q(is_activate=True) &
+                                                             Q(projects=kwargs['initial']['project']))
         # self.fields['project'].queryset = Project.objects.filter(is_activate=True)
 
         self.fields['responsible'].widget.attrs = {

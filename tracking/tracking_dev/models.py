@@ -37,6 +37,7 @@ class State(models.Model):
     date_change = models.DateTimeField(auto_now=True)
     name = models.CharField(max_length=50, default="hello_world")
     isClosed = models.BooleanField(default=False)
+    projects = models.ManyToManyField(Project, related_name='project_state')
     # Добавляем дополнительное поле - % выполнения задачи в данном состоянии
     percentage = models.IntegerField(default=0)
     description = models.TextField(default="")
@@ -56,6 +57,7 @@ class Priority(models.Model):
     code = models.CharField(max_length=50, default='default code')
     name = models.CharField(max_length=40, default='default name')
     description = models.TextField(default="")
+    projects = models.ManyToManyField(Project, related_name='priority_project')
     date_create = models.DateField(blank=True, default=django.utils.timezone.now())
     date_change = models.DateTimeField(auto_now=True)
     is_activate = models.BooleanField(default=True)

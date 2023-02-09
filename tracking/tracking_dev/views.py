@@ -1023,10 +1023,10 @@ def create_priority(request):
             creation_form.save()
 
             next = request.POST.get('next', '/')
-            messages.success(request, "Приоритет была успешно создана")
+            messages.success(request, "Приоритет был успешно создан")
             return HttpResponseRedirect(next)
     else:
-        creation_form = CreateProjectForm()
+        creation_form = CreatePriorityForm()
 
     return render(request, 'include/base_form.html', {
         'title_page': 'Форма создания нового приоритета',
@@ -1245,8 +1245,10 @@ def create_state(request):
 
                 if count_closed_states == 0:
                     my_state = State(name=name, code=code, description=description, percentage=100,
-                                     is_ticked_checkbox=is_ticked_checkbox)
+                                     isClosed=is_ticked_checkbox)
                     my_state.save()
+
+                    my_state.projects.set(Project.objects.all())
 
                     messages.success(request, "Состояние успешно создано")
                     return HttpResponseRedirect(next)
@@ -1293,10 +1295,13 @@ def edit_states(request, state_id):
 
         # The condition of the count closed tasks can be if the checkbox has ticked.
         if is_checkbox_ticked:
-            count_another_closed_tasks = State.objects.filter(Q(isClosed=True) & ~Q(state_id=state_id)).count()
+            count_another_closed_tasks = State.objects.filter(Q(isClosed=True) & ~Q(state_id=state_id)
+                                                              & Q(is_activate=True)).count()
 
             if count_another_closed_tasks == 0:
                 form.save()
+                instance.projects.set(Project.objects.all())
+
                 return HttpResponseRedirect(next)
             else:
                 messages.error(request,
