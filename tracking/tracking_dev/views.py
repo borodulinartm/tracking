@@ -24,6 +24,30 @@ def is_user_in_this_project(request, project_id):
         return data.count > 0
 
 
+# Данная вью отображет сведения о пользователе
+def show_users_profile(request):
+    raw_data = Project.objects.raw(
+        raw_query=f"select tdp.project_id, tdp.\"name\", tdp.description, tdp.date_create, tdp.code, 1 as project_exists "
+                  f"from tracking_dev_employee_projects tdep "
+                  f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
+                  f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "
+                  f"where tde.user_id = {request.user.id};"
+    )
+
+    query = f"select tde.employee_id, au.first_name, au.last_name, tde.post, tde.description, au.email, " \
+            f"au.is_staff from tracking_dev_employee tde " \
+            f"join auth_user au on tde.user_id = au.id " \
+            f"where tde.user_id = {request.user.id}"
+    user_data = Employee.objects.raw(raw_query=query)
+
+    return render(request, 'include/description/user_data.html', {
+        'show_list_group': 0,
+        'show_choose_project': 1,
+        'list_projects': raw_data,
+        'user_data': user_data
+    })
+
+
 # This view provides a main page.
 def index(request):
     if request.user.is_authenticated:
@@ -1556,6 +1580,28 @@ def create_employee(request):
         'show_choose_project': 0,
         'form': creation_form,
         'text_button': 'Создать сотрудника'
+    })
+
+
+def edit_employee(request, employee_id):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    instance = get_object_or_404(Employee, employee_id=employee_id)
+    form = CreateEmployeeForm(request.POST or None, instance=instance)
+
+    if form.is_valid():
+        form.save()
+
+        next = request.POST.get('next', '/')
+        return HttpResponseRedirect(next)
+
+    return render(request, 'include/base_form.html', {
+        'title_page': 'Форма редактирования сведений о сотруднике',
+        'form': form,
+        'text_button': 'Сохранить изменения',
+        'show_choose_project': 0,
+        'employee_id': employee_id,
     })
 
 

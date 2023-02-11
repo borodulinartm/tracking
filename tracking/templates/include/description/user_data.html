@@ -1,0 +1,53 @@
+{% extends 'include/base.html' %}
+{% load static %}
+
+{% block title %}
+    <div class="container-fluid">
+        <div class="d-flex justify-content-center">
+            <div class="row w-75">
+                <div class="block_title">
+                    {% for data in user_data %}
+                        <h2 class="title" style="margin-bottom: 50px">Добро пожаловать, {{ data.first_name }}
+                            {{ data.last_name }}</h2>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock title %}
+
+{% block content %}
+    <div class="container-fluid">
+        <div class="d-flex justify-content-end">
+            <div class="row w-75">
+                {% for elem in user_data %}
+                    <div class="mb-3">
+                        <span class="fw-bolder text_button">ФИО:</span>
+                        <span class="fw-normal text_button">{{ elem.first_name }} {{ elem.last_name }}</span>
+                    </div>
+
+                    <div class="mb-3">
+                        <span class="fw-bolder text_button">Электронная почта:</span>
+                        <span class="fw-normal text_button">{{ elem.email }}</span>
+                    </div>
+
+                    <div class="mb-3">
+                        <span class="fw-bolder text_button">Должность:</span>
+                        <span class="fw-normal text_button">{{ elem.post }}</span>
+                    </div>
+
+                    <div class="mb-3">
+                        <span class="fw-bolder text_button">О себе:</span>
+                        <span class="fw-normal text_button">{{ elem.description }}</span>
+                    </div>
+
+                    <div class="mb-3">
+                        <a href="{% url 'edit_employee' employee_id=elem.employee_id %}?next={{ request.path|urlencode }}"
+                           class="btn btn-primary text_button">Редактировать</a>
+                        <a href="#" class="btn btn-primary text_button">Сменить пароль</a>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endblock content %}

@@ -67,25 +67,34 @@
                 </symbol>
             </svg>
 
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %} alert-dismissible fade show"
-                         role="alert">
-                        {% if message.tags == 'success' %}
-                            <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Success:">
-                                <use href="#check-circle-fill"></use>
-                            </svg>
-                        {% else %}
-                            <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Danger:">
-                                <use href="#exclamation-triangle-fill"></use>
-                            </svg>
-                        {% endif %}
+            <div class="container-fluid">
+                <div class="d-flex justify-content-center">
+                    <div class="row w-100">
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %} alert-dismissible fade show"
+                                     role="alert">
+                                    {% if message.tags == 'success' %}
+                                        <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img"
+                                             aria-label="Success:">
+                                            <use href="#check-circle-fill"></use>
+                                        </svg>
+                                    {% else %}
+                                        <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img"
+                                             aria-label="Danger:">
+                                            <use href="#exclamation-triangle-fill"></use>
+                                        </svg>
+                                    {% endif %}
 
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"
+                                            aria-label="Close"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
                     </div>
-                {% endfor %}
-            {% endif %}
+                </div>
+            </div>
 
             {% block content %}
             {% endblock content %}
