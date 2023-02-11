@@ -1,5 +1,5 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, UsernameField
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, UsernameField, PasswordChangeForm
 from django.db.models import Q
 
 from .models import *
@@ -324,6 +324,29 @@ class CreateEmployeeForm(forms.ModelForm):
             'placeholder': 'Расскажите о себе',
             'style': 'margin-bottom: 20px'
         }))
+
+        self.fields['post'].label = "Должность"
+        self.fields['description'].label = "О себе"
+
+
+class ChangePasswordCustomForm(PasswordChangeForm):
+    old_password = forms.CharField(required=True, label="Старый пароль", widget=forms.PasswordInput(
+        attrs={
+            "style": "margin-bottom: 20px"
+        }
+    ), error_messages={"required": "Необходимо ввести старый пароль"})
+
+    new_password1 = forms.CharField(required=True, label="Новый пароль", widget=forms.PasswordInput(
+        attrs={
+            "style": "margin-bottom: 20px"
+        }
+    ), error_messages={"required": "Необходимо ввести новый пароль"})
+
+    new_password2 = forms.CharField(required=True, label="Подтвердите ввод нового пароля", widget=forms.PasswordInput(
+        attrs={
+            "style": "margin-bottom: 20px"
+        }
+    ), error_messages={"required": "Повторите ввод нового пароля"})
 
 
 # This form provides laboriousness form

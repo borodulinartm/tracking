@@ -106,6 +106,8 @@ urlpatterns = [
     path('logout/', logout, name="logout"),
     path('signup/', signup, name="signup"),
     path('main_page/employee/create', create_employee, name="create_employee"),
+
     path('main_page/user_data', show_users_profile, name="users_profile"),
-    path('main_page/user_data/<int:employee_id>/edit', edit_employee, name="edit_employee")
+    path('main_page/user_data/<int:employee_id>/edit', edit_employee, name="edit_employee"),
+    path('main_page/change_password', change_user_password, name="change_user_password")
 ]

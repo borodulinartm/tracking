@@ -44,7 +44,8 @@
                     <div class="mb-3">
                         <a href="{% url 'edit_employee' employee_id=elem.employee_id %}?next={{ request.path|urlencode }}"
                            class="btn btn-primary text_button">Редактировать</a>
-                        <a href="#" class="btn btn-primary text_button">Сменить пароль</a>
+                        <a href="{% url 'change_user_password' %}?next={{ request.path|urlencode }}"
+                           class="btn btn-primary text_button">Сменить пароль</a>
                     </div>
                 {% endfor %}
             </div>

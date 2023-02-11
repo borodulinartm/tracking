@@ -1594,6 +1594,8 @@ def edit_employee(request, employee_id):
         form.save()
 
         next = request.POST.get('next', '/')
+
+        messages.success(request, "Пользовательские данные успешно обновлены")
         return HttpResponseRedirect(next)
 
     return render(request, 'include/base_form.html', {
@@ -1602,6 +1604,31 @@ def edit_employee(request, employee_id):
         'text_button': 'Сохранить изменения',
         'show_choose_project': 0,
         'employee_id': employee_id,
+    })
+
+
+# Данная функция меняет пароль от текущего пользователя
+def change_user_password(request):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    form = ChangePasswordCustomForm(request.user, request.POST)
+    if form.is_valid():
+        user = form.save()
+        auth.update_session_auth_hash(request, user)
+
+        next = request.POST.get('next', '/')
+        messages.success(request, "Пароль успешно обновлён")
+
+        return HttpResponseRedirect(next)
+    else:
+        form = ChangePasswordCustomForm(request.user)
+
+    return render(request, 'include/base_form.html', {
+        'title_page': 'Форма редактирования сведений о сотруднике',
+        'form': form,
+        'text_button': 'Сохранить изменения',
+        'show_choose_project': 0,
     })
 
 
