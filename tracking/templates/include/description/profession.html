@@ -1,0 +1,84 @@
+{% extends 'include/base.html' %}
+{% load static %}
+
+{% block title %}
+    <div class="title_block">
+        <h2 class="title">{{ title_page }}</h2>
+    </div>
+{% endblock title %}
+
+{% block content %}
+    <div class="list_button_block">
+        {% for content_list in table %}
+            <div class="row">
+                <div class="col-sm">
+                    <div class="d-flex justify-content-center">
+                        <div class="row w-100">
+                            <div class="position_block">
+                                <span class="fw-bolder text_button">Номер:</span>
+                                <span class="fw-normal text_button">{{ content_list.profession_id }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm">
+                    <div class="d-flex justify-content-center">
+                        <div class="row w-100">
+                            <div class="position_block">
+                                <span class="fw-bolder text_button">Название:</span>
+                                <span class="fw-normal text_button">{{ content_list.name }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm">
+                    <div class="d-flex justify-content-center">
+                        <div class="row w-100">
+                            <div class="position_block">
+                                <span class="fw-bolder text_button">Описание:</span>
+                                <span class="fw-normal text_button">{{ content_list.description }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm">
+                    <div class="d-flex justify-content-center">
+                        <div class="row w-100">
+                            <div class="position_block">
+                                <span class="fw-bolder text_button">Заработная плата:</span>
+                                <span class="fw-normal text_button">{{ content_list.salary }}₽</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm">
+                    <div class="d-flex justify-content-center">
+                        <div class="row w-100">
+                            <div class="position_block">
+                                <span class="fw-bolder text_button">Создано:</span>
+                                <span class="fw-normal text_button">{{ content_list.date_create }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-sm">
+                    <div class="d-flex justify-content-center">
+                        <div class="row w-100">
+                            <div class="position_block">
+                                <span class="fw-bolder text_button">Изменено:</span>
+                                <span class="fw-normal text_button">{{ content_list.date_update }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock content %}

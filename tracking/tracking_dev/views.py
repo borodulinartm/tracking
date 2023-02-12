@@ -168,6 +168,65 @@ def show_list_tasks_for_project(request, project_id):
     })
 
 
+# Данная функция возвращает список должностей
+def get_list_professions(request):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    raw_data = Project.objects.raw(
+        raw_query=f"select tdp.project_id, tdp.\"name\", tdp.description, tdp.date_create, tdp.code, 1 as project_exists "
+                  f"from tracking_dev_employee_projects tdep "
+                  f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
+                  f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "
+                  f"where tde.user_id = {request.user.id};"
+    )
+
+    return render(request, 'include/list_data/profession_list.html', {
+        'title_page': 'Выберите должность для его просмотра или удаления',
+        'show_list_group': 0,
+        'show_choose_project': 1,
+        'list_projects': raw_data,
+        'data_group': raw_data,
+        'value_in_the_search_form': ''
+    })
+
+
+# Данная функция предоставляет подробные сведения о текущей должности работника
+def profession_description(request, profession_id):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    raw_data = Project.objects.raw(
+        raw_query=f"select tdp.project_id, tdp.\"name\", tdp.description, tdp.date_create, tdp.code, 1 as project_exists "
+                  f"from tracking_dev_employee_projects tdep "
+                  f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
+                  f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "
+                  f"where tde.user_id = {request.user.id};"
+    )
+
+    data = Profession.objects.raw(
+        raw_query=f"SELECT * FROM tracking_dev_profession tdp where is_activate=True"
+    )
+
+    info = Profession.objects.raw(
+        raw_query=f"select * from tracking_dev_profession tdp "
+                  f"where tdp.is_activate = true and tdp.profession_id = {profession_id}"
+    )
+
+    head = ["Номер", "Код", "Название", "Описание", "Дата создания", "Заработная плата", "Дата обновления"]
+
+    return render(request, "include/description/profession.html", {
+        'title_page': 'Сведения о должности',
+        'head': head,
+        'table': info,
+        'show_list_group': 1,
+        'what_open': 8,
+        'data_group': data,
+        'list_projects': raw_data,
+        'show_choose_project': 1,
+    })
+
+
 # This view provides a list of the projects (displayed by the table)
 def get_list_projects(request):
     if not request.user.is_authenticated:
@@ -2076,6 +2135,55 @@ def type_search(request):
                 for position in query_se:
                     item = {
                         "type_id": position.type_id,
+                        "code": position.code,
+                        "name": position.name,
+                        "date_create": position.date_create,
+                        "description": position.description,
+                        "code_exists": position.code_exists,
+                        "name_exists": position.name_exists,
+                        "description_exists": position.description_exists
+                    }
+
+                    data.append(item)
+                res = data
+            else:
+                res = []
+
+            return JsonResponse({'data': res})
+    return JsonResponse({'data': []})
+
+
+# Данная функция осуществляет поиск по профессиям
+def profession_search(request):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    if request.method == "GET":
+        # If the type is GET, we need check if request is ajax.
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        if is_ajax:
+            series = request.GET.get('series')
+            if series != '':
+                query_se = Profession.objects.raw(
+                    raw_query=f"select *, "
+                              f"strpos(lower(tdp.code), lower('{series}')) as code_exists, "
+                              f"strpos(lower(tdp.\"name\"), lower('{series}')) as name_exists, "
+                              f"strpos(lower(tdp.description), lower('{series}')) "
+                              f"as description_exists from tracking_dev_profession tdp "
+                              f"WHERE tdp.is_activate=True"
+                )
+            else:
+                query_se = Profession.objects.raw(
+                    raw_query=f"select *, 1 as code_exists, "
+                              f"1 as name_exists, 1 as description_exists from tracking_dev_profession tdp "
+                              f"WHERE tdp.is_activate=True"
+                )
+
+            if len(query_se) > 0:
+                data = []
+                for position in query_se:
+                    item = {
+                        "profession_id": position.profession_id,
                         "code": position.code,
                         "name": position.name,
                         "date_create": position.date_create,

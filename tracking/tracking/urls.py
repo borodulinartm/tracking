@@ -62,6 +62,9 @@ urlpatterns = [
     path('main_page/types/create', create_type_task, name="create_type_task"),
     path('main_page/types/<int:type_id>/edit', edit_type_task, name="edit_type_task"),
 
+    path('main_page/professions', get_list_professions, name="professions"),
+    path('main_page/profession/<int:profession_id>', profession_description, name="profession_description"),
+
     path('main_page/employees', employee_list, name="employees"),
     path('main_page/employees/<int:employee_id>', employee_description, name="employee_description"),
     path('main_page/employees/<int:employee_id>/delete', employee_remove, name="employee_delete"),
@@ -84,6 +87,7 @@ urlpatterns = [
     path('main_page/<int:project_id>/finded_sprints', sprint_search, name="sprint_search"),
     path('main_page/finded_employee', employee_search, name="employee_search"),
     path('main_page/finded_priority', priority_search, name="priority_search"),
+    path('main_page/finded_profession', profession_search, name="profession_search"),
     path('main_page/finded_type_task', type_search, name="type_search"),
     path('main_page/<int:project_id>/finded_task', search_tasks, name="task_search"),
     path('main_page/<int:project_id>/finded_collabs', search_collabarators, name="collabs_search"),

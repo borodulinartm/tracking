@@ -29,6 +29,24 @@ class Project(models.Model):
         verbose_name_plural = "Project description"
 
 
+class Profession(models.Model):
+    profession_id = models.AutoField(primary_key=True)
+    code = models.CharField(max_length=50, default="something_code")
+    name = models.CharField(max_length=50, default="something")
+    description = models.TextField(default='description of the text')
+    salary = models.IntegerField(default=0)
+    date_create = models.DateTimeField(blank=True, default=django.utils.timezone.now())
+    date_update = models.DateTimeField(auto_now=True)
+    is_activate = models.BooleanField(default=True)
+
+    def __str__(self):
+        return str(self.name)
+
+    class Meta:
+        verbose_name = "Profession"
+        verbose_name_plural = "Profession description"
+
+
 # Class—State of the tasks
 class State(models.Model):
     state_id = models.AutoField(primary_key=True)
@@ -38,7 +56,7 @@ class State(models.Model):
     name = models.CharField(max_length=50, default="hello_world")
     isClosed = models.BooleanField(default=False)
     projects = models.ManyToManyField(Project, related_name='project_state')
-    
+
     # Добавляем дополнительное поле - % выполнения задачи в данном состоянии
     percentage = models.IntegerField(default=0)
     description = models.TextField(default="")

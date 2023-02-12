@@ -429,3 +429,38 @@ class CustomAuthenticationForm(LoginForm):
             "placeholder": "Ваш пароль"
         })
     )
+
+
+# Данная форма позволяет вводить должности
+class ProfessionForm(forms.ModelForm):
+    class Meta:
+        model = Profession
+        fields = ('code', 'name', 'description', 'salary')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields['code'] = forms.CharField(widget=forms.TextInput(attrs={
+            "placeholder": "Код профессии",
+            "style": "margin-bottom: 20px"
+        }))
+
+        self.fields['name'] = forms.CharField(widget=forms.TextInput(attrs={
+            "placeholder": "Название",
+            "style": "margin-bottom: 20px"
+        }))
+
+        self.fields['description'] = forms.CharField(widget=forms.Textarea(attrs={
+            "placeholder": "Описание",
+            "style": "margin-bottom: 20px"
+        }))
+
+        self.fields['salary'] = forms.IntegerField(widget=forms.TextInput(attrs={
+            "placeholder": "Введите зарплату",
+            "style": "margin-bottom: 20px"
+        }))
+
+        self.fields['code'].label = "Код"
+        self.fields['name'].label = "Название"
+        self.fields['description'].label = "Описание"
+        self.fields['salary'].label = "Зарплата"
