@@ -64,6 +64,9 @@ urlpatterns = [
 
     path('main_page/professions', get_list_professions, name="professions"),
     path('main_page/profession/<int:profession_id>', profession_description, name="profession_description"),
+    path('main_page/profession/<int:profession_id>/delete', profession_remove, name="profession_remove"),
+    path('main_page/profession/create', create_profession, name="create_profession"),
+    path('main_page/profession/<int:profession_id>/edit', edit_profession, name="edit_profession"),
 
     path('main_page/employees', employee_list, name="employees"),
     path('main_page/employees/<int:employee_id>', employee_description, name="employee_description"),

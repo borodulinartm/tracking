@@ -67,7 +67,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="col-sm">
                     <div class="d-flex justify-content-center">
                         <div class="row w-100">
@@ -75,6 +75,45 @@
                                 <span class="fw-bolder text_button">Изменено:</span>
                                 <span class="fw-normal text_button">{{ content_list.date_update }}</span>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% if request.user.is_staff %}
+                <div class="row">
+                    <div class="col-sm">
+                        <div class="d-flex justify-content-center">
+                            <div class="row w-100">
+                                <div class="position_block">
+                                    <a href="{% url 'edit_profession' profession_id=content_list.profession_id %}?next={{ request.path|urlencode }}"
+                                       class="btn btn-primary text_button"> Редактировать
+                                    </a>
+
+                                    <a type="button" data-bs-toggle="modal" data-bs-target="#exampleModal" href="#"
+                                       class="btn btn-danger text_button"> Удалить
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Modal -->
+            <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+                 aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Внимание</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body text_button">Вы действительно хотите данную должность?</div>
+                        <div class="modal-footer">
+                            <a type="button" class="btn btn-primary" data-bs-dismiss="modal">Отмена</a>
+                            <a type="button" href="{% url 'profession_remove' profession_id=content_list.profession_id %}"
+                               class="btn btn-danger">Подтвердить удаление</a>
                         </div>
                     </div>
                 </div>

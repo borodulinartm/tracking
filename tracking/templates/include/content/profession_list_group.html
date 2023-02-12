@@ -3,7 +3,8 @@
     <div class="list-group d-flex flex-column align-items-center  text-white min-vh-100">
         <div class="dropdown pb-4 button_create">
             <a class="btn btn-primary d-flex align-items-center text-white text-decoration-none"
-               href="#" data-bs-toggle="dropdown" aria-expanded="false" id="dropdownUser1">Добавить новые данные</a>
+               href="{% url 'create_type_task' %}?next={{ request.path|urlencode }}"
+               data-bs-toggle="dropdown" aria-expanded="false" id="dropdownUser1">Добавить новые данные</a>
         </div>
         <ul class="nav-pills flex-fill mb-sm-auto mb-0 align-items-center align-items-sm-start" id="menu">
             {% for data in data_group %}

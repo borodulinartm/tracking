@@ -828,6 +828,20 @@ def project_remove(request, project_id):
     return redirect(reverse('projects'))
 
 
+# Данный метод позволяет удалить должность из системы
+def profession_remove(request, profession_id):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+
+    Profession.objects.filter(profession_id=profession_id).update(is_activate=False)
+    messages.success(request, "Должность была успешно удалена")
+
+    return redirect(reverse('professions'))
+
+
 # This view allows user remove sprint from the task
 def sprint_remove(request, project_id, sprint_id):
     if not request.user.is_authenticated:
@@ -1089,6 +1103,61 @@ def edit_project(request, project_id):
         'title_page': 'Форма редактироваиня проекта',
         'text_button': 'Сохранить изменения',
         'show_choose_project': 0,
+    })
+
+
+# Функция осуществляет добавление должности в систему
+def create_profession(request):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+
+    if request.method == "POST":
+        creation_form = ProfessionForm(data=request.POST)
+
+        if creation_form.is_valid():
+            creation_form.save()
+
+            next = request.POST.get('next', '/')
+            messages.success(request, "Должность была успешно создана")
+            return HttpResponseRedirect(next)
+    else:
+        creation_form = ProfessionForm()
+
+    return render(request, 'include/base_form.html', {
+        'title_page': 'Форма создания новой должности',
+        'form': creation_form,
+        'text_button': 'Создать должность',
+        'show_choose_project': 0,
+    })
+
+
+# This view provides edit form of the sprint
+def edit_profession(request, profession_id):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+
+    instance = get_object_or_404(Profession, profession_id=profession_id)
+    form = ProfessionForm(request.POST or None, instance=instance)
+
+    if form.is_valid():
+        form.save()
+
+        next = request.POST.get('next', '/')
+
+        messages.success(request, "Сведения о должности были успешно обновлены")
+        return HttpResponseRedirect(next)
+
+    return render(request, 'include/base_form.html', {
+        'title_page': 'Форма редактирования должности',
+        'form': form,
+        'text_button': 'Применить изменения',
+        'show_choose_project': 0
     })
 
 
