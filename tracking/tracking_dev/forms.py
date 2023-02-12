@@ -1,5 +1,6 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, UsernameField, PasswordChangeForm
+from django.contrib.auth.forms import UserCreationForm, UsernameField, PasswordChangeForm, \
+    UserChangeForm
 from django.db.models import Q
 
 from .models import *
@@ -327,6 +328,38 @@ class CreateEmployeeForm(forms.ModelForm):
 
         self.fields['post'].label = "Должность"
         self.fields['description'].label = "О себе"
+
+
+# Данная форма позволяет изменить пользовательские данные
+class ChangeUserCustomForm(UserChangeForm):
+    password = None
+
+    class Meta:
+        model = User
+        fields = ('username', 'first_name', 'last_name', 'email')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['username'].label = "Имя пользователя"
+        self.fields['username'].help_text = "<p style='margin-bottom: 20px'>Обязательное поле. Длина ник-нейма " \
+                                            "не больше 150 символов. " \
+                                            "Допустимо использовать буквы, цифры, а также символы @/./+/-/_ </p>"
+
+        self.fields['first_name'].label = "Имя"
+        self.fields['last_name'].label = "Фамилия"
+        self.fields['email'].label = "Электронная почта"
+
+        self.fields['first_name'].widget.attrs = {
+            "style": "margin-bottom: 20px"
+        }
+
+        self.fields['last_name'].widget.attrs = {
+            "style": "margin-bottom: 20px"
+        }
+
+        self.fields['email'].widget.attrs = {
+            "style": "margin-bottom: 20px"
+        }
 
 
 class ChangePasswordCustomForm(PasswordChangeForm):

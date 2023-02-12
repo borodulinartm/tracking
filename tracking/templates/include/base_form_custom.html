@@ -1,0 +1,26 @@
+{% extends 'include/base.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block title %}
+    <div class="title_block">
+        <h2 class="title">{{ title_page }}</h2>
+    </div>
+{% endblock title %}
+
+{% block content %}
+    <div class="position_block">
+        <div class="d-flex justify-content-center">
+            <div class="row w-75">
+                <form role="form" action="" method="post">
+                    {% csrf_token %}
+                    {{ user_form | crispy }}
+                    {{ employee_form | crispy }}
+
+                    <input type="hidden" name="next" value="{{ request.GET.next }}">
+                    <button type="submit" class="btn btn-primary mt-3 text_button">{{ text_button }}</button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

@@ -38,6 +38,7 @@ class State(models.Model):
     name = models.CharField(max_length=50, default="hello_world")
     isClosed = models.BooleanField(default=False)
     projects = models.ManyToManyField(Project, related_name='project_state')
+    
     # Добавляем дополнительное поле - % выполнения задачи в данном состоянии
     percentage = models.IntegerField(default=0)
     description = models.TextField(default="")

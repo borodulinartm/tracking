@@ -1587,20 +1587,25 @@ def edit_employee(request, employee_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
 
-    instance = get_object_or_404(Employee, employee_id=employee_id)
-    form = CreateEmployeeForm(request.POST or None, instance=instance)
+    instance_employee = get_object_or_404(Employee, employee_id=employee_id)
+    instance_user = get_object_or_404(User, id=request.user.id)
 
-    if form.is_valid():
-        form.save()
+    form_employee = CreateEmployeeForm(request.POST or None, instance=instance_employee)
+    form_user = ChangeUserCustomForm(request.POST or None, instance=instance_user)
+
+    if form_employee.is_valid():
+        form_employee.save()
+        form_user.save()
 
         next = request.POST.get('next', '/')
 
         messages.success(request, "Пользовательские данные успешно обновлены")
         return HttpResponseRedirect(next)
 
-    return render(request, 'include/base_form.html', {
+    return render(request, 'include/base_form_custom.html', {
         'title_page': 'Форма редактирования сведений о сотруднике',
-        'form': form,
+        'employee_form': form_employee,
+        'user_form': form_user,
         'text_button': 'Сохранить изменения',
         'show_choose_project': 0,
         'employee_id': employee_id,
