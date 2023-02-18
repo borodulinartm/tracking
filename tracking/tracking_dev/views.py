@@ -2341,6 +2341,15 @@ def search_tasks(request, project_id):
                               f"and tds.\"isClosed\" = false and tdt.is_activate=True;"
                 )
 
+                tasks_closed = Task.objects.raw(
+                    raw_query=f"select *, strpos(lower(tdt.code), lower('{series}')) as code_exists, "
+                              f"strpos(lower(tdt.\"name\"), lower('{series}')) as name_exists, "
+                              f"strpos(lower(tdt.description), lower('{series}')) as description_exists "
+                              f"from tracking_dev_task tdt "
+                              f"join tracking_dev_state tds on tdt.state_id = tds.state_id "
+                              f"where tds.\"isClosed\" = true and tdt.project_id = {project_id}"
+                )
+
                 # Another tasks
                 tasks_list = Task.objects.raw(
                     raw_query=f"select *, "
@@ -2357,6 +2366,7 @@ def search_tasks(request, project_id):
                               f"and tde3.user_id != {request.user.id} "
                               f"and tds.\"isClosed\" = false and tdt.is_activate=True;"
                 )
+
             else:
                 # Tasks, which needs to complete (which user is responsible)
                 tasks_personal = Task.objects.raw(
@@ -2373,6 +2383,15 @@ def search_tasks(request, project_id):
                               f"join tracking_dev_state tds on tds.state_id = tdt.state_id "
                               f"where tdt.is_activate and tds.\"isClosed\" = false and tde.user_id = {request.user.id} "
                               f"and tdt.project_id = {project_id} and tdt.is_activate=True;"
+                )
+
+                tasks_closed = Task.objects.raw(
+                    raw_query=f"select *, 1 as code_exists, "
+                              f"1 as name_exists, "
+                              f"1 as description_exists "
+                              f"from tracking_dev_task tdt "
+                              f"join tracking_dev_state tds on tdt.state_id = tds.state_id "
+                              f"where tds.\"isClosed\" = true and tdt.project_id = {project_id}"
                 )
 
                 # Tasks, in which current user is observer
@@ -2402,6 +2421,7 @@ def search_tasks(request, project_id):
                 data = [add_data(tasks_personal, "collapseExample_personal", "Задачи, в которых Вы ответственный"),
                         add_data(tasks_controller, "collapseExample_controller", "Задачи, в которых Вы проверяющий"),
                         add_data(tasks_observer, "collapseExample_observer", "Задачи, в которых Вы наблюдатель"),
+                        add_data(tasks_closed, "collapseExample_closed", "Закрытые задачи"),
                         add_data(tasks_list, "collapseExample_all", "Все остальные задачи")]
                 res = data
             else:
