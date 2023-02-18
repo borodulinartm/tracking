@@ -5,7 +5,7 @@
     <div class="container-fluid">
         <div class="d-flex justify-content-center">
             <div class="row w-75">
-                <form action="{% url 'task_search' project_id=project_id %}" class="form-inline search-form"
+                <form action="#" class="form-inline search-form"
                       method="get">
                     <div class="d-flex">
                         <label for="search-input" class="sr-only text_button"></label>
@@ -39,7 +39,8 @@
         function calculate_correct_tasks(array) {
             let i = 0;
             array.forEach(element => {
-                if (element.code_exists > 0 || element.name_exists > 0 || element.description_exists > 0) {
+                if (element.code_exists > 0 || element.name_exists > 0 || element.description_exists > 0
+                    || element.au1_name_exists > 0 || element.au2_name_exists > 0 || element.au3_name_exists > 0) {
                     ++i;
                 }
             })
@@ -60,6 +61,7 @@
 
                     let temp = ""
                     let data = response.data;
+                    console.log(data)
 
                     for (let i = 0; i < data.length; ++i) {
                         let count_tasks = calculate_correct_tasks(data[i])
@@ -76,7 +78,9 @@
 
                             for (let j = 2; j < data[i].length; ++j) {
                                 if (data[i][j].code_exists > 0 || data[i][j].name_exists > 0 ||
-                                    data[i][j].description_exists > 0) {
+                                    data[i][j].description_exists > 0 || data[i][j].au1_name_exists > 0 ||
+                                    data[i][j].au2_name_exists > 0 || data[i][j].au3_name_exists > 0) {
+                                    console.log(data[i][j].au1_name_exists)
                                     const django_url = "/main_page/projects/" + data[i][j].project_id + "/tasks/" +
                                         data[i][j].task_id;
 

@@ -33,7 +33,13 @@
 
                     <div class="mb-3">
                         <span class="fw-bolder text_button">Должность:</span>
-                        <span class="fw-normal text_button">{{ elem.post }}</span>
+
+                        <span class="fw-normal text_button">
+                            <a class="text_button link_inactive"
+                                href="{% url 'profession_description' profession_id=elem.profession_id %}">
+                                {{ elem.post }}
+                            </a>
+                        </span>
                     </div>
 
                     <div class="mb-3">

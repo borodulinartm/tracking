@@ -311,23 +311,23 @@ class CreateTaskForm(forms.ModelForm):
 class CreateEmployeeForm(forms.ModelForm):
     class Meta:
         model = Employee
-        fields = ['post', 'description']
+        fields = ['profession', 'description']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields['post'] = forms.CharField(widget=forms.TextInput(attrs={
-            'placeholder': 'Ваша должность',
-            'style': 'margin-bottom: 20px'
-        }))
+        self.fields['profession'].queryset = Profession.objects.filter(is_activate=True)
+        self.fields['profession'].widget.attrs = {
+            "style": "margin-bottom: 20px"
+        }
 
         self.fields['description'] = forms.CharField(widget=forms.Textarea(attrs={
             'placeholder': 'Расскажите о себе',
             'style': 'margin-bottom: 20px'
         }))
 
-        self.fields['post'].label = "Должность"
         self.fields['description'].label = "О себе"
+        self.fields['profession'].label = "Профессия"
 
 
 # Данная форма позволяет изменить пользовательские данные

@@ -122,6 +122,7 @@ class Employee(models.Model):
     date_change = models.DateTimeField(auto_now=True)
     # Add Many-to-many relationship
     projects = models.ManyToManyField(Project, related_name="employee_projects")
+    profession = models.ForeignKey(Profession, on_delete=models.CASCADE, related_name="employee_profession", default=2)
     is_activate = models.BooleanField(default=True)
 
     def __str__(self):
