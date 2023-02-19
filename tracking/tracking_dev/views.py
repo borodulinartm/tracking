@@ -59,11 +59,11 @@ def index(request):
             raw_query=f"select * from tracking_dev_employee tde where tde.user_id = {request.user.id}"
         )
 
-        query = f"select tdp.project_id, tdp.\"name\", tdp.description, tdp.date_create, tdp.code "\
-                      f"from tracking_dev_employee_projects tdep "\
-                      f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "\
-                      f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "\
-                      f"where tde.user_id = {request.user.id};"
+        query = f"select tdp.project_id, tdp.\"name\", tdp.description, tdp.date_create, tdp.code " \
+                f"from tracking_dev_employee_projects tdep " \
+                f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id " \
+                f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id " \
+                f"where tde.user_id = {request.user.id};"
         raw_data = Project.objects.raw(
             raw_query=query
         )
@@ -147,13 +147,39 @@ def show_extra_functions(request, project_id):
                   f"where tde.user_id = {request.user.id};"
     )
 
+    priority_exists = Priority.objects.raw(
+        raw_query=f"select 1 as priority_id, * from tracking_dev_priority_projects tdpp where tdpp.project_id = {project_id}"
+    )
+
+    type_exists = TypeTask.objects.raw(
+        raw_query=f"select 1 as type_id, * from tracking_dev_typetask_projects tdtp where tdtp.project_id = {project_id}"
+    )
+
+    state_exists = State.objects.raw(
+        raw_query=f"select 1 as state_id, * from tracking_dev_state_projects tdsp "
+                  f"join tracking_dev_state tds on tdsp.state_id = tds.state_id "
+                  f"where tdsp.project_id = {project_id}"
+    )
+
+    closed_state_exists = not_closed_state_exists = False
+    for state in state_exists:
+        if state.isClosed:
+            not_closed_state_exists = True
+        else:
+            closed_state_exists = True
+
     return render(request, "include/list_data/project_list_functions.html", {
         'show_list_group': 0,
         'show_choose_project': 1,
         'is_project_zone': 1,
         'list_projects': raw_data,
         'project_id': project_id,
-        'project_name': project_name
+        'project_name': project_name,
+        'priority_exists': len(list(priority_exists)) > 0,
+        'type_exists': len(list(type_exists)) > 0,
+        'state_exists': not_closed_state_exists and closed_state_exists,
+        'activate': len(list(priority_exists)) > 0 and len(list(type_exists)) > 0 and not_closed_state_exists
+                    and closed_state_exists
     })
 
 
@@ -1467,8 +1493,10 @@ def edit_states(request, state_id):
                                                               & Q(is_activate=True)).count()
 
             if count_another_closed_tasks == 0:
+                print("I am here")
                 form.save()
-                instance.projects.set(Project.objects.all())
+                # Эта строчка приводит к ошибке
+                #instance.projects.set(Project.objects.all())
 
                 return HttpResponseRedirect(next)
             else:
@@ -2079,6 +2107,7 @@ def state_search(request):
                         "description": position.description,
                         "code_exists": position.code_exists,
                         "state_exists": position.state_exists,
+                        "isClosed": position.isClosed,
                         "description_exists": position.description_exists
                     }
 
