@@ -4,27 +4,88 @@
 {% block content %}
     <div class="position_block">
         {% if request.user.is_authenticated %}
-            <div class="title_block d-flex justify-content-center">
-                <h1>Ваши проекты</h1>
-            </div>
+            {% if not is_employee_in_project %}
+                <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                    <symbol id="check-circle-fill" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"></path>
+                    </symbol>
 
-            <div class="container-fluid">
-                <div class="d-flex justify-content-center">
-                    <div class="row w-75">
-                        <form action="{% url 'project_search_for_current_user' %}"
-                              class="form-inline search-form" method="get">
-                            <div class="d-flex">
-                                <label for="search-input" class="sr-only text_button"></label>
-                                <input name="search" class="form-control me-2" id="search-input"
-                                       placeholder="Введите текст для поиска" value="{{ value_in_the_search_form }}">
-                            </div>
-                        </form>
-                    </div>
+                    <symbol id="info-fill" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"></path>
+                    </symbol>
+
+                    <symbol id="exclamation-triangle-fill" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"></path>
+                    </symbol>
+                </svg>
+
+                <div class="alert alert-warning" role="alert">
+                    <h4 class="alert-heading">
+                        <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Warning:">
+                            <use xlink:href="#exclamation-triangle-fill"></use>
+                        </svg>
+                        Внимание!
+                    </h4>
+                    <p>
+                        В ваш аккаунт не внесены дополнительные сведения касаемо профессиональной деятельности.
+                        Данная информация необходима для включения дальнейшего подключения
+                        Вас в команду. Пожалуйста, заполните сведения о себе по подсказке ниже
+                    </p>
+
+                    <hr>
+                    <p class="mb-0">
+                        Для заполнения личных данных просьба перейти по ссылке ниже
+                    </p>
+                    <p class="mb-0" style="margin-top: 10px">
+                        <a href="{% url 'create_employee' %}"
+                           class="btn btn-warning" style="font-size: 16px; color: #664D03">Заполнить данные
+                        </a>
+                    </p>
                 </div>
-            </div>
 
-            <div class="container-fluid" id="list_projects"></div>
+                <div class="title_block d-flex justify-content-center">
+                    <h1>Добро пожаловать</h1>
+                </div>
+            {% else %}
+                <div class="title_block d-flex justify-content-center">
+                    <h1>Ваши проекты</h1>
+                </div>
 
+                {% if count_projects > 0 %}
+                    <div class="container-fluid">
+                        <div class="d-flex justify-content-center">
+                            <div class="row w-75">
+                                <form action="{% url 'project_search_for_current_user' %}"
+                                      class="form-inline search-form" method="get">
+                                    <div class="d-flex">
+                                        <label for="search-input" class="sr-only text_button"></label>
+                                        <input name="search" class="form-control me-2" id="search-input"
+                                               placeholder="Введите текст для поиска"
+                                               value="{{ value_in_the_search_form }}">
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="container-fluid">
+                        <div class="d-flex justify-content-center">
+                            <div class="row">
+                                <img src="{% static 'img/sad_cat.jpg' %}" height="200" width="300" alt="sad_cat">
+                            </div>
+                        </div>
+
+                        <div class="text_button">
+                            <p class="mb-3">К сожалению, здесь пока ничего нет. Не переживайте,
+                                скоро администратор Вас добавит в проект и Вы всем покажете, насколько Вы крутой
+                                специалист :)
+                            </p>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <div class="container-fluid" id="list_projects"></div>
+            {% endif %}
         {% else %}
             <div class="title_block d-flex justify-content-center">
                 <h1>Добро пожаловать</h1>
@@ -42,6 +103,7 @@
                                 Авторизация
                             </h3>
                         </div>
+
                         <p class="mb-1">Используйте этот пункт, если у Вас есть аккакунт в системе</p>
                     </a>
                 </div>
@@ -59,6 +121,7 @@
                                 Регистрация
                             </h3>
                         </div>
+
                         <p class="mb-1">Используйте этот пункт, если у Вас нет учётной записи в системе</p>
                     </a>
                 </div>
@@ -69,21 +132,22 @@
 
 {% block script %}
     <script>
-        const search_data = (series) => {
-            $.ajax({
-                url: '{% url "project_search_for_current_user" %}',
-                type: 'GET',
-                data: {
-                    'series': series
-                }, success: function (response) {
-                    $("#list_projects").empty();
+        {% if is_employee_in_project %}
+            const search_data = (series) => {
+                $.ajax({
+                    url: '{% url "project_search_for_current_user" %}',
+                    type: 'GET',
+                    data: {
+                        'series': series
+                    }, success: function (response) {
+                        $("#list_projects").empty();
 
-                    let data = response.data;
-                    let temp = "";
+                        let data = response.data;
+                        let temp = "";
 
-                    data.forEach(element => {
-                        let link_to_project_descripton = `/main_page/projects/${element.project_id}`
-                        temp += `
+                        data.forEach(element => {
+                            let link_to_project_descripton = `/main_page/projects/${element.project_id}`
+                            temp += `
                             <div class="d-flex justify-content-center">
                                 <div class="row w-75">
                                     <a href="${link_to_project_descripton}"
@@ -102,21 +166,22 @@
                                 </div>
                             </div>
                         `
-                    })
+                        })
 
-                    $("#list_projects").append(temp);
-                }, error: function (error) {
-                    console.log("An error occured. Text error is " + String(error))
-                }
+                        $("#list_projects").append(temp);
+                    }, error: function (error) {
+                        console.log("An error occured. Text error is " + String(error))
+                    }
+                })
+            }
+
+            // По умолчанию, оставляем полный список
+            search_data('')
+
+            const search_input = document.getElementById("search-input")
+            search_input.addEventListener('keyup', e => {
+                search_data(e.target.value)
             })
-        }
-
-        // По умолчанию, оставляем полный список
-        search_data('')
-
-        const search_input = document.getElementById("search-input")
-        search_input.addEventListener('keyup', e => {
-            search_data(e.target.value)
-        })
+        {% endif %}
     </script>
 {% endblock script %}

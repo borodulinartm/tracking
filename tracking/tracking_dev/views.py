@@ -51,13 +51,21 @@ def show_users_profile(request):
 
 # This view provides a main page.
 def index(request):
+    is_employee = []
+
     if request.user.is_authenticated:
-        raw_data = Project.objects.raw(
-            raw_query=f"select tdp.project_id, tdp.\"name\", tdp.description, tdp.date_create, tdp.code, 1 as project_exists "
-                      f"from tracking_dev_employee_projects tdep "
-                      f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
-                      f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "
+        # Проверяем на то, что пользовалеь авторизован в системе
+        is_employee = Employee.objects.raw(
+            raw_query=f"select * from tracking_dev_employee tde where tde.user_id = {request.user.id}"
+        )
+
+        query = f"select tdp.project_id, tdp.\"name\", tdp.description, tdp.date_create, tdp.code "\
+                      f"from tracking_dev_employee_projects tdep "\
+                      f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "\
+                      f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "\
                       f"where tde.user_id = {request.user.id};"
+        raw_data = Project.objects.raw(
+            raw_query=query
         )
     else:
         raw_data = []
@@ -66,7 +74,9 @@ def index(request):
         'title_page': 'Привет, мир',
         'show_list_group': 0,
         'show_choose_project': 1,
-        'list_projects': raw_data
+        'is_employee_in_project': len(list(is_employee)) > 0,
+        'list_projects': raw_data,
+        'count_projects': len(list(raw_data))
     })
 
 
@@ -87,18 +97,18 @@ def project_search_for_current_user(request):
                               f"tdp.project_id in (select tdep.project_id from tracking_dev_employee_projects tdep "
                               f"join tracking_dev_employee tde on tde.employee_id = tdep.employee_id "
                               f"join auth_user au on tde.user_id=tde.user_id "
-                              f"where au.id={request.user.id}) and (strpos(lower(tdp.code), lower('{series}')) > 0 "
+                              f"where tde.user_id={request.user.id}) and (strpos(lower(tdp.code), lower('{series}')) > 0 "
                               f"or strpos(lower(tdp.code), lower('{series}')) > 0 or "
                               f"strpos(lower(tdp.description), lower('{series}')) > 0) "
                 )
             else:
                 query_se = Project.objects.raw(
-                    raw_query=f"select tdp.project_id, tdp.\"name\""
-                              f"from tracking_dev_project tdp WHERE tdp.is_activate=True "
-                              f"and tdp.project_id in (select tdep.project_id from tracking_dev_employee_projects tdep "
-                              f"join tracking_dev_employee tde on tde.employee_id = tdep.employee_id "
-                              f"join auth_user au on tde.user_id=tde.user_id "
-                              f"where au.id={request.user.id})"
+                    raw_query=f"select tdp.project_id, tdp.\"name\" from tracking_dev_project "
+                              f"tdp WHERE tdp.is_activate=True "
+                              f"and tdp.project_id in (select tdep.project_id "
+                              f"from tracking_dev_employee_projects tdep join tracking_dev_employee tde "
+                              f"on tde.employee_id = tdep.employee_id "
+                              f"join auth_user au on tde.user_id=tde.user_id where tde.user_id={request.user.id})"
                 )
 
             if len(query_se) > 0:
@@ -126,6 +136,10 @@ def show_extra_functions(request, project_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
 
+    project_name = ""
+    for info in Project.objects.filter(project_id=project_id):
+        project_name = info.name
+
     raw_data = Project.objects.raw(
         raw_query=f"select * from tracking_dev_employee_projects tdep "
                   f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
@@ -138,7 +152,8 @@ def show_extra_functions(request, project_id):
         'show_choose_project': 1,
         'is_project_zone': 1,
         'list_projects': raw_data,
-        'project_id': project_id
+        'project_id': project_id,
+        'project_name': project_name
     })
 
 
@@ -1693,10 +1708,10 @@ def create_employee(request):
     if request.method == "POST":
         creation_form = CreateEmployeeForm(data=request.POST)
         if creation_form.is_valid():
-            post = creation_form.cleaned_data['post']
+            profession = creation_form.cleaned_data['profession']
             description = creation_form.cleaned_data['description']
 
-            employee = Employee(post=post, description=description, user_id=request.user.id)
+            employee = Employee(profession=profession, description=description, user_id=request.user.id)
             employee.save()
 
             messages.success(request, "Поздравляю! Вы успешно создали свой аккаунт")

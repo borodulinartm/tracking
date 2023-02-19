@@ -9,6 +9,10 @@
 
 {% block content %}
     <div class="container-fluid">
+        <div class="d-flex justify-content-center" style="margin-bottom: 30px">
+            <h1>{{ project_name }}</h1>
+        </div>
+
         <div class="d-flex justify-content-center">
             <div class="row w-75">
                 <a href="{% url 'tasks_for_project' project_id=project_id %}"
@@ -21,6 +25,7 @@
                             Задачи
                         </h3>
                     </div>
+
                     <p class="mb-1">Нажмите для открытия списка задач для данного проекта</p>
                 </a>
             </div>
