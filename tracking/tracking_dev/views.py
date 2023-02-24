@@ -2869,8 +2869,9 @@ def report_by_employee(request, project_id, employee_id):
 # Данная функция предоставляет пользователю отчёт по голосам за задачу
 def report_by_votes(request, project_id):
     list_tasks = Task.objects.raw(
-        raw_query=f"select * from tracking_dev_task tdt "
-                  f"where tdt.project_id = {project_id}"
+        raw_query=f"select distinct tdt.task_id, tdt.code, tdt.\"name\", tdt.description from "
+                  f"tracking_dev_task_employee tdte join tracking_dev_task tdt on tdte.task_id = tdt.task_id "
+                  f"where tdt.is_activate = true and tdt.project_id = {project_id} "
     )
 
     raw_data = Project.objects.raw(
