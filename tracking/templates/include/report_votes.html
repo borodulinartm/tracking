@@ -1,0 +1,106 @@
+{% extends 'include/base.html' %}
+{% load static %}
+
+{% block config %}
+    <!--Chart js-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js"
+            integrity="sha256-Uv9BNBucvCPipKQ2NS9wYpJmi8DTOEfTA/nH2aoJALw=" crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.css"
+          integrity="sha256-aa0xaJgmK/X74WM224KMQeNQC2xYKwlAt08oZqjeF0E=" crossorigin="anonymous"/>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+{% endblock config %}
+
+{% block script %}
+    <script>
+        $(document).ready(function () {
+            var ctx = document.getElementById('myChart').getContext('2d');
+
+            var myBarChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: [{% for data in votes_list %}'{{ data.code }}',{% endfor %}],
+                    datasets: [{
+                        label: "Количество голосов",
+                        backgroundColor: [
+                            {% for data in votes_list %}
+                                "{{ color }}",
+                            {% endfor %}
+                        ],
+                        data: [{% for data in votes_list %}{{ data.count_employee }}, {% endfor %}]
+                    }
+                    ]
+                },
+                options: {
+                    tooltips: {
+                        displayColors: true,
+                        callbacks: {
+                            mode: 'x',
+                        },
+                    },
+                    scales: {
+                        xAxes: [{
+                            stacked: true,
+                            gridLines: {
+                                display: false,
+                            }
+                        }],
+                        yAxes: [{
+                            stacked: true,
+                            ticks: {
+                                beginAtZero: true,
+                            },
+                            type: 'linear',
+                        }]
+                    },
+
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    legend: {position: 'bottom'},
+                }
+            });
+        });
+    </script>
+{% endblock script %}
+
+{% block content %}
+    <div class="title_block">
+        <h2 class="title">Диаграмма голосования за задачи</h2>
+    </div>
+
+    <div style="margin-bottom: 100px">
+        <canvas id="myChart" height="500%"></canvas>
+    </div>
+
+    <div class="title_block">
+        <h2 class="title">Список задач</h2>
+    </div>
+
+    {% for data in votes_list %}
+        <div class="d-flex justify-content-center">
+            <div class="row w-75">
+                <a href="#"
+                   class="list-group-item list-group-item-action text_button" aria-current="true">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h3 class="mb-1">
+                            <span class="fw-normal">
+                                <img src="{% static 'img/pencil.svg' %}" alt="type" rel="icon">
+                            </span>
+                            {{ data.code }}: {{ data.name }}
+                        </h3>
+                        <small>
+                            <img src="{% static 'img/heart.svg' %}" alt="heart" rel="icon">
+                            {{ data.count_employee }}
+                        </small>
+                    </div>
+
+                    <p class="mb-1">{{ data.description|truncatechars:100 }}</p>
+                </a>
+            </div>
+        </div>
+    {% endfor %}
+
+    
+{% endblock content %}

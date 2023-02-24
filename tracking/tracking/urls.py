@@ -14,6 +14,7 @@ urlpatterns = [
     path('main_page/projects/<int:project_id>', show_extra_functions, name="project_extra_function"),
     path('main_page/projects/<int:project_id>/description', project_description, name="project_description"),
     path('main_page/projects/<int:project_id>/report', calculate_report_tasks, name="project_report"),
+    path('main_page/projects/<int:project_id>/report_votes', report_by_votes, name="report_votes"),
 
     path('main_page/projects/<int:project_id>/sprints', get_sprint_list_for_project, name="sprints"),
     path('main_page/projects/<int:project_id>/sprints/<int:sprint_id>', sprint_description,

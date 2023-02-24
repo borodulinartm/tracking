@@ -418,7 +418,7 @@ class CreateLaboriousnessForm(forms.ModelForm):
 class CustomAuthenticationForm(LoginForm):
     username = UsernameField(label="Введите имя пользователя", widget=forms.TextInput(attrs={
         "auto_focus": True,
-        "style": "margin-bottom: 20px",
+        "style": "margin-bottom: 20px;",
         "placeholder": "Ваш логин"
     }))
 

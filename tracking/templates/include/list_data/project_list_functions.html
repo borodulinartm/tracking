@@ -160,6 +160,23 @@
 
             <div class="d-flex justify-content-center">
                 <div class="row w-75">
+                    <a href="{% url 'report_votes' project_id=project_id %}"
+                       class="list-group-item list-group-item-action text_button" aria-current="true">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h3 class="mb-1">
+                                <span class="fw-normal">
+                                    <img src="{% static 'img/report.svg' %}" alt="type" rel="icon">
+                                </span>
+                                Отчёт по голосованию за задачи
+                            </h3>
+                        </div>
+                        <p class="mb-1">Нажмите для просмотра отчётной о голосах за задачу</p>
+                    </a>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-center">
+                <div class="row w-75">
                     <a href="{% url 'kanban_board' project_id=project_id %}"
                        class="list-group-item list-group-item-action text_button" aria-current="true">
                         <div class="d-flex w-100 justify-content-between">

@@ -1496,7 +1496,7 @@ def edit_states(request, state_id):
                 print("I am here")
                 form.save()
                 # Эта строчка приводит к ошибке
-                #instance.projects.set(Project.objects.all())
+                # instance.projects.set(Project.objects.all())
 
                 return HttpResponseRedirect(next)
             else:
@@ -2863,6 +2863,35 @@ def report_by_employee(request, project_id, employee_id):
         'colors': random_colors_array,
         'project_id': project_id,
         'employee_id': employee_id
+    })
+
+
+# Данная функция предоставляет пользователю отчёт по голосам за задачу
+def report_by_votes(request, project_id):
+    count_votes = Task.objects.raw(
+        raw_query=f"select tdte.task_id, tdt.code, tdt.\"name\", tdt.description, count(tdte.employee_id) "
+                  f"as count_employee from tracking_dev_task_employee tdte "
+                  f"join tracking_dev_task tdt on tdte.task_id = tdt.task_id "
+                  f"group by tdte.task_id, tdt.code , tdt.\"name\", tdt.description "
+                  f"order by count_employee desc"
+    )
+
+    raw_data = Project.objects.raw(
+        raw_query=f"select * from tracking_dev_employee_projects tdep "
+                  f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
+                  f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "
+                  f"where tde.user_id = {request.user.id};"
+    )
+
+    r = lambda: random.randint(0, 255)
+    random_color = '#%02X%02X%02X' % (r(), r(), r())
+
+    return render(request, "include/report_votes.html", {
+        'votes_list': count_votes,
+        'list_projects': raw_data,
+        'is_project_zone': 1,
+        'color': random_color,
+        'project_id': project_id,
     })
 
 
