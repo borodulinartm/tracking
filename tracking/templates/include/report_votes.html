@@ -157,10 +157,11 @@
 
                     // Добавляем также данные
                     data.forEach(element => {
+                        let link_to_the_task = `/main_page/projects/${response.project_id}/tasks/${element.id}`
                         let temp = `
                         <div class="d-flex justify-content-center">
                             <div class="row w-75">
-                                <a href="#"
+                                <a href="${link_to_the_task}"
                                    class="list-group-item list-group-item-action text_button" aria-current="true">
                                     <div class="d-flex w-100 justify-content-between">
                                         <h3 class="mb-1">

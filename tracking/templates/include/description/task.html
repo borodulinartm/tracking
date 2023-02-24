@@ -275,7 +275,7 @@
 
                 {% for sprint in list_sprints %}
                     <div id="collapseExample_sprints" class="collapse rounded-2">
-                        <a href="#"
+                        <a href="{% url 'sprint_description' project_id=project_id sprint_id=sprint.sprint_id %}"
                            class="list-group-item list-group-item-action text_button rounded-2"
                            aria-current="true">
                             <div class="d-flex w-100 justify-content-between">

@@ -510,11 +510,21 @@ def state_description(request, state_id):
 
     tasks_with_current_state_id = Task.objects.filter(state_id=state_id).count()
 
+    list_projects = Project.objects.raw(
+        raw_query=f"select * from tracking_dev_state_projects tdtp "
+                  f"join tracking_dev_project tdp on tdtp.project_id = tdp.project_id "
+                  f"where tdtp.state_id = {state_id} "
+                  f"and tdtp.project_id in (select tdep.project_id from tracking_dev_employee_projects tdep "
+                  f"join tracking_dev_employee tde on tdep.employee_id=tde.employee_id "
+                  f"where tde.user_id={request.user.id})"
+    )
+
     head = ["Номер", "Код", "Название", "Описание", "Дата создания"]
     return render(request, "include/description/state.html", {
         'title_page': 'Сведения о состоянии задачи',
         'head': head,
         'table': raw_data,
+        'projects_accessible': list_projects,
         'show_list_group': 1,
         'data_group': data,
         'what_open': 2,
@@ -576,12 +586,22 @@ def priority_description(request, priority_id):
                   f"where tde.user_id = {request.user.id};"
     )
 
+    list_projects = Project.objects.raw(
+        raw_query=f"select * from tracking_dev_priority_projects tdtp "
+                  f"join tracking_dev_project tdp on tdtp.project_id = tdp.project_id "
+                  f"where tdtp.priority_id = {priority_id} "
+                  f"and tdtp.project_id in (select tdep.project_id from tracking_dev_employee_projects tdep "
+                  f"join tracking_dev_employee tde on tdep.employee_id=tde.employee_id "
+                  f"where tde.user_id={request.user.id})"
+    )
+
     head = ["Номер", "Код", "Название", "Описание", "Дата создания"]
     return render(request, "include/description/priority.html", {
         'title_page': 'Сведение о приоритете задачи',
         'head': head,
         'table': raw_data,
         'show_list_group': 1,
+        'projects_accessible': list_projects,
         'count_tasks': len(list(count_tasks)),
         'data_group': data,
         'show_choose_project': 1,
@@ -637,6 +657,15 @@ def type_task_description(request, type_id):
         raw_query=f"select * from tracking_dev_task tdt where tdt.type_id = {type_id} and is_activate=True"
     )
 
+    list_projects = Project.objects.raw(
+        raw_query=f"select * from tracking_dev_typetask_projects tdtp "
+                  f"join tracking_dev_project tdp on tdtp.project_id = tdp.project_id "
+                  f"where tdtp.typetask_id = {type_id} "
+                  f"and tdtp.project_id in (select tdep.project_id from tracking_dev_employee_projects tdep "
+                  f"join tracking_dev_employee tde on tdep.employee_id=tde.employee_id "
+                  f"where tde.user_id={request.user.id})"
+    )
+
     all_projects = Project.objects.raw(
         raw_query=f"select * from tracking_dev_employee_projects tdep "
                   f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
@@ -651,6 +680,7 @@ def type_task_description(request, type_id):
         'count_tasks': len(list(count_tasks)),
         'data_group': data,
         'what_open': 4,
+        'projects_accessible': list_projects,
         'show_choose_project': 1,
         'list_projects': all_projects
     })
@@ -2932,6 +2962,7 @@ def get_list_votes_for_certain_tasks(request, project_id):
                 result = []
                 for data in count_votes:
                     item = {
+                        "id": data.task_id,
                         "code": data.code,
                         "name": data.name,
                         "count_employee": data.count_employee,
