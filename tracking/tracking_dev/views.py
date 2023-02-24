@@ -799,11 +799,19 @@ def task_description(request, project_id, task_id):
                   f"where tdl.task_id = {task_id}"
     )
 
+    # The sprint list of the task
+    list_of_sprints_for_task = Sprint.objects.raw(
+        raw_query=f"select * from tracking_dev_sprint_task tdst "
+                  f"join tracking_dev_sprint tds on tdst.sprint_id = tds.sprint_id "
+                  f"where tdst.task_id = {task_id}"
+    )
+
     return render(request, "include/description/task.html", {
         'title_page': 'Сведения о задаче',
         'table': raw_data,
         'show_list_group': 1,
         'data_group': data,
+        'list_sprints': list_of_sprints_for_task,
         'project_id': project_id,
         'is_project_zone': 1,
         'show_choose_project': 0,
