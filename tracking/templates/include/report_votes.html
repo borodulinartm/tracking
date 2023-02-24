@@ -13,58 +13,6 @@
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
 {% endblock config %}
 
-{% block script %}
-    <script>
-        $(document).ready(function () {
-            var ctx = document.getElementById('myChart').getContext('2d');
-
-            var myBarChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: [{% for data in votes_list %}'{{ data.code }}',{% endfor %}],
-                    datasets: [{
-                        label: "Количество голосов",
-                        backgroundColor: [
-                            {% for data in votes_list %}
-                                "{{ color }}",
-                            {% endfor %}
-                        ],
-                        data: [{% for data in votes_list %}{{ data.count_employee }}, {% endfor %}]
-                    }
-                    ]
-                },
-                options: {
-                    tooltips: {
-                        displayColors: true,
-                        callbacks: {
-                            mode: 'x',
-                        },
-                    },
-                    scales: {
-                        xAxes: [{
-                            stacked: true,
-                            gridLines: {
-                                display: false,
-                            }
-                        }],
-                        yAxes: [{
-                            stacked: true,
-                            ticks: {
-                                beginAtZero: true,
-                            },
-                            type: 'linear',
-                        }]
-                    },
-
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    legend: {position: 'bottom'},
-                }
-            });
-        });
-    </script>
-{% endblock script %}
-
 {% block content %}
     <div class="title_block">
         <h2 class="title">Диаграмма голосования за задачи</h2>
@@ -78,29 +26,259 @@
         <h2 class="title">Список задач</h2>
     </div>
 
-    {% for data in votes_list %}
-        <div class="d-flex justify-content-center">
-            <div class="row w-75">
-                <a href="#"
-                   class="list-group-item list-group-item-action text_button" aria-current="true">
-                    <div class="d-flex w-100 justify-content-between">
-                        <h3 class="mb-1">
-                            <span class="fw-normal">
-                                <img src="{% static 'img/pencil.svg' %}" alt="type" rel="icon">
-                            </span>
-                            {{ data.code }}: {{ data.name }}
-                        </h3>
-                        <small>
-                            <img src="{% static 'img/heart.svg' %}" alt="heart" rel="icon">
-                            {{ data.count_employee }}
-                        </small>
-                    </div>
+    <div class="position_block" id="titles">
+    </div>
 
-                    <p class="mb-1">{{ data.description|truncatechars:100 }}</p>
-                </a>
+    <div class="row w-100">
+        <div class="position_block">
+            <a href="#" class="btn btn-danger text_button" type="button"
+               data-bs-toggle="modal"
+               data-bs-target="#collapseExample_settings_votes">
+                настройки отчёта
+            </a>
+        </div>
+    </div>
+
+    <div class="modal fade" id="collapseExample_settings_votes" tabindex="-1" aria-labelledby="exampleModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Выбор задачи</h5>
+                    <a type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></a>
+                </div>
+                <div class="modal-body text_button">
+                    <form class="form-inline search-form" method="get">
+                        <div class="form-check" style="margin-bottom: 10px">
+                            <label for="task_all">Отметить все</label>
+                            <input class="form-check-input"
+                                   type="checkbox" id="task_all" onclick="checkbox_task_all_clicled()"
+                                   checked>
+                        </div>
+
+                        {% for task in list_tasks %}
+                            <div class="form-check" style="margin-bottom: 10px">
+                                <label for="task_{{ task.code }}">{{ task.code|truncatechars:40 }}
+                                    {{ task.name|truncatechars:30 }}</label>
+                                <input class="form-check-input"
+                                       type="checkbox" id="task_{{ task.code }}"
+                                       onclick="checkbox_with_task_clicked()"
+                                       checked>
+                            </div>
+                        {% endfor %}
+                    </form>
+                </div>
+
+                <div class="modal-footer">
+                    <a type="button" data-bs-dismiss="modal"
+                       href="#"
+                       onclick="insert_data()"
+                       class="btn btn-primary">Подтвердить</a>
+                </div>
             </div>
         </div>
-    {% endfor %}
-
-    
+    </div>
 {% endblock content %}
+
+{% block script %}
+    <script>
+        let myChart = null;
+
+        const filter_tasks = (array_with_task_id) => {
+            $.ajax({
+                type: 'GET',
+                url: '{% url "get_list_votes_for_certain_tasks" project_id=project_id %}',
+                data: {
+                    'array_with_task_id': array_with_task_id
+                }, success: function (response) {
+                    const data = response.data;
+
+                    const data_arr = [];
+                    const label_arr = [];
+
+                    data.forEach(element => {
+                        data_arr.push(element.count_employee)
+                        label_arr.push(element.code)
+                    })
+
+                    const color_arr = [];
+                    const color = response.color;
+                    data.forEach(elem => {
+                        color_arr.push(color)
+                    })
+
+                    const ctx = document.getElementById('myChart').getContext('2d');
+                    if (myChart !== null) {
+                        myChart.destroy();
+                    }
+
+                    myChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: label_arr,
+                            datasets: [{
+                                label: "Количество голосов",
+                                backgroundColor: color_arr,
+                                data: data_arr
+                            }]
+                        },
+                        options: {
+                            tooltips: {
+                                displayColors: true,
+                                callbacks: {
+                                    mode: 'x',
+                                },
+                            },
+                            scales: {
+                                xAxes: [{
+                                    stacked: true,
+                                    gridLines: {
+                                        display: false,
+                                    }
+                                }],
+                                yAxes: [{
+                                    stacked: true,
+                                    ticks: {
+                                        beginAtZero: true,
+                                    },
+                                    type: 'linear',
+                                }]
+                            },
+
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            legend: {position: 'bottom'},
+                        }
+
+                    });
+
+                    document.getElementById("titles").innerHTML = ""
+
+                    // Добавляем также данные
+                    data.forEach(element => {
+                        let temp = `
+                        <div class="d-flex justify-content-center">
+                            <div class="row w-75">
+                                <a href="#"
+                                   class="list-group-item list-group-item-action text_button" aria-current="true">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h3 class="mb-1">
+                                            <span class="fw-normal">
+                                                <img src="{% static 'img/pencil.svg' %}" alt="type" rel="icon">
+                                            </span>
+                                            ${element.code}: ${element.name}
+                                        </h3>
+                                        <small>
+                                            <img src="{% static 'img/heart.svg' %}" alt="heart" rel="icon">
+                                            ${element.count_employee}
+                                        </small>
+                                    </div>
+                                    <p class="mb-1">`
+                        if (element.description.length > 50) {
+                            temp += `${element.description.slice(1, 50)}`
+                        } else {
+                            temp += `${element.description}`
+                        }
+                        temp += `</p>
+                                </a>
+                            </div>
+                        </div>
+                    `
+                        $("#titles").append(temp)
+                    })
+                }, error: function (error) {
+                    console.log(error)
+                }
+            })
+        }
+
+        function insert_data() {
+            const array_checked_checkboxes = [];
+
+            let elem;
+            {% for task in list_tasks %}
+                elem = document.getElementById("task_{{ task.code }}")
+                console.log(elem.checked)
+                if (elem.checked) {
+                    array_checked_checkboxes.push("{{ task.task_id }}")
+                }
+            {% endfor %}
+
+            scroll(0,0)
+
+            if (array_checked_checkboxes.length > 0) {
+                filter_tasks(array_checked_checkboxes.toString())
+            } else {
+                filter_tasks('-1')
+            }
+        }
+
+        function change_all_checkboxes(state) {
+            let elem;
+            {% for task in list_tasks %}
+            elem = document.getElementById("task_{{ task.code }}")
+            elem.checked = state;
+            {% endfor %}
+        }
+
+        function checkbox_task_all_clicled() {
+            var data = document.getElementById("task_all")
+
+            if (data.checked) {
+                change_all_checkboxes(true)
+            } else {
+                change_all_checkboxes(false);
+            }
+        }
+
+        const checkBoxesState = {
+            "disable": 0,
+            "enable": 1,
+            "indeterminate": 2
+        }
+
+        function getStateOfCheckBoxes() {
+            let hasCheckedCheckbox = false;
+            let hasUnCheckedCheckbox = false;
+
+            let elem;
+            {% for task in list_tasks %}
+            elem = document.getElementById("task_{{ task.code }}")
+            if (elem.checked) {
+                hasCheckedCheckbox = true;
+            } else {
+                hasUnCheckedCheckbox = true;
+            }
+            {% endfor %}
+
+            if (hasUnCheckedCheckbox && hasUnCheckedCheckbox) {
+                return checkBoxesState.indeterminate;
+            } else if (!hasUnCheckedCheckbox) {
+                return checkBoxesState.enable;
+            } else if (!hasCheckedCheckbox) {
+                return checkBoxesState.disable;
+            }
+        }
+
+        // Данная функция изменяет состояние верхнего чек-бокса, если были изменены остальные
+        function checkbox_with_task_clicked() {
+            // Получаем текущее состояние всех чек-боксов
+            let state = getStateOfCheckBoxes();
+
+            const data = document.getElementById("task_all");
+            // Заранее был создан enum с перечислением всех возможных типов
+            if (state === checkBoxesState.disable) {
+                // Третье состояние - неопределенно
+                data.indeterminate = false;
+                data.checked = false;
+            } else if (state === checkBoxesState.indeterminate) {
+                data.indeterminate = true;
+            } else {
+                data.indeterminate = false;
+                data.checked = true;
+            }
+        }
+
+        filter_tasks('')
+    </script>
+{% endblock script %}

@@ -2868,12 +2868,9 @@ def report_by_employee(request, project_id, employee_id):
 
 # Данная функция предоставляет пользователю отчёт по голосам за задачу
 def report_by_votes(request, project_id):
-    count_votes = Task.objects.raw(
-        raw_query=f"select tdte.task_id, tdt.code, tdt.\"name\", tdt.description, count(tdte.employee_id) "
-                  f"as count_employee from tracking_dev_task_employee tdte "
-                  f"join tracking_dev_task tdt on tdte.task_id = tdt.task_id "
-                  f"group by tdte.task_id, tdt.code , tdt.\"name\", tdt.description "
-                  f"order by count_employee desc"
+    list_tasks = Task.objects.raw(
+        raw_query=f"select * from tracking_dev_task tdt "
+                  f"where tdt.project_id = {project_id}"
     )
 
     raw_data = Project.objects.raw(
@@ -2883,16 +2880,63 @@ def report_by_votes(request, project_id):
                   f"where tde.user_id = {request.user.id};"
     )
 
-    r = lambda: random.randint(0, 255)
-    random_color = '#%02X%02X%02X' % (r(), r(), r())
-
     return render(request, "include/report_votes.html", {
-        'votes_list': count_votes,
         'list_projects': raw_data,
+        'list_tasks': list_tasks,
         'is_project_zone': 1,
-        'color': random_color,
         'project_id': project_id,
     })
+
+
+def get_list_votes_for_certain_tasks(request, project_id):
+    if request.method == "GET":
+        # If the type is GET, we need check if request is ajax.
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
+        if is_ajax:
+            array_with_task_id = request.GET.get('array_with_task_id')
+            if array_with_task_id != '':
+                count_votes = Task.objects.raw(
+                    raw_query=f"select tdte.task_id, tdt.code, tdt.\"name\", tdt.description, count(tdte.employee_id) "
+                              f"as count_employee from tracking_dev_task_employee tdte "
+                              f"join tracking_dev_task tdt on tdte.task_id = tdt.task_id "
+                              f"where tdt.task_id in ({array_with_task_id}) and tdt.project_id={project_id} "
+                              f"group by tdte.task_id, tdt.code , tdt.\"name\", tdt.description "
+                              f"order by count_employee desc"
+                )
+            else:
+                count_votes = Task.objects.raw(
+                    raw_query=f"select tdte.task_id, tdt.code, tdt.\"name\", tdt.description, count(tdte.employee_id) "
+                              f"as count_employee from tracking_dev_task_employee tdte "
+                              f"join tracking_dev_task tdt on tdte.task_id = tdt.task_id "
+                              f"group by tdte.task_id, tdt.code , tdt.\"name\", tdt.description "
+                              f"order by count_employee desc"
+                )
+
+            r = lambda: random.randint(0, 255)
+            random_color = '#%02X%02X%02X' % (r(), r(), r())
+
+            if array_with_task_id == '-1':
+                array_with_task_id = []
+
+            if len(count_votes) > 0:
+                result = []
+                for data in count_votes:
+                    item = {
+                        "code": data.code,
+                        "name": data.name,
+                        "count_employee": data.count_employee,
+                        "description": data.description
+                    }
+
+                    result.append(item)
+            else:
+                result = []
+
+            return JsonResponse({'data': result, 'project_id': project_id, "user_id": request.user.id,
+                                 "color": random_color})
+        return JsonResponse({'data': [], 'project_id': project_id, "user_id": request.user.id,
+                             "color": ""})
 
 
 # This view provides a list of the completed or uncompleted tasks
