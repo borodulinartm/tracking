@@ -721,10 +721,9 @@ def employee_description(request, employee_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
 
-    raw_data = Employee.objects.raw(
-        raw_query=f"select * from tracking_dev_employee tde join auth_user au on au.id = tde.user_id "
-                  f"where employee_id = {employee_id} and is_activate=True;"
-    )
+    query = f"select * from tracking_dev_employee tde join auth_user au on au.id = tde.user_id " \
+            f"where employee_id = {employee_id} and is_activate=True;"
+    raw_data = Employee.objects.raw(raw_query=query)
 
     data = Employee.objects.raw(
         raw_query="select au.first_name, au.last_name, tde.employee_id, tde.post, tde.description, tde.date_create "

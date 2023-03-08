@@ -114,7 +114,21 @@
                     </div>
                 </div>
             </div>
-        {% endfor %}
 
+            {% if request.user.id == content_list.id %}
+                <div class="row">
+                    <div class="col-sm">
+                        <div class="d-flex justify-content-center">
+                            <div class="row w-100">
+                                <div class="position_block">
+                                    <a href="{% url 'edit_employee' employee_id=content_list.employee_id %}"
+                                       class="btn btn-primary text_button">Редактировать</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        {% endfor %}
     </div>
 {% endblock content %}
