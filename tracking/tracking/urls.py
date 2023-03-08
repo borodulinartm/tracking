@@ -64,6 +64,8 @@ urlpatterns = [
     path('main_page/types<int:type_id>/delete', type_remove, name="type_remove"),
     path('main_page/types/create', create_type_task, name="create_type_task"),
     path('main_page/types/<int:type_id>/edit', edit_type_task, name="edit_type_task"),
+    path('main_page/types/<int:type_id>/change_compound', change_compound_projects_to_type_task,
+         name="compound_type_task"),
 
     path('main_page/professions', get_list_professions, name="professions"),
     path('main_page/profession/<int:profession_id>', profession_description, name="profession_description"),

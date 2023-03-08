@@ -13,7 +13,6 @@
         <div class="d-flex justify-content-center">
             <div class="row w-75">
                 <form role="form" action="" method="post">
-                    {% csrf_token %}
                     {{ form | crispy }}
                     <input type="hidden" name="next" value="{{ request.GET.next }}">
                     <button type="submit" class="btn btn-primary mt-3 text_button">{{ text_button }}</button>
