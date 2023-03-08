@@ -31,7 +31,7 @@ def show_users_profile(request):
                   f"from tracking_dev_employee_projects tdep "
                   f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
                   f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "
-                  f"where tde.user_id = {request.user.id};"
+                  f"where tde.user_id = {request.user.id} and tdp.is_activate=True;"
     )
 
     query = f"select tde.employee_id, au.first_name, au.last_name, tde.description, au.email, " \
@@ -63,7 +63,7 @@ def index(request):
                 f"from tracking_dev_employee_projects tdep " \
                 f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id " \
                 f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id " \
-                f"where tde.user_id = {request.user.id};"
+                f"where tde.user_id = {request.user.id} and tdp.is_activate=True;"
         raw_data = Project.objects.raw(
             raw_query=query
         )
@@ -144,7 +144,7 @@ def show_extra_functions(request, project_id):
         raw_query=f"select * from tracking_dev_employee_projects tdep "
                   f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
                   f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "
-                  f"where tde.user_id = {request.user.id};"
+                  f"where tde.user_id = {request.user.id} and tdp.is_activate=TRUE;"
     )
 
     priority_exists = Priority.objects.raw(
@@ -195,7 +195,7 @@ def show_list_tasks_for_project(request, project_id):
         raw_query=f"select * from tracking_dev_employee_projects tdep "
                   f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
                   f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "
-                  f"where tde.user_id = {request.user.id};"
+                  f"where tde.user_id = {request.user.id} and tdp.is_activate=TRUE"
     )
 
     return render(request, "include/list_data/tasks_list.html", {
@@ -220,7 +220,7 @@ def get_list_professions(request):
                   f"from tracking_dev_employee_projects tdep "
                   f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
                   f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "
-                  f"where tde.user_id = {request.user.id};"
+                  f"where tde.user_id = {request.user.id} and tdp.is_activate=TRUE;"
     )
 
     return render(request, 'include/list_data/profession_list.html', {
@@ -243,7 +243,7 @@ def profession_description(request, profession_id):
                   f"from tracking_dev_employee_projects tdep "
                   f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
                   f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "
-                  f"where tde.user_id = {request.user.id};"
+                  f"where tde.user_id = {request.user.id} and tdp.is_activate=TRUE;"
     )
 
     data = Profession.objects.raw(
@@ -282,7 +282,7 @@ def get_list_projects(request):
                   f"from tracking_dev_employee_projects tdep "
                   f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
                   f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "
-                  f"where tde.user_id = {request.user.id};"
+                  f"where tde.user_id = {request.user.id} and tdp.is_activate=TRUE;"
     )
 
     return render(request, 'include/list_data/project_list.html', {
@@ -397,7 +397,7 @@ def sprint_description(request, project_id, sprint_id):
         raw_query=f"select * from tracking_dev_employee_projects tdep "
                   f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
                   f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "
-                  f"where tde.user_id = {request.user.id};"
+                  f"where tde.user_id = {request.user.id} and tdp.is_activate=TRUE;"
     )
 
     head = ["Номер", "Код", "Название", "Описание", "Дата создания", "Дата начала", "Дата завершения"]
@@ -477,7 +477,7 @@ def get_state_list(request):
         raw_query=f"select * from tracking_dev_employee_projects tdep "
                   f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
                   f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "
-                  f"where tde.user_id = {request.user.id};"
+                  f"where tde.user_id = {request.user.id} and tdp.is_activate=TRUE;"
     )
 
     return render(request, "include/list_data/state_list.html", {
@@ -516,7 +516,7 @@ def state_description(request, state_id):
                   f"where tdtp.state_id = {state_id} "
                   f"and tdtp.project_id in (select tdep.project_id from tracking_dev_employee_projects tdep "
                   f"join tracking_dev_employee tde on tdep.employee_id=tde.employee_id "
-                  f"where tde.user_id={request.user.id})"
+                  f"where tde.user_id={request.user.id}) and tdp.is_activate=TRUE"
     )
 
     head = ["Номер", "Код", "Название", "Описание", "Дата создания"]
@@ -550,7 +550,7 @@ def get_priority_list(request):
         raw_query=f"select * from tracking_dev_employee_projects tdep "
                   f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
                   f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "
-                  f"where tde.user_id = {request.user.id};"
+                  f"where tde.user_id = {request.user.id} and tdp.is_activate=TRUE;"
     )
 
     return render(request, "include/list_data/priority_list.html", {
@@ -592,7 +592,7 @@ def priority_description(request, priority_id):
                   f"where tdtp.priority_id = {priority_id} "
                   f"and tdtp.project_id in (select tdep.project_id from tracking_dev_employee_projects tdep "
                   f"join tracking_dev_employee tde on tdep.employee_id=tde.employee_id "
-                  f"where tde.user_id={request.user.id})"
+                  f"where tde.user_id={request.user.id}) and tdp.is_activate=TRUE"
     )
 
     head = ["Номер", "Код", "Название", "Описание", "Дата создания"]
@@ -626,7 +626,7 @@ def type_task_list(request):
         raw_query=f"select * from tracking_dev_employee_projects tdep "
                   f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
                   f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "
-                  f"where tde.user_id = {request.user.id};"
+                  f"where tde.user_id = {request.user.id} and tdp.is_activate=TRUE;"
     )
 
     return render(request, "include/list_data/type_task_list.html", {
@@ -663,7 +663,7 @@ def type_task_description(request, type_id):
                   f"where tdtp.typetask_id = {type_id} "
                   f"and tdtp.project_id in (select tdep.project_id from tracking_dev_employee_projects tdep "
                   f"join tracking_dev_employee tde on tdep.employee_id=tde.employee_id "
-                  f"where tde.user_id={request.user.id})"
+                  f"where tde.user_id={request.user.id}) and tdp.is_activate=TRUE"
     )
 
     all_projects = Project.objects.raw(
@@ -704,7 +704,7 @@ def employee_list(request):
         raw_query=f"select * from tracking_dev_employee_projects tdep "
                   f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
                   f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "
-                  f"where tde.user_id = {request.user.id};"
+                  f"where tde.user_id = {request.user.id} and tdp.is_activate=TRUE;"
     )
 
     return render(request, "include/list_data/employee_list.html", {
@@ -735,7 +735,7 @@ def employee_description(request, employee_id):
         raw_query=f"select * from tracking_dev_employee_projects tdep "
                   f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
                   f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "
-                  f"where tde.user_id = {request.user.id};"
+                  f"where tde.user_id = {request.user.id} and tdp.is_activate=TRUE;"
     )
 
     return render(request, "include/description/employee.html", {
@@ -797,7 +797,7 @@ def task_description(request, project_id, task_id):
         raw_query=f"select * from tracking_dev_employee_projects tdep "
                   f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
                   f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "
-                  f"where tde.user_id = {request.user.id};"
+                  f"where tde.user_id = {request.user.id} and tdp.is_activate=TRUE;"
     )
 
     employee_id_list = Employee.objects.filter(user_id=request.user.id)
@@ -1035,7 +1035,7 @@ def get_list_collobarators_to_project(request, project_id):
         raw_query=f"select * from tracking_dev_employee_projects tdep "
                   f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
                   f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "
-                  f"where tde.user_id = {request.user.id};"
+                  f"where tde.user_id = {request.user.id} and tdp.is_activate=TRUE;"
     )
 
     return render(request, "include/description/collobarators.html", {
@@ -2876,7 +2876,7 @@ def calculate_report_tasks(request, project_id):
         raw_query=f"select * from tracking_dev_employee_projects tdep "
                   f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
                   f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "
-                  f"where tde.user_id = {request.user.id};"
+                  f"where tde.user_id = {request.user.id} and tdp.is_activate=TRUE;"
     )
 
     return render(request, "include/report.html", {
@@ -2911,7 +2911,7 @@ def report_by_laboriousness(request, project_id, sprint_id):
         raw_query=f"select * from tracking_dev_employee_projects tdep "
                   f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
                   f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "
-                  f"where tde.user_id = {request.user.id};"
+                  f"where tde.user_id = {request.user.id} and tdp.is_activate=TRUE;"
     )
 
     details_data = Laboriousness.objects.raw(
@@ -2993,7 +2993,7 @@ def report_by_employee(request, project_id, employee_id):
         raw_query=f"select * from tracking_dev_employee_projects tdep "
                   f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
                   f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "
-                  f"where tde.user_id = {request.user.id};"
+                  f"where tde.user_id = {request.user.id} and tdp.is_activate=TRUE;"
     )
 
     return render(request, "include/report_employee.html", {
@@ -3021,7 +3021,7 @@ def report_by_votes(request, project_id):
         raw_query=f"select * from tracking_dev_employee_projects tdep "
                   f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
                   f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "
-                  f"where tde.user_id = {request.user.id};"
+                  f"where tde.user_id = {request.user.id} and tdp.is_activate=TRUE;"
     )
 
     return render(request, "include/report_votes.html", {
@@ -3100,7 +3100,7 @@ def show_uncompleted_tasks_by_user(request, project_id, employee_id, sort):
         raw_query=f"select * from tracking_dev_employee_projects tdep "
                   f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
                   f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "
-                  f"where tde.user_id = {request.user.id};"
+                  f"where tde.user_id = {request.user.id} and tdp.is_activate=TRUE;"
     )
 
     return render(request, "include/list_data/task_compact.html", {
@@ -3147,7 +3147,7 @@ def kanban_board_manager(request, project_id):
         raw_query=f"select * from tracking_dev_employee_projects tdep "
                   f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
                   f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "
-                  f"where tde.user_id = {request.user.id};"
+                  f"where tde.user_id = {request.user.id} and tdp.is_activate=TRUE;"
     )
 
     return render(request, "include/kanban.html", {
