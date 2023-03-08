@@ -361,6 +361,9 @@ class ChangeUserCustomForm(UserChangeForm):
             "style": "margin-bottom: 20px"
         }
 
+    def get_user_name(self):
+        return self.fields['username']
+
 
 class ChangePasswordCustomForm(PasswordChangeForm):
     old_password = forms.CharField(required=True, label="Старый пароль", widget=forms.PasswordInput(

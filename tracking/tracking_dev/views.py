@@ -1120,34 +1120,39 @@ def create_project(request):
 
         # If the form is valid, you should add the user to this project.
         if creation_form.is_valid():
-            creation_form.save()
-
             # Auto add manager to table
             code = creation_form.cleaned_data['code']
 
-            new_project = Project.objects.raw(
-                raw_query=f"SELECT * FROM tracking_dev_project WHERE code='{code}'"
-            )
-            list_employees = Employee.objects.raw(
-                raw_query=f"SELECT * FROM tracking_dev_employee WHERE user_id={request.user.id}"
-            )
+            count_projects = Project.objects.filter(code=code).count()
+            if count_projects > 0:
+                messages.error(request, f"Проект с кодом '{code}' уже существует в системе. Пожалуйста, создайте "
+                                        f"другой проект")
+            else:
+                creation_form.save()
 
-            project_id = 0
-            employee_id = 0
+                new_project = Project.objects.raw(
+                    raw_query=f"SELECT * FROM tracking_dev_project WHERE code='{code}'"
+                )
+                list_employees = Employee.objects.raw(
+                    raw_query=f"SELECT * FROM tracking_dev_employee WHERE user_id={request.user.id}"
+                )
 
-            for current_project in new_project:
-                project_id = current_project.project_id
+                project_id = 0
+                employee_id = 0
 
-            for current_employee in list_employees:
-                employee_id = current_employee.employee_id
+                for current_project in new_project:
+                    project_id = current_project.project_id
 
-            with connection.cursor() as cursor:
-                cursor.execute(f"insert into tracking_dev_employee_projects(employee_id, project_id, is_activate) "
-                               f"values ({employee_id}, {project_id}, True)")
+                for current_employee in list_employees:
+                    employee_id = current_employee.employee_id
 
-            next = request.POST.get('next', '/')
-            messages.success(request, "Проект был успешно создан")
-            return HttpResponseRedirect(next)
+                with connection.cursor() as cursor:
+                    cursor.execute(f"insert into tracking_dev_employee_projects(employee_id, project_id, is_activate) "
+                                   f"values ({employee_id}, {project_id}, True)")
+
+                next = request.POST.get('next', '/')
+                messages.success(request, "Проект был успешно создан")
+                return HttpResponseRedirect(next)
         else:
             messages.error(request, "Ошибка валидации формы")
     else:
@@ -1171,12 +1176,20 @@ def edit_project(request, project_id):
 
     instance = get_object_or_404(Project, project_id=project_id)
     form = CreateProjectForm(request.POST or None, instance=instance)
-    if form.is_valid():
-        form.save()
 
-        next = request.POST.get('next', '/')
-        messages.success(request, "Информация о проекте была успешно обновлена")
-        return HttpResponseRedirect(next)
+    if form.is_valid():
+        code = form.cleaned_data['code']
+
+        is_project_exists = Project.objects.filter(Q(code=code) & ~Q(project_id=project_id)).count()
+        if is_project_exists:
+            messages.error(request, f"Проект с кодом '{code}' уже существует в системе. Пожалуйста, создайте "
+                                    f"другой проект")
+        else:
+            form.save()
+
+            next = request.POST.get('next', '/')
+            messages.success(request, "Информация о проекте была успешно обновлена")
+            return HttpResponseRedirect(next)
 
     return render(request, 'include/base_form.html', {
         'form': form,
@@ -1198,11 +1211,18 @@ def create_profession(request):
         creation_form = ProfessionForm(data=request.POST)
 
         if creation_form.is_valid():
-            creation_form.save()
+            code = creation_form.cleaned_data['code']
 
-            next = request.POST.get('next', '/')
-            messages.success(request, "Должность была успешно создана")
-            return HttpResponseRedirect(next)
+            is_profession_exists = Profession.objects.filter(code=code).count()
+            if is_profession_exists:
+                messages.error(request, f"Должность с кодом '{code}' уже существует в системе. Пожалуйста, создайте "
+                                        f"другую должность")
+            else:
+                creation_form.save()
+
+                next = request.POST.get('next', '/')
+                messages.success(request, "Должность была успешно создана")
+                return HttpResponseRedirect(next)
     else:
         creation_form = ProfessionForm()
 
@@ -1226,12 +1246,19 @@ def edit_profession(request, profession_id):
     form = ProfessionForm(request.POST or None, instance=instance)
 
     if form.is_valid():
-        form.save()
+        code = form.cleaned_data['code']
 
-        next = request.POST.get('next', '/')
+        is_profession_exists = Profession.objects.filter(Q(code=code) & ~Q(profession_id=profession_id)).count()
+        if is_profession_exists:
+            messages.error(request, f"Должность с кодом '{code}' уже существует в системе. Пожалуйста, создайте "
+                                    f"другую должность")
+        else:
+            form.save()
 
-        messages.success(request, "Сведения о должности были успешно обновлены")
-        return HttpResponseRedirect(next)
+            next = request.POST.get('next', '/')
+
+            messages.success(request, "Сведения о должности были успешно обновлены")
+            return HttpResponseRedirect(next)
 
     return render(request, 'include/base_form.html', {
         'title_page': 'Форма редактирования должности',
@@ -1252,11 +1279,18 @@ def create_priority(request):
         creation_form = CreatePriorityForm(data=request.POST)
 
         if creation_form.is_valid():
-            creation_form.save()
+            code = creation_form.cleaned_data['code']
 
-            next = request.POST.get('next', '/')
-            messages.success(request, "Приоритет был успешно создан")
-            return HttpResponseRedirect(next)
+            is_priority_exists = Priority.objects.filter(code=code).count()
+            if is_priority_exists:
+                messages.error(request, f"Приоритет с кодом '{code}' уже существует в системе. Пожалуйста, создайте "
+                                        f"другой приоритет задачи")
+            else:
+                creation_form.save()
+
+                next = request.POST.get('next', '/')
+                messages.success(request, "Приоритет был успешно создан")
+                return HttpResponseRedirect(next)
     else:
         creation_form = CreatePriorityForm()
 
@@ -1286,14 +1320,19 @@ def create_sprint(request, project_id):
             date_start = creation_form.cleaned_data['date_start']
             date_end = creation_form.cleaned_data['date_end']
 
-            SprintData = Sprint(code=code, name=name, description=description, project_id=project_id,
-                                date_start=date_start, date_end=date_end)
-            SprintData.save()
+            is_sprint_exists = Sprint.objects.filter(code=code).count()
+            if is_sprint_exists:
+                messages.error(request, f"Спринт с кодом '{code}' уже существует в системе. Пожалуйста, создайте "
+                                        f"другой спринт")
+            else:
+                SprintData = Sprint(code=code, name=name, description=description, project_id=project_id,
+                                    date_start=date_start, date_end=date_end)
+                SprintData.save()
 
-            next = request.POST.get('next', '/')
-            messages.success(request, "Спринт был успешно создан")
+                next = request.POST.get('next', '/')
+                messages.success(request, "Спринт был успешно создан")
 
-            return HttpResponseRedirect(next)
+                return HttpResponseRedirect(next)
     else:
         creation_form = CreateSprintForm()
 
@@ -1317,12 +1356,19 @@ def edit_sprint(request, project_id, sprint_id):
     form = CreateSprintForm(request.POST or None, instance=instance)
 
     if form.is_valid():
-        form.save()
+        code = form.cleaned_data['code']
 
-        next = request.POST.get('next', '/')
+        is_sprint_exists = Sprint.objects.filter(Q(code=code) & ~Q(sprint_id=sprint_id)).count()
+        if is_sprint_exists:
+            messages.error(request, f"Спринт с кодом '{code}' уже существует в системе. Пожалуйста, создайте "
+                                    f"другой спринт")
+        else:
+            form.save()
 
-        messages.success(request, "Сведения о спринте были обновлены")
-        return HttpResponseRedirect(next)
+            next = request.POST.get('next', '/')
+
+            messages.success(request, "Сведения о спринте были обновлены")
+            return HttpResponseRedirect(next)
 
     return render(request, 'include/base_form.html', {
         'title_page': 'Форма редактирования спринта',
@@ -1342,11 +1388,18 @@ def edit_priority(request, priority_id):
     instance = get_object_or_404(Priority, priority_id=priority_id)
     form = CreatePriorityForm(request.POST or None, instance=instance)
     if form.is_valid():
-        form.save()
+        code = form.cleaned_data['code']
 
-        next = request.POST.get('next', '/')
-        messages.success(request, "Приоритет был успешно обновлён")
-        return HttpResponseRedirect(next)
+        is_priority_exists = Priority.objects.filter(Q(code=code) & ~Q(priority_id=priority_id)).count()
+        if is_priority_exists:
+            messages.error(request, f"Приоритет с кодом '{code}' уже существует в системе. Пожалуйста, создайте "
+                                    f"другой приоритет задачи")
+        else:
+            form.save()
+
+            next = request.POST.get('next', '/')
+            messages.success(request, "Приоритет был успешно обновлён")
+            return HttpResponseRedirect(next)
 
     return render(request, 'include/base_form.html', {
         'title_page': 'Форма редактирования приоритета',
@@ -1408,7 +1461,8 @@ def create_laboriousness(request, project_id, task_id):
             else:
                 if len(list(list_data)) > 0:
                     messages.error(request, "Трудоёмкость для данного пользователя уже "
-                                            "имеется в системе. Пожалуйста, выберите другого пользователя или отредактируйте"
+                                            "имеется в системе. Пожалуйста, выберите другого пользователя или "
+                                            "отредактируйте"
                                             " запись для данного")
                 elif len(list(is_user_exists)) == 0:
                     messages.error(request, "Данный сотрудник ничего не имеет общего с данной задачей")
@@ -1470,31 +1524,36 @@ def create_state(request):
             code = creation_form.cleaned_data['code']
             is_ticked_checkbox = creation_form.cleaned_data['isClosed']
 
-            next = request.POST.get('next', '/')
-
-            if is_ticked_checkbox:
-                count_closed_states = State.objects.filter(isClosed=True).count()
-
-                if count_closed_states == 0:
-                    my_state = State(name=name, code=code, description=description, percentage=100,
-                                     isClosed=is_ticked_checkbox)
-                    my_state.save()
-
-                    my_state.projects.set(Project.objects.all())
-
-                    messages.success(request, "Состояние успешно создано")
-                    return HttpResponseRedirect(next)
-                else:
-                    messages.error(request, "Состояние закрытой задачи уже существует в системе")
+            is_state_exists = State.objects.filter(code=code).count()
+            if is_state_exists:
+                messages.error(request, f"Состояние с кодом '{code}' уже существует в системе. Пожалуйста, "
+                                        f"создайте другое состояние задачи")
             else:
-                # Если % выполнения задачи > 100, то выдаём ошибку, так как процент не может быть больше 99
-                # для незакрытого состояния
-                if percentage >= 100:
-                    messages.error(request,
-                                   "Процент выполнения задачи не может превышать 99 для не закрытого состояния задачи")
+                next = request.POST.get('next', '/')
+
+                if is_ticked_checkbox:
+                    count_closed_states = State.objects.filter(isClosed=True).count()
+
+                    if count_closed_states == 0:
+                        my_state = State(name=name, code=code, description=description, percentage=100,
+                                         isClosed=is_ticked_checkbox)
+                        my_state.save()
+
+                        my_state.projects.set(Project.objects.all())
+
+                        messages.success(request, "Состояние успешно создано")
+                        return HttpResponseRedirect(next)
+                    else:
+                        messages.error(request, "Состояние закрытой задачи уже существует в системе")
                 else:
-                    creation_form.save()
-                    return HttpResponseRedirect(next)
+                    # Если % выполнения задачи > 100, то выдаём ошибку, так как процент не может быть больше 99
+                    # для незакрытого состояния
+                    if percentage >= 100:
+                        messages.error(request,
+                                       "Процент выполнения задачи не может превышать 99 для не закрытого состояния задачи")
+                    else:
+                        creation_form.save()
+                        return HttpResponseRedirect(next)
         else:
             messages.error(request, "Произошла ошибка при вводе данных. Убедитесь, что информация введена верно")
     else:
@@ -1520,35 +1579,40 @@ def edit_states(request, state_id):
     form = CreateStateForm(request.POST or None, instance=instance)
 
     if form.is_valid():
+        code = form.cleaned_data['code']
         percentage = form.cleaned_data['percentage']
         is_checkbox_ticked = form.cleaned_data['isClosed']
 
         next = request.POST.get('next', '/')
 
-        # The condition of the count closed tasks can be if the checkbox has ticked.
-        if is_checkbox_ticked:
-            count_another_closed_tasks = State.objects.filter(Q(isClosed=True) & ~Q(state_id=state_id)
-                                                              & Q(is_activate=True)).count()
-
-            if count_another_closed_tasks == 0:
-                print("I am here")
-                form.save()
-                # Эта строчка приводит к ошибке
-                # instance.projects.set(Project.objects.all())
-
-                return HttpResponseRedirect(next)
-            else:
-                messages.error(request,
-                               "В базе данных уже имеется состояние, при котором задача может считаться закрытой")
+        is_state_exists = State.objects.filter(Q(code=code) & ~Q(state_id=state_id)).count()
+        if is_state_exists:
+            messages.error(request, f"Состояние с кодом '{code}' уже существует в системе. Пожалуйста, "
+                                    f"создайте другое состояние задачи")
         else:
-            if percentage >= 100:
-                messages.error(request,
-                               "Процент выполнения задачи не может превышать 99 для не закрытого состояния задачи")
-            else:
-                form.save()
+            # The condition of the count closed tasks can be if the checkbox has ticked.
+            if is_checkbox_ticked:
+                count_another_closed_tasks = State.objects.filter(Q(isClosed=True) & ~Q(state_id=state_id)
+                                                                  & Q(is_activate=True)).count()
 
-                messages.success(request, "Состояние задачи было успешно изменено")
-                return HttpResponseRedirect(next)
+                if count_another_closed_tasks == 0:
+                    form.save()
+                    # Эта строчка приводит к ошибке
+                    # instance.projects.set(Project.objects.all())
+
+                    return HttpResponseRedirect(next)
+                else:
+                    messages.error(request,
+                                   "В базе данных уже имеется состояние, при котором задача может считаться закрытой")
+            else:
+                if percentage >= 100:
+                    messages.error(request,
+                                   "Процент выполнения задачи не может превышать 99 для не закрытого состояния задачи")
+                else:
+                    form.save()
+
+                    messages.success(request, "Состояние задачи было успешно изменено")
+                    return HttpResponseRedirect(next)
 
     return render(request, "include/base_form.html", {
         'title_page': 'Форма рредактирования текущего состояния',
@@ -1568,12 +1632,19 @@ def create_type_task(request):
     if request.method == "POST":
         creation_form = CreateTypeTaskForm(data=request.POST)
         if creation_form.is_valid():
-            creation_form.save()
+            code = creation_form.cleaned_data['code']
 
-            next = request.POST.get('next', '/')
+            is_type_exists = TypeTask.objects.filter(code=code).count()
+            if is_type_exists:
+                messages.error(request, f"Тип задачи с кодом '{code}' уже существует в системе. Пожалуйста, "
+                                        f"создайте другой тип задачи")
+            else:
+                creation_form.save()
 
-            messages.success(request, "Тип задачи был успешно создан")
-            return HttpResponseRedirect(next)
+                next = request.POST.get('next', '/')
+
+                messages.success(request, "Тип задачи был успешно создан")
+                return HttpResponseRedirect(next)
     else:
         creation_form = CreateTypeTaskForm()
 
@@ -1596,12 +1667,19 @@ def edit_type_task(request, type_id):
     form = CreateTypeTaskForm(request.POST or None, instance=instance)
 
     if form.is_valid():
-        form.save()
+        code = form.cleaned_data['code']
 
-        next = request.POST.get('next', '/')
+        is_type_exists = TypeTask.objects.filter(Q(code=code) & ~Q(type_id=type_id)).count()
+        if is_type_exists:
+            messages.error(request, f"Тип задачи с кодом '{code}' уже существует в системе. Пожалуйста, "
+                                    f"создайте другой тип задачи")
+        else:
+            form.save()
 
-        messages.success(request, "Тип задачи был успешно изменён")
-        return HttpResponseRedirect(next)
+            next = request.POST.get('next', '/')
+
+            messages.success(request, "Тип задачи был успешно изменён")
+            return HttpResponseRedirect(next)
 
     return render(request, 'include/base_form.html', {
         'title_page': 'Форма редактирования типа задачи',
@@ -1632,7 +1710,7 @@ def create_task(request, project_id):
         employee_arr = data
 
     if request.method == "POST":
-        creation_form = CreateTaskForm(data=request.POST, initial={'project': raw_data})
+        creation_form = CreateTaskForm(data=request.POST, initial={'project': arr})
         if creation_form.is_valid():
             code = creation_form.cleaned_data['code']
             name = creation_form.cleaned_data['name']
@@ -1644,15 +1722,20 @@ def create_task(request, project_id):
             type_task = creation_form.cleaned_data['type']
             date_deadline = creation_form.cleaned_data['date_deadline']
 
-            task = Task(code=code, name=name, description=description, responsible=responsible, initiator=initiator,
-                        state=state, priority=priority, type=type_task, date_deadline=date_deadline, project=arr,
-                        manager=employee_arr)
-            task.save()
+            is_task_exists = Task.objects.filter(code=code).count()
+            if is_task_exists:
+                messages.error(request, f"Задача с кодом '{code}' уже существует в системе. Пожалуйста, "
+                                        f"создайте другую задачу")
+            else:
+                task = Task(code=code, name=name, description=description, responsible=responsible, initiator=initiator,
+                            state=state, priority=priority, type=type_task, date_deadline=date_deadline, project=arr,
+                            manager=employee_arr)
+                task.save()
 
-            next = request.POST.get('next', '/')
+                next = request.POST.get('next', '/')
 
-            messages.success(request, "Задача была успешно создана")
-            return HttpResponseRedirect(next)
+                messages.success(request, "Задача была успешно создана")
+                return HttpResponseRedirect(next)
     else:
         creation_form = CreateTaskForm(initial={'project': project_id})
 
@@ -1695,7 +1778,7 @@ def create_subtask_form(request, project_id, task_id):
         reference_task_arr = data
 
     if request.method == "POST":
-        creation_form = CreateTaskForm(data=request.POST)
+        creation_form = CreateTaskForm(data=request.POST, initial={'project': arr})
 
         if creation_form.is_valid():
             code = creation_form.cleaned_data['code']
@@ -1708,22 +1791,27 @@ def create_subtask_form(request, project_id, task_id):
             type_task = creation_form.cleaned_data['type']
             date_deadline = creation_form.cleaned_data['date_deadline']
 
-            task = Task(code=code, name=name, description=description, responsible=responsible, initiator=initiator,
-                        state=state, priority=priority, type=type_task, date_deadline=date_deadline, project=arr,
-                        manager=employee_arr)
-            task.save()
+            is_task_exists = Task.objects.filter(code=code).count()
+            if is_task_exists:
+                messages.error(request, f"Задача с кодом '{code}' уже существует в системе. Пожалуйста, "
+                                        f"создайте другую задачу")
+            else:
+                task = Task(code=code, name=name, description=description, responsible=responsible, initiator=initiator,
+                            state=state, priority=priority, type=type_task, date_deadline=date_deadline, project=arr,
+                            manager=employee_arr)
+                task.save()
 
-            subtask = SubTasks(task=task, reference_task=reference_task_arr)
-            subtask.save()
+                subtask = SubTasks(task=task, reference_task=reference_task_arr)
+                subtask.save()
 
-            next = request.POST.get('next', '/')
+                next = request.POST.get('next', '/')
 
-            messages.success(request, "Подзадача была успешно создана")
-            return HttpResponseRedirect(next)
+                messages.success(request, "Подзадача была успешно создана")
+                return HttpResponseRedirect(next)
         else:
             messages.error(request, "Ошибка при вводе данных")
     else:
-        creation_form = CreateTaskForm()
+        creation_form = CreateTaskForm(initial={'project': arr})
 
         # Use a many-to-many query
         creation_form.fields['responsible'].queryset = Employee.objects.filter(projects=project_id)
@@ -1750,12 +1838,19 @@ def edit_task(request, project_id, task_id):
     form = CreateTaskForm(request.POST or None, instance=instance, initial={'project': project_id})
 
     if form.is_valid():
-        form.save()
+        code = form.cleaned_data['code']
 
-        next = request.POST.get('next', '/')
+        is_task_exists = Task.objects.filter(Q(code=code) & ~Q(task_id=task_id)).count()
+        if is_task_exists:
+            messages.error(request, f"Задача с кодом '{code}' уже существует в системе. Пожалуйста, "
+                                    f"создайте другую задачу")
+        else:
+            form.save()
 
-        messages.success(request, "Задача была успешно изменена")
-        return HttpResponseRedirect(next)
+            next = request.POST.get('next', '/')
+
+            messages.success(request, "Задача была успешно изменена")
+            return HttpResponseRedirect(next)
 
     return render(request, 'include/base_form.html', {
         'title_page': 'Форма редактирования задачи',
@@ -1804,13 +1899,20 @@ def edit_employee(request, employee_id):
     form_user = ChangeUserCustomForm(request.POST or None, instance=instance_user)
 
     if form_employee.is_valid():
-        form_employee.save()
-        form_user.save()
+        username = form_user.get_user_name()
 
-        next = request.POST.get('next', '/')
+        is_user_exists = User.objects.filter(Q(username=username) & ~Q(id=request.user.id)).count()
+        if is_user_exists:
+            messages.error(request, "Пользователь с данным ник-неймом существует в системе. Пожалуйста, выберите "
+                                    "другого пользователя")
+        else:
+            form_employee.save()
+            form_user.save()
 
-        messages.success(request, "Пользовательские данные успешно обновлены")
-        return HttpResponseRedirect(next)
+            next = request.POST.get('next', '/')
+
+            messages.success(request, "Пользовательские данные успешно обновлены")
+            return HttpResponseRedirect(next)
 
     return render(request, 'include/base_form_custom.html', {
         'title_page': 'Форма редактирования сведений о сотруднике',
