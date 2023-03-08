@@ -161,19 +161,19 @@ class CreateSprintForm(forms.ModelForm):
             'rows': '3',
             'style': 'margin-bottom: 20px'}))
 
-        self.fields['date_start'] = forms.DateField(widget=forms.SelectDateWidget(attrs={
-            "style": "margin-bottom: 20px"
-        }))
-
-        self.fields['date_end'] = forms.DateField(widget=forms.SelectDateWidget(attrs={
-            "style": "margin-bottom: 20px"
-        }))
+        self.fields['date_start'] = forms.DateField(widget=forms.DateInput())
+        self.fields['date_end'] = forms.DateField(widget=forms.DateInput())
 
         self.fields['code'].label = "Код"
         self.fields['name'].label = "Название"
         self.fields['description'].label = "Описание"
         self.fields['date_start'].label = "Дата начала"
         self.fields['date_end'].label = "Дата окончания"
+
+        self.fields['date_start'].help_text = "<p style='margin-bottom: 20px'>Формат ввода данных: гг-мм-дд. " \
+                                              "Пример: 2023-02-28</p>"
+        self.fields['date_end'].help_text = "<p style='margin-bottom: 20px'>Формат ввода данных: гг-мм-дд. " \
+                                            "Пример: 2023-02-28</p>"
 
 
 # Login Form
@@ -265,7 +265,7 @@ class CreateTaskForm(forms.ModelForm):
         self.fields['initiator'].queryset = Employee.objects.filter(Q(is_activate=True) &
                                                                     Q(projects=kwargs['initial']['project']))
         self.fields['manager'].queryset = Employee.objects.filter(Q(is_activate=True) &
-                                                                   Q(projects=kwargs['initial']['project']))
+                                                                  Q(projects=kwargs['initial']['project']))
         self.fields['priority'].queryset = Priority.objects.filter(Q(is_activate=True) &
                                                                    Q(projects=kwargs['initial']['project']))
         self.fields['type'].queryset = TypeTask.objects.filter(Q(is_activate=True) &
@@ -292,9 +292,7 @@ class CreateTaskForm(forms.ModelForm):
             "style": "margin-bottom: 20px"
         }
 
-        self.fields['date_deadline'] = forms.DateField(widget=forms.SelectDateWidget(attrs={
-            "style": "margin-bottom: 20px"
-        }))
+        self.fields['date_deadline'] = forms.DateField(widget=forms.DateInput())
 
         # Enter the label to the all tasks
         self.fields['code'].label = "Код"
@@ -307,6 +305,9 @@ class CreateTaskForm(forms.ModelForm):
         self.fields['type'].label = "Тип задачи"
         self.fields['state'].label = "Текущее состояние задачи"
         self.fields['date_deadline'].label = "Дата выполнения задания"
+
+        self.fields['date_deadline'].help_text = "<p style='margin-bottom: 20px'>Формат ввода данных: гг-мм-дд. " \
+                                                 "Пример: 2023-02-28</p>"
 
 
 # This form provides employee creation
