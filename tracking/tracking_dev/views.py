@@ -1123,7 +1123,7 @@ def create_project(request):
             # Auto add manager to table
             code = creation_form.cleaned_data['code']
 
-            count_projects = Project.objects.filter(code=code).count()
+            count_projects = Project.objects.filter(Q(code=code) & Q(is_activate=True)).count()
             if count_projects > 0:
                 messages.error(request, f"Проект с кодом '{code}' уже существует в системе. Пожалуйста, создайте "
                                         f"другой проект")
@@ -1180,7 +1180,8 @@ def edit_project(request, project_id):
     if form.is_valid():
         code = form.cleaned_data['code']
 
-        is_project_exists = Project.objects.filter(Q(code=code) & ~Q(project_id=project_id)).count()
+        is_project_exists = Project.objects.filter(Q(code=code) & ~Q(project_id=project_id) &
+                                                   Q(is_activate=True)).count()
         if is_project_exists:
             messages.error(request, f"Проект с кодом '{code}' уже существует в системе. Пожалуйста, создайте "
                                     f"другой проект")
@@ -1213,7 +1214,7 @@ def create_profession(request):
         if creation_form.is_valid():
             code = creation_form.cleaned_data['code']
 
-            is_profession_exists = Profession.objects.filter(code=code).count()
+            is_profession_exists = Profession.objects.filter(Q(code=code) & Q(is_activate=True)).count()
             if is_profession_exists:
                 messages.error(request, f"Должность с кодом '{code}' уже существует в системе. Пожалуйста, создайте "
                                         f"другую должность")
@@ -1248,7 +1249,8 @@ def edit_profession(request, profession_id):
     if form.is_valid():
         code = form.cleaned_data['code']
 
-        is_profession_exists = Profession.objects.filter(Q(code=code) & ~Q(profession_id=profession_id)).count()
+        is_profession_exists = Profession.objects.filter(Q(code=code) & ~Q(profession_id=profession_id)
+                                                         & Q(is_activate=True)).count()
         if is_profession_exists:
             messages.error(request, f"Должность с кодом '{code}' уже существует в системе. Пожалуйста, создайте "
                                     f"другую должность")
@@ -1281,7 +1283,7 @@ def create_priority(request):
         if creation_form.is_valid():
             code = creation_form.cleaned_data['code']
 
-            is_priority_exists = Priority.objects.filter(code=code).count()
+            is_priority_exists = Priority.objects.filter(Q(code=code) & Q(is_activate=True)).count()
             if is_priority_exists:
                 messages.error(request, f"Приоритет с кодом '{code}' уже существует в системе. Пожалуйста, создайте "
                                         f"другой приоритет задачи")
@@ -1320,7 +1322,7 @@ def create_sprint(request, project_id):
             date_start = creation_form.cleaned_data['date_start']
             date_end = creation_form.cleaned_data['date_end']
 
-            is_sprint_exists = Sprint.objects.filter(code=code).count()
+            is_sprint_exists = Sprint.objects.filter(Q(code=code) & Q(is_activate=True)).count()
             if is_sprint_exists:
                 messages.error(request, f"Спринт с кодом '{code}' уже существует в системе. Пожалуйста, создайте "
                                         f"другой спринт")
@@ -1358,7 +1360,8 @@ def edit_sprint(request, project_id, sprint_id):
     if form.is_valid():
         code = form.cleaned_data['code']
 
-        is_sprint_exists = Sprint.objects.filter(Q(code=code) & ~Q(sprint_id=sprint_id)).count()
+        is_sprint_exists = Sprint.objects.filter(Q(code=code) & ~Q(sprint_id=sprint_id)
+                                                 & Q(is_activate=True)).count()
         if is_sprint_exists:
             messages.error(request, f"Спринт с кодом '{code}' уже существует в системе. Пожалуйста, создайте "
                                     f"другой спринт")
@@ -1390,7 +1393,8 @@ def edit_priority(request, priority_id):
     if form.is_valid():
         code = form.cleaned_data['code']
 
-        is_priority_exists = Priority.objects.filter(Q(code=code) & ~Q(priority_id=priority_id)).count()
+        is_priority_exists = Priority.objects.filter(Q(code=code) & ~Q(priority_id=priority_id)
+                                                     & Q(is_activate=True)).count()
         if is_priority_exists:
             messages.error(request, f"Приоритет с кодом '{code}' уже существует в системе. Пожалуйста, создайте "
                                     f"другой приоритет задачи")
@@ -1524,7 +1528,7 @@ def create_state(request):
             code = creation_form.cleaned_data['code']
             is_ticked_checkbox = creation_form.cleaned_data['isClosed']
 
-            is_state_exists = State.objects.filter(code=code).count()
+            is_state_exists = State.objects.filter(Q(code=code) & Q(is_activate=True)).count()
             if is_state_exists:
                 messages.error(request, f"Состояние с кодом '{code}' уже существует в системе. Пожалуйста, "
                                         f"создайте другое состояние задачи")
@@ -1585,7 +1589,8 @@ def edit_states(request, state_id):
 
         next = request.POST.get('next', '/')
 
-        is_state_exists = State.objects.filter(Q(code=code) & ~Q(state_id=state_id)).count()
+        is_state_exists = State.objects.filter(Q(code=code) & ~Q(state_id=state_id)
+                                               & Q(is_activate=True)).count()
         if is_state_exists:
             messages.error(request, f"Состояние с кодом '{code}' уже существует в системе. Пожалуйста, "
                                     f"создайте другое состояние задачи")
@@ -1634,7 +1639,7 @@ def create_type_task(request):
         if creation_form.is_valid():
             code = creation_form.cleaned_data['code']
 
-            is_type_exists = TypeTask.objects.filter(code=code).count()
+            is_type_exists = TypeTask.objects.filter(Q(code=code) & Q(is_activate=True)).count()
             if is_type_exists:
                 messages.error(request, f"Тип задачи с кодом '{code}' уже существует в системе. Пожалуйста, "
                                         f"создайте другой тип задачи")
@@ -1669,7 +1674,8 @@ def edit_type_task(request, type_id):
     if form.is_valid():
         code = form.cleaned_data['code']
 
-        is_type_exists = TypeTask.objects.filter(Q(code=code) & ~Q(type_id=type_id)).count()
+        is_type_exists = TypeTask.objects.filter(Q(code=code) & ~Q(type_id=type_id)
+                                                 & Q(is_activate=True)).count()
         if is_type_exists:
             messages.error(request, f"Тип задачи с кодом '{code}' уже существует в системе. Пожалуйста, "
                                     f"создайте другой тип задачи")
@@ -1717,19 +1723,20 @@ def create_task(request, project_id):
             description = creation_form.cleaned_data['description']
             responsible = creation_form.cleaned_data['responsible']
             initiator = creation_form.cleaned_data['initiator']
+            manager = creation_form.cleaned_data['manager']
             state = creation_form.cleaned_data['state']
             priority = creation_form.cleaned_data['priority']
             type_task = creation_form.cleaned_data['type']
             date_deadline = creation_form.cleaned_data['date_deadline']
 
-            is_task_exists = Task.objects.filter(code=code).count()
+            is_task_exists = Task.objects.filter(Q(code=code) & Q(is_activate=True)).count()
             if is_task_exists:
                 messages.error(request, f"Задача с кодом '{code}' уже существует в системе. Пожалуйста, "
                                         f"создайте другую задачу")
             else:
                 task = Task(code=code, name=name, description=description, responsible=responsible, initiator=initiator,
                             state=state, priority=priority, type=type_task, date_deadline=date_deadline, project=arr,
-                            manager=employee_arr)
+                            manager=manager)
                 task.save()
 
                 next = request.POST.get('next', '/')
@@ -1738,10 +1745,6 @@ def create_task(request, project_id):
                 return HttpResponseRedirect(next)
     else:
         creation_form = CreateTaskForm(initial={'project': project_id})
-
-        # Use a many-to-many query
-        creation_form.fields['responsible'].queryset = Employee.objects.filter(projects=project_id)
-        creation_form.fields['initiator'].queryset = Employee.objects.filter(projects=project_id)
 
     return render(request, 'include/base_form.html', {
         'title_page': 'Форма создания новой задачи',
@@ -1791,7 +1794,7 @@ def create_subtask_form(request, project_id, task_id):
             type_task = creation_form.cleaned_data['type']
             date_deadline = creation_form.cleaned_data['date_deadline']
 
-            is_task_exists = Task.objects.filter(code=code).count()
+            is_task_exists = Task.objects.filter(Q(code=code) & Q(is_activate=True)).count()
             if is_task_exists:
                 messages.error(request, f"Задача с кодом '{code}' уже существует в системе. Пожалуйста, "
                                         f"создайте другую задачу")
@@ -1840,7 +1843,7 @@ def edit_task(request, project_id, task_id):
     if form.is_valid():
         code = form.cleaned_data['code']
 
-        is_task_exists = Task.objects.filter(Q(code=code) & ~Q(task_id=task_id)).count()
+        is_task_exists = Task.objects.filter(Q(code=code) & ~Q(task_id=task_id) & Q(is_activate=True)).count()
         if is_task_exists:
             messages.error(request, f"Задача с кодом '{code}' уже существует в системе. Пожалуйста, "
                                     f"создайте другую задачу")

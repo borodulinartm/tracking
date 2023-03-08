@@ -260,16 +260,18 @@ class CreateTaskForm(forms.ModelForm):
         }))
 
         # This line is correct for the modelChoiceField
-        self.fields['responsible'].queryset = Employee.objects.filter(is_activate=True)
-        self.fields['initiator'].queryset = Employee.objects.filter(is_activate=True)
-        self.fields['manager'].querysetr = Employee.objects.filter(is_activate=True)
+        self.fields['responsible'].queryset = Employee.objects.filter(Q(is_activate=True) &
+                                                                      Q(projects=kwargs['initial']['project']))
+        self.fields['initiator'].queryset = Employee.objects.filter(Q(is_activate=True) &
+                                                                    Q(projects=kwargs['initial']['project']))
+        self.fields['manager'].queryset = Employee.objects.filter(Q(is_activate=True) &
+                                                                   Q(projects=kwargs['initial']['project']))
         self.fields['priority'].queryset = Priority.objects.filter(Q(is_activate=True) &
                                                                    Q(projects=kwargs['initial']['project']))
         self.fields['type'].queryset = TypeTask.objects.filter(Q(is_activate=True) &
                                                                Q(projects=kwargs['initial']['project']))
         self.fields['state'].queryset = State.objects.filter(Q(is_activate=True) &
                                                              Q(projects=kwargs['initial']['project']))
-        # self.fields['project'].queryset = Project.objects.filter(is_activate=True)
 
         self.fields['responsible'].widget.attrs = {
             "style": "margin-bottom: 20px"
