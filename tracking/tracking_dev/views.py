@@ -505,7 +505,7 @@ def state_description(request, state_id):
         raw_query=f"select * from tracking_dev_employee_projects tdep "
                   f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
                   f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "
-                  f"where tde.user_id = {request.user.id};"
+                  f"where tde.user_id = {request.user.id} and tdp.is_activate=TRUE;"
     )
 
     tasks_with_current_state_id = Task.objects.filter(state_id=state_id).count()
@@ -583,7 +583,7 @@ def priority_description(request, priority_id):
         raw_query=f"select * from tracking_dev_employee_projects tdep "
                   f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
                   f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "
-                  f"where tde.user_id = {request.user.id};"
+                  f"where tde.user_id = {request.user.id} and tdp.is_activate=TRUE;"
     )
 
     list_projects = Project.objects.raw(
@@ -670,7 +670,7 @@ def type_task_description(request, type_id):
         raw_query=f"select * from tracking_dev_employee_projects tdep "
                   f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
                   f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "
-                  f"where tde.user_id = {request.user.id};"
+                  f"where tde.user_id = {request.user.id} and tdp.is_activate=TRUE;"
     )
 
     return render(request, "include/description/type.html", {
@@ -3120,9 +3120,9 @@ def kanban_board_manager(request, project_id):
         return HttpResponseForbidden()
 
     data = State.objects.raw(
-        raw_query=f"select * from tracking_dev_state tds "
-                  f"where tds.is_activate "
-                  f"order by tds.\"isClosed\", tds.percentage"
+        raw_query=f"select * from tracking_dev_state_projects tdsp "
+                  f"join tracking_dev_state tds on tdsp.state_id = tds.state_id "
+                  f"where tdsp.project_id = {project_id}"
     )
 
     tasks_by_state = []
