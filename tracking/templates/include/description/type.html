@@ -170,36 +170,13 @@
                 <div class="position_block">
                     <a class="btn btn-outline-light"
                        data-bs-toggle="modal"
+                       onclick="fill_checkboxes()"
                        data-bs-target="#collapseExample_settings_projects">
                         <img src="{% static 'img/settings-sliders.svg' %}" alt="settings" rel="icon">
                     </a>
                 </div>
 
                 <div class="position_block" id="block_projects">
-                    {% for project in projects_accessible %}
-                        <a href="{% url 'project_description' project_id=project.project_id %}"
-                           class="list-group-item list-group-item-action text_button rounded-2"
-                           aria-current="true">
-                            <div class="d-flex w-100 justify-content-between">
-                                <h3 class="mb-1">
-                                    <img src="{% static 'img/project.svg' %}" alt="pencil" rel="icon">
-                                    {{ project.name }}
-                                </h3>
-                                <small>{{ project.date_create }}</small>
-                            </div>
-
-                            <p class="mb-1" style="margin-top: 10px">
-                                <svg xmlns="http://www.w3.org/2000/svg" id="Outline" viewBox="0 0 24 24"
-                                     width="24"
-                                     height="24">
-                                    <path d="M12,0A12,12,0,1,0,24,12,12.013,12.013,0,0,0,12,0Zm0,22A10,10,0,1,1,22,12,10.011,10.011,0,0,1,12,22Z"></path>
-                                    <path d="M12,10H11a1,1,0,0,0,0,2h1v6a1,1,0,0,0,2,0V12A2,2,0,0,0,12,10Z"></path>
-                                    <circle cx="12" cy="6.5" r="1.5"></circle>
-                                </svg>
-                                {{ project.description|truncatechars:50 }}
-                            </p>
-                        </a>
-                    {% endfor %}
                 </div>
             </div>
         {% endif %}
@@ -210,29 +187,15 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Выбор задачи</h5>
+                    <h5 class="modal-title" id="exampleModalLabel">Выбор проекта</h5>
                     <a type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></a>
                 </div>
 
                 <div class="modal-body text_button">
                     <form class="form-inline search-form" method="get">
                         {% csrf_token %}
-                        <div class="form-check" style="margin-bottom: 10px">
-                            <label for="task_all">Отметить все</label>
-                            <input class="form-check-input"
-                                   type="checkbox" id="task_all" checked>
+                        <div class="position_block" id="block_checkboxes">
                         </div>
-
-                        <hr>
-
-                        {% for project in list_projects %}
-                            <div class="form-check" style="margin-bottom: 10px">
-                                <label for="project_{{ project.code }}">{{ project.name|truncatechars:30 }}</label>
-                                <input class="form-check-input"
-                                       type="checkbox" id="project_{{ project.code }}"
-                                       checked>
-                            </div>
-                        {% endfor %}
                     </form>
                 </div>
 
@@ -249,6 +212,9 @@
 
 {% block script %}
     <script>
+        let data;
+        let all_data;
+
         const change_tasks = (array_with_project_id) => {
             $.ajax({
                 type: 'POST',
@@ -257,7 +223,8 @@
                     'array_with_project_id': array_with_project_id,
                     'csrfmiddlewaretoken': '{{ csrf_token }}'
                 }, success: function (response) {
-                    const data = response.data;
+                    data = response.data;
+                    all_data = response.all_data;
 
                     document.getElementById("count_projects").innerHTML = `
                     <a class="text-dark fw-bolder text_button text-decoration-none dropdown-toggle"
@@ -296,6 +263,22 @@
 
                         $("#block_projects").append(temp)
                     })
+
+                    document.getElementById("block_checkboxes").innerHTML = ""
+
+                    all_data.forEach(element => {
+                        const temp = `
+                        <div class="form-check" style="margin-bottom: 10px">
+                            <label for="project_${element.code}">${element.name.slice(0, 30)}</label>
+                            <input class="form-check-input"
+                                   type="checkbox" id="project_${element.code}">
+                        </div>
+                        `;
+
+                        $("#block_checkboxes").append(temp)
+                    })
+
+                    fill_checkboxes()
                 }, error: function (message) {
                     console.log(message)
                 }
@@ -306,20 +289,48 @@
             const array_data = [];
 
             let elem;
-            {% for project in list_projects %}
-                elem = document.getElementById("project_{{ project.code }}")
+            all_data.forEach(element => {
+                elem = document.getElementById(`project_${element.code}`)
                 if (elem.checked) {
-                    array_data.push("{{ project.project_id }}")
+                    array_data.push(`${element.project_id}`)
                 }
-            {% endfor %}
+            })
 
             if (array_data.length > 0) {
-                console.log(array_data)
                 change_tasks(array_data.join(','))
             } else {
                 console.log("No data available :(")
                 change_tasks("-1")
             }
         }
+
+        function init_data() {
+            const array_data = []
+            {% for project in projects_accessible %}
+                array_data.push("{{ project.project_id }}")
+            {% endfor %}
+
+            if (array_data.length > 0) {
+                change_tasks(array_data.join(', '))
+            } else {
+                change_tasks("-1")
+            }
+        }
+
+        function fill_checkboxes() {
+            let element_checkbox;
+
+            all_data.forEach(element => {
+                element_checkbox = document.getElementById("project_" + String(element.code))
+                element_checkbox.checked = false;
+            })
+
+            data.forEach(element => {
+                element_checkbox = document.getElementById(`project_${element.code}`)
+                element_checkbox.checked = true;
+            })
+        }
+
+        init_data()
     </script>
 {% endblock script %}

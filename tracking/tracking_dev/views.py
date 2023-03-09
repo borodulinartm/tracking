@@ -2717,6 +2717,21 @@ def search_collabarators(request, project_id):
                          'is_admin_zone': request.user.is_staff})
 
 
+def pack_projects(list_projects):
+    result = []
+    for projects in list_projects:
+        items = {
+            "project_id": projects.project_id,
+            "name": projects.name,
+            "code": projects.code,
+            "description": projects.description,
+            "date_create": projects.date_create
+        }
+
+        result.append(items)
+    return result
+
+
 # This method changes the compound of the projects to the type task
 def change_compound_projects_to_type_task(request, type_id):
     if not request.user.is_authenticated:
@@ -2751,19 +2766,18 @@ def change_compound_projects_to_type_task(request, type_id):
                           f"tracking_dev_typetask_projects tdtp join tracking_dev_project tdp "
                           f"on tdtp.project_id = tdp.project_id where tdp.project_id in ({array_with_project_id})"
             )
+            accesible_projects = Project.objects.raw(
+                raw_query=f"select * from tracking_dev_employee_projects tdep "
+                          f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
+                          f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "
+                          f"where tde.user_id = {request.user.id} and tdp.is_activate=TRUE;"
+            )
 
-            result = []
-            for projects in list_projects:
-                items = {
-                    "project_id": projects.project_id,
-                    "name": projects.name,
-                    "description": projects.description,
-                    "date_create": projects.date_create
-                }
+            return JsonResponse({"data": pack_projects(list_projects),
+                                 "all_data": pack_projects(accesible_projects),
+                                 "type_id": type_id})
+    return JsonResponse({"data": [], "all_data": [], "type_id": type_id})
 
-                result.append(items)
-            return JsonResponse({"data": result, "type_id": type_id})
-    return JsonResponse({"data": [], "type_id": type_id})
 
 # This method adds new users to the project
 def add_employee_to_project(request, project_id, employee_id):
