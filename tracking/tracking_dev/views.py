@@ -2740,6 +2740,13 @@ def change_compound_projects_to_type_task(request, type_id):
     if not request.user.is_staff:
         return HttpResponseForbidden()
 
+    accesible_projects = Project.objects.raw(
+        raw_query=f"select * from tracking_dev_employee_projects tdep "
+                  f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
+                  f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "
+                  f"where tde.user_id = {request.user.id} and tdp.is_activate=TRUE;"
+    )
+
     if request.method == "POST":
         # If the type is POST, we need check if request is ajax.
         is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
@@ -2747,36 +2754,32 @@ def change_compound_projects_to_type_task(request, type_id):
             array_with_project_id = request.POST.get('array_with_project_id')
             project_list = array_with_project_id.split(',')
 
-            try:
-                with connection.cursor() as cursor:
-                    # 1. Firstly, we need to remove the all projects
-                    cursor.execute(f"delete from tracking_dev_typetask_projects where typetask_id={type_id}")
+            if array_with_project_id != "-1":
+                try:
+                    with connection.cursor() as cursor:
+                        # 1. Firstly, we need to remove the all projects
+                        cursor.execute(f"delete from tracking_dev_typetask_projects where typetask_id={type_id}")
 
-                    # 2. Secondary, add projects with the specific type id to project
-                    for project_id in project_list:
-                        cursor.execute(
-                            f"insert into tracking_dev_typetask_projects(typetask_id, project_id) "
-                            f"values ({type_id}, {project_id})")
-            except Exception as error:
-                print(error)
+                        # 2. Secondary, add projects with the specific type id to project
+                        for project_id in project_list:
+                            cursor.execute(
+                                f"insert into tracking_dev_typetask_projects(typetask_id, project_id) "
+                                f"values ({type_id}, {project_id})")
+                except Exception as error:
+                    print(error)
 
-            list_projects = TypeTask.objects.raw(
-                raw_query=f"select distinct 1 as type_id, tdp.project_id, tdp.code, tdp.\"name\", tdp.description"
-                          f", tdp.date_create from "
-                          f"tracking_dev_typetask_projects tdtp join tracking_dev_project tdp "
-                          f"on tdtp.project_id = tdp.project_id where tdp.project_id in ({array_with_project_id})"
-            )
-            accesible_projects = Project.objects.raw(
-                raw_query=f"select * from tracking_dev_employee_projects tdep "
-                          f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
-                          f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "
-                          f"where tde.user_id = {request.user.id} and tdp.is_activate=TRUE;"
-            )
+                list_projects = TypeTask.objects.raw(
+                    raw_query=f"select distinct 1 as type_id, tdp.project_id, tdp.code, tdp.\"name\", tdp.description"
+                              f", tdp.date_create from "
+                              f"tracking_dev_typetask_projects tdtp join tracking_dev_project tdp "
+                              f"on tdtp.project_id = tdp.project_id where tdp.project_id in ({array_with_project_id})"
+                )
 
-            return JsonResponse({"data": pack_projects(list_projects),
-                                 "all_data": pack_projects(accesible_projects),
-                                 "type_id": type_id})
-    return JsonResponse({"data": [], "all_data": [], "type_id": type_id})
+                return JsonResponse({"data": pack_projects(list_projects),
+                                     "all_data": pack_projects(accesible_projects),
+                                     "type_id": type_id})
+    return JsonResponse({"data": [], "all_data": pack_projects(accesible_projects),
+                         "type_id": type_id})
 
 
 # This method adds new users to the project

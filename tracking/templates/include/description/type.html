@@ -149,37 +149,35 @@
             </div>
         {% endfor %}
 
-        {% if projects_accessible %}
-            <div class="row">
-                <div class="col-sm">
-                    <div class="d-flex justify-content-center">
-                        <div class="row w-100">
-                            <div class="position_block" id="count_projects">
-                                <a class="text-dark fw-bolder text_button text-decoration-none dropdown-toggle"
-                                   data-bs-toggle="collapse" href="#collapseExample_projects" role="button"
-                                   aria-expanded="false" aria-controls="collapseExample_personal">
-                                    Доступно в проектах ({{ projects_accessible|length }})
-                                </a>
-                            </div>
+        <div class="row">
+            <div class="col-sm">
+                <div class="d-flex justify-content-center">
+                    <div class="row w-100">
+                        <div class="position_block" id="count_projects">
+                            <a class="text-dark fw-bolder text_button text-decoration-none dropdown-toggle"
+                               data-bs-toggle="collapse" href="#collapseExample_projects" role="button"
+                               aria-expanded="false" aria-controls="collapseExample_personal">
+                                Доступно в проектах ({{ projects_accessible|length }})
+                            </a>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div id="collapseExample_projects" class="collapse rounded-2">
-                <div class="position_block">
-                    <a class="btn btn-outline-light"
-                       data-bs-toggle="modal"
-                       onclick="fill_checkboxes()"
-                       data-bs-target="#collapseExample_settings_projects">
-                        <img src="{% static 'img/settings-sliders.svg' %}" alt="settings" rel="icon">
-                    </a>
-                </div>
-
-                <div class="position_block" id="block_projects">
-                </div>
+        <div id="collapseExample_projects" class="collapse rounded-2">
+            <div class="position_block">
+                <a class="btn btn-outline-light"
+                   data-bs-toggle="modal"
+                   onclick="fill_checkboxes()"
+                   data-bs-target="#collapseExample_settings_projects">
+                    <img src="{% static 'img/settings-sliders.svg' %}" alt="settings" rel="icon">
+                </a>
             </div>
-        {% endif %}
+
+            <div class="position_block" id="block_projects">
+            </div>
+        </div>
     </div>
 
     <div class="modal fade" id="collapseExample_settings_projects" tabindex="-1" aria-labelledby="exampleModalLabel"
@@ -194,6 +192,14 @@
                 <div class="modal-body text_button">
                     <form class="form-inline search-form" method="get">
                         {% csrf_token %}
+                        <div class="position_block form-check" style="margin-bottom: 10px">
+                            <label for="projects_all">Отметить всё</label>
+                            <input class="form-check-input" type="checkbox" id="projects_all"
+                            onclick="manage_all_checkboxes()">
+                        </div>
+
+                        <hr>
+
                         <div class="position_block" id="block_checkboxes">
                         </div>
                     </form>
@@ -265,13 +271,15 @@
                     })
 
                     document.getElementById("block_checkboxes").innerHTML = ""
+                    console.log(all_data)
 
                     all_data.forEach(element => {
                         const temp = `
                         <div class="form-check" style="margin-bottom: 10px">
                             <label for="project_${element.code}">${element.name.slice(0, 30)}</label>
                             <input class="form-check-input"
-                                   type="checkbox" id="project_${element.code}">
+                                   type="checkbox" id="project_${element.code}"
+                                    onclick="checkbox_project_clicked()">
                         </div>
                         `;
 
@@ -328,6 +336,47 @@
             data.forEach(element => {
                 element_checkbox = document.getElementById(`project_${element.code}`)
                 element_checkbox.checked = true;
+            })
+
+            if (data.length === all_data.length) {
+                document.getElementById("projects_all").checked = true;
+                document.getElementById("projects_all").indeterminate = false;
+            } else if (data.length > 0) {
+                document.getElementById("projects_all").indeterminate = true;
+            } else {
+                document.getElementById("projects_all").checked = false;
+                document.getElementById("projects_all").indeterminate = false;
+            }
+        }
+
+        function checkbox_project_clicked() {
+            let has_checkbox_enable = false;
+            let has_checkbox_disable = false;
+
+            all_data.forEach(element => {
+                const element_checkbox = document.getElementById("project_" + String(element.code));
+                if (element_checkbox.checked) {
+                    has_checkbox_enable = true;
+                } else {
+                    has_checkbox_disable = true;
+                }
+            })
+
+            if (has_checkbox_enable && !has_checkbox_disable) {
+                document.getElementById("projects_all").checked = true;
+                document.getElementById("projects_all").indeterminate = false;
+            } else if (has_checkbox_enable && has_checkbox_disable) {
+                document.getElementById("projects_all").indeterminate = true;
+            } else {
+                document.getElementById("projects_all").checked = false;
+                document.getElementById("projects_all").indeterminate = false;
+            }
+        }
+
+        function manage_all_checkboxes() {
+            all_data.forEach(element => {
+                const element_checkbox = document.getElementById("project_" + String(element.code));
+                element_checkbox.checked = !!document.getElementById("projects_all").checked;
             })
         }
 
