@@ -52,6 +52,8 @@ urlpatterns = [
     path('main_page/states/create', create_state, name="create_state"),
     path('main_page/states/<int:state_id>/edit', edit_states, name="state_edit"),
     path('main_page/states/<int:state_id>/delete', state_remove, name="state_remove"),
+    path('main_page/states/<int:state_id>/change_compound', change_compound_projects_to_state,
+         name="compound_state"),
 
     path('main_page/priorities', get_priority_list, name="priorities"),
     path('main_page/priorities/<int:priority_id>', priority_description, name="priority_description"),

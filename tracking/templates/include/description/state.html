@@ -175,49 +175,236 @@
             </div>
         {% endfor %}
 
-        {% if projects_accessible %}
-            <div class="row">
-                <div class="col-sm">
-                    <div class="d-flex justify-content-center">
-                        <div class="row w-100">
-                            <div class="position_block">
-                                <a class="text-dark fw-bolder text_button text-decoration-none dropdown-toggle"
-                                   data-bs-toggle="collapse" href="#collapseExample_projects" role="button"
-                                   aria-expanded="false" aria-controls="collapseExample_personal">
-                                    Доступно в проектах ({{ projects_accessible|length }})
-                                </a>
-                            </div>
+        <div class="row">
+            <div class="col-sm">
+                <div class="d-flex justify-content-center">
+                    <div class="row w-100">
+                        <div class="position_block" id="count_projects">
+                            <a class="text-dark fw-bolder text_button text-decoration-none dropdown-toggle"
+                               data-bs-toggle="collapse" href="#collapseExample_projects" role="button"
+                               aria-expanded="false" aria-controls="collapseExample_personal">
+                                Доступно в проектах ({{ projects_accessible|length }})
+                            </a>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            {% for project in projects_accessible %}
-                <div id="collapseExample_projects" class="collapse rounded-2">
-                    <a href="#"
-                       class="list-group-item list-group-item-action text_button rounded-2"
-                       aria-current="true">
-                        <div class="d-flex w-100 justify-content-between">
-                            <h3 class="mb-1">
-                                <img src="{% static 'img/project.svg' %}" alt="pencil" rel="icon">
-                                {{ project.name }}
-                            </h3>
-                            <small>{{ project.date_create }}</small>
+        <div id="collapseExample_projects" class="collapse rounded-2">
+            <div class="position_block">
+                <a class="btn btn-outline-light"
+                   data-bs-toggle="modal"
+                   onclick="fill_checkboxes()"
+                   data-bs-target="#collapseExample_settings_projects">
+                    <img src="{% static 'img/settings-sliders.svg' %}" alt="settings" rel="icon">
+                </a>
+            </div>
+
+            <div class="position_block" id="block_projects">
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="collapseExample_settings_projects" tabindex="-1" aria-labelledby="exampleModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Выбор проекта</h5>
+                    <a type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></a>
+                </div>
+
+                <div class="modal-body text_button">
+                    <form class="form-inline search-form" method="get">
+                        {% csrf_token %}
+                        <div class="position_block form-check" style="margin-bottom: 10px">
+                            <label for="projects_all">Отметить всё</label>
+                            <input class="form-check-input" type="checkbox" id="projects_all"
+                            onclick="manage_all_checkboxes()">
                         </div>
 
-                        <p class="mb-1" style="margin-top: 10px">
-                            <svg xmlns="http://www.w3.org/2000/svg" id="Outline" viewBox="0 0 24 24"
-                                 width="24"
-                                 height="24">
-                                <path d="M12,0A12,12,0,1,0,24,12,12.013,12.013,0,0,0,12,0Zm0,22A10,10,0,1,1,22,12,10.011,10.011,0,0,1,12,22Z"></path>
-                                <path d="M12,10H11a1,1,0,0,0,0,2h1v6a1,1,0,0,0,2,0V12A2,2,0,0,0,12,10Z"></path>
-                                <circle cx="12" cy="6.5" r="1.5"></circle>
-                            </svg>
-                            {{ project.description|truncatechars:50 }}
-                        </p>
-                    </a>
+                        <hr>
+
+                        <div class="position_block" id="block_checkboxes">
+                        </div>
+                    </form>
                 </div>
-            {% endfor %}
-        {% endif %}
+
+                <div class="modal-footer">
+                    <a type="button" data-bs-dismiss="modal"
+                       href="#"
+                       onclick="insert_data()"
+                       class="btn btn-primary">Подтвердить</a>
+                </div>
+            </div>
+        </div>
     </div>
 {% endblock content %}
+
+{% block script %}
+    <script>
+        let data;
+        let all_data;
+
+        const change_tasks = (array_with_project_id) => {
+            $.ajax({
+                type: 'POST',
+                url: '{% url "compound_state" state_id=state_id %}',
+                data: {
+                    'array_with_project_id': array_with_project_id,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                }, success: function (response) {
+                    data = response.data;
+                    all_data = response.all_data;
+
+                    document.getElementById("count_projects").innerHTML = `
+                    <a class="text-dark fw-bolder text_button text-decoration-none dropdown-toggle"
+                                   data-bs-toggle="collapse" href="#collapseExample_projects" role="button"
+                                   aria-expanded="false" aria-controls="collapseExample_personal">
+                                    Доступно в проектах (${data.length})
+                    </a>
+                    `
+
+                    document.getElementById("block_projects").innerHTML = ""
+                    data.forEach(element => {
+                        let temp = `
+                            <a href="#"
+                               class="list-group-item list-group-item-action text_button rounded-2"
+                               aria-current="true">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h3 class="mb-1">
+                                        <img src="{% static 'img/project.svg' %}" alt="pencil" rel="icon">
+                                        ${element.name}
+                                    </h3>
+                                    <small>${element.date_create}</small>
+                                </div>
+
+                                <p class="mb-1" style="margin-top: 10px">
+                                    <svg xmlns="http://www.w3.org/2000/svg" id="Outline" viewBox="0 0 24 24"
+                                         width="24"
+                                         height="24">
+                                        <path d="M12,0A12,12,0,1,0,24,12,12.013,12.013,0,0,0,12,0Zm0,22A10,10,0,1,1,22,12,10.011,10.011,0,0,1,12,22Z"></path>
+                                        <path d="M12,10H11a1,1,0,0,0,0,2h1v6a1,1,0,0,0,2,0V12A2,2,0,0,0,12,10Z"></path>
+                                        <circle cx="12" cy="6.5" r="1.5"></circle>
+                                    </svg>
+                                    ${element.description.slice(0, 50)}
+                                </p>
+                            </a>
+                        `
+
+                        $("#block_projects").append(temp)
+                    })
+
+                    document.getElementById("block_checkboxes").innerHTML = ""
+
+                    all_data.forEach(element => {
+                        const temp = `
+                        <div class="form-check" style="margin-bottom: 10px">
+                            <label for="project_${element.code}">${element.name.slice(0, 30)}</label>
+                            <input class="form-check-input"
+                                   type="checkbox" id="project_${element.code}"
+                                    onclick="checkbox_project_clicked()">
+                        </div>
+                        `;
+
+                        $("#block_checkboxes").append(temp)
+                    })
+
+                    fill_checkboxes()
+                }, error: function (message) {
+                    console.log(message)
+                }
+            })
+        }
+
+        function insert_data() {
+            const array_data = [];
+
+            let elem;
+            all_data.forEach(element => {
+                elem = document.getElementById(`project_${element.code}`)
+                if (elem.checked) {
+                    array_data.push(`${element.project_id}`)
+                }
+            })
+
+            if (array_data.length > 0) {
+                change_tasks(array_data.join(','))
+            } else {
+                console.log("No data available :(")
+                change_tasks("-1")
+            }
+        }
+
+        function init_data() {
+            const array_data = []
+            {% for project in projects_accessible %}
+                array_data.push("{{ project.project_id }}")
+            {% endfor %}
+
+            if (array_data.length > 0) {
+                change_tasks(array_data.join(', '))
+            } else {
+                change_tasks("-1")
+            }
+        }
+
+        function fill_checkboxes() {
+            let element_checkbox;
+
+            all_data.forEach(element => {
+                element_checkbox = document.getElementById("project_" + String(element.code))
+                element_checkbox.checked = false;
+            })
+
+            data.forEach(element => {
+                element_checkbox = document.getElementById(`project_${element.code}`)
+                element_checkbox.checked = true;
+            })
+
+            if (data.length === all_data.length) {
+                document.getElementById("projects_all").checked = true;
+                document.getElementById("projects_all").indeterminate = false;
+            } else if (data.length > 0) {
+                document.getElementById("projects_all").indeterminate = true;
+            } else {
+                document.getElementById("projects_all").checked = false;
+                document.getElementById("projects_all").indeterminate = false;
+            }
+        }
+
+        function checkbox_project_clicked() {
+            let has_checkbox_enable = false;
+            let has_checkbox_disable = false;
+
+            all_data.forEach(element => {
+                const element_checkbox = document.getElementById("project_" + String(element.code));
+                if (element_checkbox.checked) {
+                    has_checkbox_enable = true;
+                } else {
+                    has_checkbox_disable = true;
+                }
+            })
+
+            if (has_checkbox_enable && !has_checkbox_disable) {
+                document.getElementById("projects_all").checked = true;
+                document.getElementById("projects_all").indeterminate = false;
+            } else if (has_checkbox_enable && has_checkbox_disable) {
+                document.getElementById("projects_all").indeterminate = true;
+            } else {
+                document.getElementById("projects_all").checked = false;
+                document.getElementById("projects_all").indeterminate = false;
+            }
+        }
+
+        function manage_all_checkboxes() {
+            all_data.forEach(element => {
+                const element_checkbox = document.getElementById("project_" + String(element.code));
+                element_checkbox.checked = !!document.getElementById("projects_all").checked;
+            })
+        }
+
+        init_data()
+    </script>
+{% endblock script %}
