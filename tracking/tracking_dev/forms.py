@@ -61,9 +61,11 @@ class CreatePriorityForm(forms.ModelForm):
             'onInput': 'change_label_value()'
         }))
 
-        self.fields['priority_color'] = forms.CharField(widget=forms.TextInput(attrs={
-            "type": 'color'
-        }))
+        self.fields['priority_color'] = forms.CharField(widget=forms.HiddenInput(), required=False)
+
+        # self.fields['priority_color'] = forms.CharField(widget=forms.TextInput(attrs={
+        #     "type": 'color'
+        # }))
 
         self.fields['projects'] = forms.ModelMultipleChoiceField(
             queryset=Project.objects.filter(is_activate=True),

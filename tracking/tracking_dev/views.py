@@ -1306,21 +1306,33 @@ def create_priority(request):
         return HttpResponseForbidden()
 
     if request.method == "POST":
-        creation_form = CreatePriorityForm(data=request.POST)
+        creation_form = CreatePriorityForm(data=request.POST, initial={
+            "priority_color": "#0D6EFD"})
 
         if creation_form.is_valid():
             code = creation_form.cleaned_data['code']
+            name = creation_form.cleaned_data['name']
+            description = creation_form.cleaned_data['description']
+            projects = creation_form.cleaned_data['projects']
+            priority_value = creation_form.cleaned_data['priority_value']
+
+            priority_record = Priority(code=code, name=name, description=description, priority_value=priority_value,
+                                       priority_color=get_color_for_priority(priority_value))
 
             is_priority_exists = Priority.objects.filter(Q(code=code) & Q(is_activate=True)).count()
             if is_priority_exists:
                 messages.error(request, f"Приоритет с кодом '{code}' уже существует в системе. Пожалуйста, создайте "
                                         f"другой приоритет задачи")
             else:
-                creation_form.save()
+                priority_record.save()
+                priority_record.projects.add(*projects)
+                priority_record.save()
 
                 next = request.POST.get('next', '/')
                 messages.success(request, "Приоритет был успешно создан")
                 return HttpResponseRedirect(next)
+        else:
+            print("I am here")
     else:
         creation_form = CreatePriorityForm()
 
@@ -1409,6 +1421,30 @@ def edit_sprint(request, project_id, sprint_id):
     })
 
 
+def get_color_for_priority(priority_value):
+    if 1 <= priority_value <= 30:
+        return "#00FF00"
+    elif 31 <= priority_value <= 65:
+        return "#ffff00"
+    elif 66 <= priority_value <= 90:
+        return "#ffa500"
+    else:
+        return "#ff0000"
+
+
+def get_priority_value_for_current_priority(priority_id):
+    list_colors = Priority.objects.raw(
+        raw_query=f"select 1 as priority_id, tdp.priority_value "
+                  f"from tracking_dev_priority tdp where tdp.priority_id = {priority_id}"
+    )
+    value = 0
+
+    for colors in list_colors:
+        value = colors.priority_value
+
+    return value
+
+
 def edit_priority(request, priority_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
@@ -1417,9 +1453,25 @@ def edit_priority(request, priority_id):
         return HttpResponseForbidden()
 
     instance = get_object_or_404(Priority, priority_id=priority_id)
-    form = CreatePriorityForm(request.POST or None, instance=instance)
+    form = CreatePriorityForm(request.POST or None, instance=instance, initial={
+        "priority_color": get_color_for_priority(get_priority_value_for_current_priority(priority_id))
+    })
+
     if form.is_valid():
         code = form.cleaned_data['code']
+        name = form.cleaned_data['name']
+        description = form.cleaned_data['description']
+        projects = form.cleaned_data['projects']
+        priority_value = form.cleaned_data['priority_value']
+
+        priority_record = Priority.objects.get(priority_id=priority_id)
+        priority_record.code = code
+        priority_record.name = name
+        priority_record.description = description
+        priority_record.priority_value = priority_value
+        priority_record.priority_color = get_color_for_priority(int(form.cleaned_data['priority_value']))
+
+        priority_record.projects.set(projects)
 
         is_priority_exists = Priority.objects.filter(Q(code=code) & ~Q(priority_id=priority_id)
                                                      & Q(is_activate=True)).count()
@@ -1427,7 +1479,7 @@ def edit_priority(request, priority_id):
             messages.error(request, f"Приоритет с кодом '{code}' уже существует в системе. Пожалуйста, создайте "
                                     f"другой приоритет задачи")
         else:
-            form.save()
+            priority_record.save()
 
             next = request.POST.get('next', '/')
             messages.success(request, "Приоритет был успешно обновлён")
