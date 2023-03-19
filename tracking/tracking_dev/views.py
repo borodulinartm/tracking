@@ -1324,7 +1324,7 @@ def create_priority(request):
     else:
         creation_form = CreatePriorityForm()
 
-    return render(request, 'include/base_form.html', {
+    return render(request, 'include/base_form_priority.html', {
         'title_page': 'Форма создания нового приоритета',
         'form': creation_form,
         'text_button': 'Создать приоритет',
@@ -1433,7 +1433,7 @@ def edit_priority(request, priority_id):
             messages.success(request, "Приоритет был успешно обновлён")
             return HttpResponseRedirect(next)
 
-    return render(request, 'include/base_form.html', {
+    return render(request, 'include/base_form_priority.html', {
         'title_page': 'Форма редактирования приоритета',
         'form': form,
         'text_button': 'Применить изменения',

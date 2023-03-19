@@ -80,6 +80,7 @@ class Priority(models.Model):
     date_create = models.DateField(blank=True, default=django.utils.timezone.now())
     date_change = models.DateTimeField(auto_now=True)
     is_activate = models.BooleanField(default=True)
+    priority_value = models.IntegerField(default=0)
 
     def __str__(self):
         return str(self.name)

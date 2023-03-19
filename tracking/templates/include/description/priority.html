@@ -82,6 +82,25 @@
                 </div>
             </div>
 
+            <div class="row">
+                <div class="col-sm">
+                    <div class="d-flex justify-content-center">
+                        <div class="row w-100">
+                            <div class="position_block">
+                                <span class="fw-bold text_button">Значение приоритета:
+                                    ({{ content_list.priority_value }} из 100)</span>
+                                <div class="progress text_button">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                                         style="width: {{ content_list.priority_value }}%"
+                                         aria-valuenow="{{ content_list.priority_value }}" aria-valuemin="1"
+                                         aria-valuemax="100"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             {% if request.user.is_staff %}
                 <div class="row">
                     <div class="col-sm">
@@ -194,7 +213,7 @@
                         <div class="position_block form-check" style="margin-bottom: 10px">
                             <label for="projects_all">Отметить всё</label>
                             <input class="form-check-input" type="checkbox" id="projects_all"
-                            onclick="manage_all_checkboxes()">
+                                   onclick="manage_all_checkboxes()">
                         </div>
 
                         <hr>
@@ -217,7 +236,7 @@
 
 {% block script %}
     <script>
-       let data;
+        let data;
         let all_data;
 
         const change_tasks = (array_with_project_id) => {

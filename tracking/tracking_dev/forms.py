@@ -33,7 +33,7 @@ class CreateProjectForm(forms.ModelForm):
 class CreatePriorityForm(forms.ModelForm):
     class Meta:
         model = Priority
-        fields = ['code', 'name', 'description', 'projects']
+        fields = ['code', 'name', 'description', 'priority_value', 'projects']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -47,14 +47,27 @@ class CreatePriorityForm(forms.ModelForm):
         self.fields['code'] = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'Введите код',
                                                                             'style': 'margin-bottom: 20px'}))
 
+        self.fields['priority_value'] = forms.IntegerField(widget=forms.NumberInput(attrs={
+            'type': 'range',
+            'class': 'form-range slider',
+            'step': '1',
+            'min': '1',
+            'max': '100',
+            'value': '1',
+            'id': 'priority_value_ranger_mnu',
+            'style': 'margin-bottom: 20px',
+            'onInput': 'change_label_value()'
+        }))
+
         self.fields['projects'] = forms.ModelMultipleChoiceField(
-            queryset=Project.objects.all(),
+            queryset=Project.objects.filter(is_activate=True),
             widget=forms.CheckboxSelectMultiple, required=False
         )
 
         self.fields['name'].label = "Название"
         self.fields['description'].label = "Описание"
         self.fields['code'].label = "Код"
+        self.fields['priority_value'].label = "Значение приоритета (1)"
         self.fields['projects'].label = "Проекты"
 
 
@@ -93,7 +106,7 @@ class CreateStateForm(forms.ModelForm):
         }))
 
         self.fields['projects'] = forms.ModelMultipleChoiceField(
-            queryset=Project.objects.all(),
+            queryset=Project.objects.filter(is_activate=True),
             widget=forms.CheckboxSelectMultiple, required=False
         )
 
@@ -128,7 +141,7 @@ class CreateTypeTaskForm(forms.ModelForm):
             'style': 'margin-bottom: 20px'}))
 
         self.fields['projects'] = forms.ModelMultipleChoiceField(
-            queryset=Project.objects.all(),
+            queryset=Project.objects.filter(is_activate=True),
             widget=forms.CheckboxSelectMultiple, required=False
         )
 
