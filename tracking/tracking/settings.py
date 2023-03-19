@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'crispy_forms',
     'tracking_dev.apps.TrackingDevConfig',
+    'colorfield'
 ]
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
@@ -134,7 +135,8 @@ STATIC_URL = '/static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-STATIC_ROOT = ''
+PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+STATIC_ROOT = os.path.join(PROJECT_ROOT, 'static')
 STATICFILES_DIRS = (os.path.join('static'),)
 
 MESSAGE_TAGS = {

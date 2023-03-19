@@ -1,0 +1,96 @@
+.title_block {
+    margin-bottom: 100px;
+}
+
+.title {
+    font-size: 40px;
+    text-align: center;
+}
+
+.text {
+    font-size: 16px;
+}
+
+.user_buttons_block {
+    margin: 50px 0 0 0;
+}
+
+.link_inactive {
+    color: #000000;
+    text-decoration: none;
+}
+
+.text_button {
+    font-size: 20px;
+    margin: 10px;
+}
+
+.sub_title_text {
+    font-size: 40px;
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.tables_block {
+    border: 5px gray solid;
+    padding: 10px;
+    border-radius: 20px;
+    background-color: #DDCCCC;
+}
+
+.sub_title_table {
+    font-size: 40px;
+    text-align: center;
+    margin-top: 50px;
+    margin-bottom: 40px;
+}
+
+.my_table {
+    margin-bottom: 100px;
+}
+
+table {
+    table-layout: fixed;
+    width: 100%;
+}
+
+td, th {
+    white-space: normal;
+    word-wrap: break-word;
+}
+
+.list_button_block {
+    margin-bottom: 50px;
+}
+
+.text_large {
+    font-size: 50px;
+}
+
+.service {
+    border: 1px gray solid;
+	border-radius: 20px;
+	margin: 75px 150px 75px 150px;
+}
+
+.text_to_list_services {
+    font-size: 20px;
+    padding-top: 5px;
+}
+
+.add_content_button {
+    margin-top: 50px;
+    margin-bottom: 50px;
+}
+
+.position_block {
+    margin: 15px;
+}
+
+.button_create {
+    margin-top: 15px;
+}
+
+.block_title {
+    margin-bottom: 10px;
+}

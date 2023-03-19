@@ -3,6 +3,7 @@ import datetime
 import django.utils.timezone
 from django.db import models
 from django.contrib.auth.models import User, AbstractUser
+from colorfield.fields import ColorField
 
 
 # Create your models here.
@@ -80,7 +81,9 @@ class Priority(models.Model):
     date_create = models.DateField(blank=True, default=django.utils.timezone.now())
     date_change = models.DateTimeField(auto_now=True)
     is_activate = models.BooleanField(default=True)
+
     priority_value = models.IntegerField(default=0)
+    priority_color = ColorField(default="#FF0000")
 
     def __str__(self):
         return str(self.name)

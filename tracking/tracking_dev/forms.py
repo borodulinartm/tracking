@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm, UsernameField, PasswordChangeForm, \
     UserChangeForm
 from django.db.models import Q
+from colorfield.widgets import ColorWidget
 
 from .models import *
 
@@ -33,7 +34,8 @@ class CreateProjectForm(forms.ModelForm):
 class CreatePriorityForm(forms.ModelForm):
     class Meta:
         model = Priority
-        fields = ['code', 'name', 'description', 'priority_value', 'projects']
+        fields = ['code', 'name', 'description', 'priority_value', 'priority_color',
+                  'projects']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -59,6 +61,10 @@ class CreatePriorityForm(forms.ModelForm):
             'onInput': 'change_label_value()'
         }))
 
+        self.fields['priority_color'] = forms.CharField(widget=forms.TextInput(attrs={
+            "type": 'color'
+        }))
+
         self.fields['projects'] = forms.ModelMultipleChoiceField(
             queryset=Project.objects.filter(is_activate=True),
             widget=forms.CheckboxSelectMultiple, required=False
@@ -69,6 +75,7 @@ class CreatePriorityForm(forms.ModelForm):
         self.fields['code'].label = "Код"
         self.fields['priority_value'].label = "Значение приоритета (1)"
         self.fields['projects'].label = "Проекты"
+        self.fields['priority_color'].label = "Цвет приоритета"
 
 
 # This class allows users create a states form
