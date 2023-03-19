@@ -1,3 +1,5 @@
+from django.contrib.auth import password_validation
+from django.contrib.auth.hashers import check_password
 from django.db.models import Q
 from django.utils.timezone import now
 from django.views.decorators.csrf import csrf_exempt
@@ -1034,6 +1036,15 @@ def get_list_collobarators_to_project(request, project_id):
                   f"where project_id = {project_id} and tdep.is_activate=True;"
     )
 
+    list_count_participants = Project.objects.raw(
+        raw_query=f"select 1 as project_id, Count(*) as count from "
+                  f"tracking_dev_employee_projects tdep where tdep.project_id = {project_id}"
+    )
+    count_participants = 0
+
+    for elem in list_count_participants:
+        count_participants = elem.count
+
     all_projects = Project.objects.raw(
         raw_query=f"select * from tracking_dev_employee_projects tdep "
                   f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
@@ -1048,10 +1059,24 @@ def get_list_collobarators_to_project(request, project_id):
         'project_id': project_id,
         'show_choose_project': 1,
         'is_project_zone': 1,
+        'count_participants': count_participants,
         'list_projects': all_projects,
         'is_admin_zone': request.user.is_staff,
         'id': request.user.id
     })
+
+
+def get_user_from_employee(employee_id):
+    list_users = Employee.objects.raw(
+        raw_query=f"select * from tracking_dev_employee tde join auth_user au on au.id = tde.user_id "
+                  f"where tde.employee_id = {employee_id}"
+    )
+
+    user = ""
+    for users in list_users:
+        user += users.first_name + " " + users.last_name
+
+    return user
 
 
 # This view allows admin remove the user from current project
@@ -1066,7 +1091,8 @@ def remove_user_from_current_project(request, project_id, employee_id):
     with connection.cursor() as cursor:
         cursor.execute(f"delete from tracking_dev_employee_projects where "
                        f"project_id={project_id} and employee_id={employee_id}")
-        messages.success(request, "Пользователь успешно удалён из проекта")
+        user_info = get_user_from_employee(employee_id)
+        messages.success(request, f"Пользователь '{user_info}' успешно удалён из проекта")
 
     # Redirect to the website with projects
     return redirect(reverse("collabs", kwargs={'project_id': project_id}))
@@ -1098,11 +1124,10 @@ def remove_all_users_from_current_project(request, project_id):
 
     # We should delete entirely from the database
     with connection.cursor() as cursor:
-        cursor.execute(f"update tracking_dev_employee_projects tdep "
-                       f"set is_activate = false "
-                       f"from tracking_dev_employee tde "
-                       f"where tde.employee_id = tdep.employee_id and tde.user_id != {request.user.id} "
-                       f"and tdep.project_id = {project_id}")
+        cursor.execute(f"delete from tracking_dev_employee_projects tdep "
+                       f"where tdep.employee_id in (select tde.employee_id from tracking_dev_employee "
+                       f"tde where tde.user_id != 2) "
+                       f"and tdep.project_id = 16")
         messages.success(request, "Все пользователи были удалены из проекта")
 
     # Redirect to the website with project
@@ -1935,20 +1960,21 @@ def change_user_password(request):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
 
-    form = ChangePasswordCustomForm(request.user, request.POST)
-    if form.is_valid():
-        user = form.save()
-        auth.update_session_auth_hash(request, user)
+    if request.method == "POST":
+        form = ChangePasswordCustomForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            auth.update_session_auth_hash(request, user)
 
-        next = request.POST.get('next', '/')
-        messages.success(request, "Пароль успешно обновлён")
+            next = request.POST.get('next', '/')
+            messages.success(request, "Пароль успешно обновлён")
 
-        return HttpResponseRedirect(next)
+            return HttpResponseRedirect(next)
     else:
         form = ChangePasswordCustomForm(request.user)
 
     return render(request, 'include/base_form.html', {
-        'title_page': 'Форма редактирования сведений о сотруднике',
+        'title_page': 'Форма смена пароля',
         'form': form,
         'text_button': 'Сохранить изменения',
         'show_choose_project': 0,
@@ -1969,11 +1995,12 @@ def search(request, project_id):
             if series != '':
                 query_se = Employee.objects.raw(
                     raw_query=f"select *, au.id as user_id, au.username "
-                              f"from tracking_dev_employee tde "
-                              f"join auth_user au on tde.user_id = au.id "
+                              f"from tracking_dev_employee tde join auth_user au on tde.user_id = au.id "
                               f"where tde.is_activate and (strpos(lower(au.first_name), lower('{series}')) > 0 or "
                               f"strpos(lower(au.last_name), lower('{series}')) > 0 or "
-                              f"strpos(lower(au.username), lower('{series}')) > 0 )"
+                              f"strpos(lower(au.username), lower('{series}')) > 0 ) "
+                              f"and tde.employee_id not in (select tdep.employee_id  "
+                              f"from tracking_dev_employee_projects tdep where tdep.project_id = {project_id})"
                 )
 
             if query_se is not None and len(query_se) > 0:
@@ -2893,7 +2920,8 @@ def add_employee_to_project(request, project_id, employee_id):
     with connection.cursor() as cursor:
         cursor.execute(f"insert into tracking_dev_employee_projects(employee_id, project_id, is_activate) "
                        f"values ({employee_id}, {project_id}, True)")
-        messages.success(request, "Пользователь был успешнот добавлен в проект")
+        user_info = get_user_from_employee(employee_id)
+        messages.success(request, f"Пользователь '{user_info}' был успешно добавлен в проект")
 
     return redirect(reverse("collabs", kwargs={'project_id': project_id}))
 

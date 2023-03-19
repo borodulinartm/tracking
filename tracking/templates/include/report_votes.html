@@ -44,12 +44,12 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Выбор задачи</h5>
+                    <h4 class="modal-title" id="exampleModalLabel">Выбор задачи</h4>
                     <a type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></a>
                 </div>
                 <div class="modal-body text_button">
                     <form class="form-inline search-form" method="get">
-                        <div class="form-check" style="margin-bottom: 10px">
+                        <div class="position_block form-check" style="margin-bottom: 10px">
                             <label for="task_all">Отметить все</label>
                             <input class="form-check-input"
                                    type="checkbox" id="task_all" onclick="checkbox_task_all_clicled()"
@@ -58,7 +58,7 @@
 
                         <hr>
                         {% for task in list_tasks %}
-                            <div class="form-check" style="margin-bottom: 10px">
+                            <div class="position_block form-check" style="margin-bottom: 10px">
                                 <label for="task_{{ task.code }}">{{ task.code|truncatechars:40 }}
                                     {{ task.name|truncatechars:30 }}</label>
                                 <input class="form-check-input"

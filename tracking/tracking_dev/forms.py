@@ -387,6 +387,19 @@ class ChangePasswordCustomForm(PasswordChangeForm):
         }
     ), error_messages={"required": "Повторите ввод нового пароля"})
 
+    error_messages = {
+        'password_mismatch': 'Новые пароли не совпадают. Пожалуйста, повторите попытку'
+    }
+
+    def clean_old_password(self):
+        old_password = self.cleaned_data["old_password"]
+        if not self.user.check_password(old_password):
+            raise forms.ValidationError(
+                "Введённый пароль некорректен. Пожалуйста, попробуйте ввести пароль ещё раз",
+                code='password_incorrect',
+            )
+        return old_password
+
 
 # This form provides laboriousness form
 class CreateLaboriousnessForm(forms.ModelForm):
