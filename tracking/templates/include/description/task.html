@@ -151,7 +151,7 @@
                     <div class="d-flex justify-content-center">
                         <div class="row w-100">
                             <div class="position_block">
-                                <span class="fw-bolder text_button">Приоритет:</span>
+                                <span class="fw-bolder text_button" style="color: {{ content_list.priority_color }}">Приоритет:</span>
                                 <span class="fw-normal">
                                     <a href="{% url 'priority_description' priority_id=content_list.priority_id %}"
                                        class="link_inactive text_button">

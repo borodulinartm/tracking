@@ -436,13 +436,15 @@ def get_list_sprint_task(request, project_id, sprint_id):
             list_tasks = Task.objects.raw(
                 raw_query=f"select tdst.sprint_id, tdst.task_id, tdt.code, tdt.\"name\" as task_name, "
                           f"tdt.description, tdt.date_create, tds.state_id, "
-                          f"tds.\"name\" as state_name, au.first_name, au.last_name, tde.employee_id "
+                          f"tds.\"name\" as state_name, au.first_name, au.last_name, tde.employee_id, tdp.priority_color "
                           f"from tracking_dev_sprint_task tdst "
                           f"join tracking_dev_task tdt on tdst.task_id = tdt.task_id "
                           f"join tracking_dev_state tds on tdt.state_id = tds.state_id "
                           f"join tracking_dev_employee tde on tde.employee_id = tdt.responsible_id "
+                          f"join tracking_dev_priority tdp on tdt.priority_id = tdp.priority_id "
                           f"join auth_user au on au.id = tde.user_id "
-                          f"where tdst.sprint_id = {sprint_id}"
+                          f"where tdst.sprint_id = {sprint_id} "
+                          f"order by tdp.priority_value desc, tdt.date_change desc"
             )
 
             data = []
@@ -454,7 +456,8 @@ def get_list_sprint_task(request, project_id, sprint_id):
                     "state_id": element.state_id,
                     "task_name": element.task_name,
                     "state_name": element.state_name,
-                    "user_name": element.first_name + " " + element.last_name
+                    "user_name": element.first_name + " " + element.last_name,
+                    "color": element.priority_color
                 }
 
                 data.append(item)
@@ -768,14 +771,15 @@ def task_description(request, project_id, task_id):
                   f"au.last_name as init_surname, au2.last_name as resp_surname, "
                   f"au2.first_name  as resp_name, tds.name as state_name, tdp.name as project_name, "
                   f"tdp2.name as priority_name, tdt2.name as type_task_name, au3.first_name as manager_name, "
-                  f"au3.last_name as manager_last_name "
+                  f"au3.last_name as manager_last_name, tdp2.priority_color "
                   f"from tracking_dev_task tdt  "
                   f"join tracking_dev_employee tde on tde.employee_id = tdt.initiator_id  "
                   f"join tracking_dev_state tds "
                   f"on tds.state_id = tdt.state_id join tracking_dev_project tdp on tdp.project_id = tdt.project_id "
                   f"join tracking_dev_employee tde3 on tde3.employee_id = tdt.manager_id "
                   f"join auth_user au3 on au3.id = tde3.user_id  "
-                  f"join tracking_dev_priority tdp2 on tdp2.priority_id = tdt.priority_id join tracking_dev_employee "
+                  f"join tracking_dev_priority tdp2 on tdp2.priority_id = tdt.priority_id "
+                  f"join tracking_dev_employee "
                   f"tde2 on tde2.employee_id = tdt.responsible_id join tracking_dev_typetask tdt2 "
                   f"on tdt2.type_id = tdt.type_id join auth_user au on au.id = tde.user_id "
                   f"join auth_user au2 on au2.id = tde2.user_id "
@@ -2556,7 +2560,8 @@ def add_data(tasks, href, text_link):
             "au1_name_exists": position.au1_name_exists,
             "au2_name_exists": position.au2_name_exists,
             "au3_name_exists": position.au3_name_exists,
-            "description_exists": position.description_exists
+            "description_exists": position.description_exists,
+            "text_color": position.priority_color
         }
 
         data.append(item)
@@ -2585,7 +2590,7 @@ def search_tasks(request, project_id):
                               f"strpos(lower(tdt.description), lower('{series}')) as description_exists, "
                               f"strpos(lower(au.first_name), lower('{series}')) as au1_name_exists, "
                               f"strpos(lower(au2.first_name), lower('{series}')) as au2_name_exists,"
-                              f"strpos(lower(au3.first_name), lower('{series}')) as au3_name_exists "
+                              f"strpos(lower(au3.first_name), lower('{series}')) as au3_name_exists, "
                               f"from tracking_dev_task tdt "
                               f"join tracking_dev_employee tde on tdt.manager_id = tde.employee_id "
                               f"join tracking_dev_employee tde2 on tdt.responsible_id = tde2.employee_id "
@@ -2593,9 +2598,11 @@ def search_tasks(request, project_id):
                               f"join tracking_dev_state tds on tds.state_id = tdt.state_id "
                               f"join auth_user au on au.id=tde.user_id "
                               f"join auth_user au2 on au2.id=tde2.user_id "
+                              f"join tracking_dev_priority tdp on tdt.priority_id = tdp.priority_id "
                               f"join auth_user au3 on au3.id=tde3.user_id "
                               f"where tdt.is_activate and tds.\"isClosed\" = false and tde2.user_id = {request.user.id} "
-                              f"and tdt.project_id = {project_id} and tdt.is_activate=True;"
+                              f"and tdt.project_id = {project_id} and tdt.is_activate=True "
+                              f"order by tdp.priority_value desc, tdt.date_change desc;"
                 )
 
                 tasks_controller = Task.objects.raw(
@@ -2610,11 +2617,13 @@ def search_tasks(request, project_id):
                               f"join tracking_dev_employee tde2 on tdt.responsible_id = tde2.employee_id "
                               f"join tracking_dev_employee tde3 on tdt.initiator_id = tde3.employee_id "
                               f"join tracking_dev_state tds on tds.state_id = tdt.state_id "
+                              f"join tracking_dev_priority tdp on tdp.priority_id = tdt.priority_id"
                               f"join auth_user au on au.id=tde.user_id "
                               f"join auth_user au2 on au2.id=tde2.user_id "
                               f"join auth_user au3 on au3.id=tde3.user_id "
                               f"where tdt.is_activate and tds.\"isClosed\" = false and tde.user_id = {request.user.id} "
-                              f"and tdt.project_id = {project_id} and tdt.is_activate=True;"
+                              f"and tdt.project_id = {project_id} and tdt.is_activate=True "
+                              f"order by tdp.priority_value desc, tdt.date_change desc;"
                 )
 
                 # Tasks, in which current user is observer
@@ -2631,11 +2640,13 @@ def search_tasks(request, project_id):
                               f"join tracking_dev_employee tde2 on tdt.responsible_id = tde2.employee_id "
                               f"join tracking_dev_employee tde3 on tdt.initiator_id = tde3.employee_id "
                               f"join tracking_dev_state tds on tds.state_id = tdt.state_id "
+                              f"join tracking_dev_priority tdp on tdt.priority_id = tdp.priority_id"
                               f"join auth_user au on au.id=tde.user_id "
                               f"join auth_user au2 on au2.id=tde2.user_id "
                               f"join auth_user au3 on au3.id=tde3.user_id "
                               f"where tde.user_id = {request.user.id} and tdt.project_id = {project_id} and tdt.is_activate "
-                              f"and tds.\"isClosed\" = false and tdt.is_activate=True;"
+                              f"and tds.\"isClosed\" = false and tdt.is_activate=True "
+                              f"order by tdp.priority_value desc, tdt.date_change desc;"
                 )
 
                 tasks_closed = Task.objects.raw(
@@ -2645,7 +2656,9 @@ def search_tasks(request, project_id):
                               f"1 as au1_name_exists, 1 as au2_name_exists, 1 as au3_name_exists "
                               f"from tracking_dev_task tdt "
                               f"join tracking_dev_state tds on tdt.state_id = tds.state_id "
-                              f"where tds.\"isClosed\" = true and tdt.project_id = {project_id}"
+                              f"join tracking_dev_priority tdp on tdt.priority_id = tdp.priority_id "
+                              f"where tds.\"isClosed\" = true and tdt.project_id = {project_id} "
+                              f"order by tdp.priority_value desc "
                 )
 
                 # Another tasks
@@ -2663,10 +2676,12 @@ def search_tasks(request, project_id):
                               f"join auth_user au on au.id=tde.user_id "
                               f"join auth_user au2 on au2.id=tde2.user_id "
                               f"join auth_user au3 on au3.id=tde3.user_id "
+                              f"join tracking_dev_priority tdp on tdt.priority_id = tdp.priority_id "
                               f"where tde.user_id != {request.user.id} and tdt.project_id = {project_id} "
                               f"and tde2.user_id != {request.user.id} and tdt.is_activate "
                               f"and tde3.user_id != {request.user.id} "
-                              f"and tds.\"isClosed\" = false and tdt.is_activate=True;"
+                              f"and tds.\"isClosed\" = false and tdt.is_activate=True "
+                              f"order by tdp.priority_value desc, tdt.date_change desc;"
                 )
 
             else:
@@ -2677,8 +2692,10 @@ def search_tasks(request, project_id):
                               f"from tracking_dev_task tdt "
                               f"join tracking_dev_employee tde on tdt.responsible_id = tde.employee_id "
                               f"join tracking_dev_state tds on tds.state_id = tdt.state_id "
+                              f"join tracking_dev_priority tdp on tdp.priority_id = tdt.priority_id "
                               f"where tdt.is_activate and tds.\"isClosed\" = false and tde.user_id = {request.user.id} "
-                              f"and tdt.project_id = {project_id} and tdt.is_activate=True;"
+                              f"and tdt.project_id = {project_id} and tdt.is_activate=True "
+                              f"order by tdp.priority_value desc, tdt.date_change desc ;"
                 )
 
                 tasks_controller = Task.objects.raw(
@@ -2687,8 +2704,10 @@ def search_tasks(request, project_id):
                               f"from tracking_dev_task tdt "
                               f"join tracking_dev_employee tde on tdt.manager_id = tde.employee_id "
                               f"join tracking_dev_state tds on tds.state_id = tdt.state_id "
+                              f"join tracking_dev_priority tdp on tdt.priority_id = tdp.priority_id "
                               f"where tdt.is_activate and tds.\"isClosed\" = false and tde.user_id = {request.user.id} "
-                              f"and tdt.project_id = {project_id} and tdt.is_activate=True;"
+                              f"and tdt.project_id = {project_id} and tdt.is_activate=True "
+                              f"order by tdp.priority_value desc, tdt.date_change desc ;"
                 )
 
                 tasks_closed = Task.objects.raw(
@@ -2698,7 +2717,9 @@ def search_tasks(request, project_id):
                               f"1 as au1_name_exists, 1 as au2_name_exists, 1 as au3_name_exists "
                               f"from tracking_dev_task tdt "
                               f"join tracking_dev_state tds on tdt.state_id = tds.state_id "
-                              f"where tds.\"isClosed\" = true and tdt.project_id = {project_id}"
+                              f"join tracking_dev_priority tdp on tdt.priority_id = tdp.priority_id "
+                              f"where tds.\"isClosed\" = true and tdt.project_id = {project_id} "
+                              f"order by tdp.priority_value desc "
                 )
 
                 # Tasks, in which current user is observer
@@ -2708,8 +2729,10 @@ def search_tasks(request, project_id):
                               f"from tracking_dev_task tdt "
                               f"join tracking_dev_employee tde on tdt.initiator_id = tde.employee_id "
                               f"join tracking_dev_state tds on tds.state_id = tdt.state_id "
+                              f"join tracking_dev_priority tdp on tdp.priority_id = tdt.priority_id "
                               f"where tde.user_id = {request.user.id} and tdt.project_id = {project_id} and tdt.is_activate "
-                              f"and tds.\"isClosed\" = false and tdt.is_activate=True;"
+                              f"and tds.\"isClosed\" = false and tdt.is_activate=True "
+                              f"order by tdp.priority_value desc, tdt.date_change desc ;"
                 )
 
                 # Another tasks
@@ -2721,10 +2744,12 @@ def search_tasks(request, project_id):
                               f"join tracking_dev_employee tde2 on tdt.responsible_id = tde2.employee_id "
                               f"join tracking_dev_employee tde3 on tdt.manager_id = tde3.employee_id "
                               f"join tracking_dev_state tds on tds.state_id = tdt.state_id "
+                              f"join tracking_dev_priority tdp on tdt.priority_id = tdp.priority_id "
                               f"where tde.user_id != {request.user.id} and tdt.project_id = {project_id} "
                               f"and tde2.user_id != {request.user.id} and tdt.is_activate "
                               f"and tde3.user_id != {request.user.id} "
-                              f"and tds.\"isClosed\" = false and tdt.is_activate=True;"
+                              f"and tds.\"isClosed\" = false and tdt.is_activate=True "
+                              f"order by tdp.priority_value desc, tdt.date_change desc ;"
                 )
 
             if len(tasks_personal) > 0 or len(tasks_observer) > 0 or len(tasks_list) > 0:
@@ -3258,8 +3283,10 @@ def report_by_employee(request, project_id, employee_id):
 # Данная функция предоставляет пользователю отчёт по голосам за задачу
 def report_by_votes(request, project_id):
     list_tasks = Task.objects.raw(
-        raw_query=f"select distinct tdt.task_id, tdt.code, tdt.\"name\", tdt.description from "
-                  f"tracking_dev_task_employee tdte join tracking_dev_task tdt on tdte.task_id = tdt.task_id "
+        raw_query=f"select distinct tdt.task_id, tdt.code, tdt.\"name\", tdt.description, tdp.priority_color "
+                  f"from tracking_dev_task_employee tdte "
+                  f"join tracking_dev_task tdt on tdte.task_id = tdt.task_id "
+                  f"join tracking_dev_priority tdp on tdp.priority_id = tdt.priority_id "
                   f"where tdt.is_activate = true and tdt.project_id = {project_id} "
     )
 
