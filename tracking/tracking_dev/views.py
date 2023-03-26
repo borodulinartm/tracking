@@ -2,11 +2,29 @@ from django.contrib import auth, messages
 from django.http import HttpResponseNotFound, HttpResponseForbidden, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, redirect, reverse, get_object_or_404
 from django.db import connection
+from django.core.mail import send_mail
+
+from django.conf import settings
 
 from .models import *
 from .forms import *
 
 import random
+
+
+# Данная функция позволяет вытащить адрес электронной почты, а также ФИО сотрудника, исходя из его employee_id
+def get_user_info_from_employee_id(employee):
+    list_users = Employee.objects.raw(
+        raw_query=f"select tde.employee_id, au.first_name, au.last_name, au.email  from tracking_dev_employee tde "
+                  f"join auth_user au on tde.user_id = au.id "
+                  f"where tde.employee_id = {employee.employee_id}"
+    )
+
+    result = ""
+    for user in list_users:
+        result = user.email
+
+    return result
 
 
 # Данная функция проверяет, что текущий пользователь действительно относится к этому проекту
@@ -1906,6 +1924,16 @@ def create_subtask_form(request, project_id, task_id):
     })
 
 
+# Функция, которая отправляет сообщение на электронную почту пользователю сообщение
+def send_mail_to_user(email, name, *args):
+    text_message = f"Здравствуйте, {name}!\n"
+
+    for value in args:
+        text_message += value + "\n"
+
+    send_mail("Тестовая тема", text_message, settings.EMAIL_HOST_USER, recipient_list=[email])
+
+
 # This view allows user edit your task (only for administrators)
 def edit_task(request, project_id, task_id):
     if not request.user.is_authenticated:
@@ -1920,12 +1948,25 @@ def edit_task(request, project_id, task_id):
     if form.is_valid():
         code = form.cleaned_data['code']
 
+        # Извлекаем ответственных лиц
+        responsible = form.cleaned_data['responsible']
+        initiator = form.cleaned_data['initiator']
+        manager = form.cleaned_data['manager']
+
+        # Извлекаем название задачи и описание
+        name = form.cleaned_data['name']
+        description = form.cleaned_data['description']
+
         is_task_exists = Task.objects.filter(Q(code=code) & ~Q(task_id=task_id) & Q(is_activate=True)).count()
         if is_task_exists:
             messages.error(request, f"Задача с кодом '{code}' уже существует в системе. Пожалуйста, "
                                     f"создайте другую задачу")
         else:
             form.save()
+
+            # Отправка сообщения на электронную почту
+            email = get_user_info_from_employee_id(responsible)
+            send_mail_to_user(email, responsible, f"Отредактирвана задача '{code}'")
 
             next = request.POST.get('next', '/')
 
@@ -3404,11 +3445,11 @@ def kanban_board_manager(request, project_id):
 
     tasks_by_state = []
     for elem in data:
-        query = f"select * from tracking_dev_task tdt "\
-                      f"join tracking_dev_employee tde on tde.employee_id = tdt.responsible_id "\
-                      f"join auth_user au on au.id = tde.user_id "\
-                      f"where tdt.state_id = {elem.state_id} and tdt.project_id = {project_id} "\
-                      f"and tdt.is_activate = true;"
+        query = f"select * from tracking_dev_task tdt " \
+                f"join tracking_dev_employee tde on tde.employee_id = tdt.responsible_id " \
+                f"join auth_user au on au.id = tde.user_id " \
+                f"where tdt.state_id = {elem.state_id} and tdt.project_id = {project_id} " \
+                f"and tdt.is_activate = true;"
         tasks_query = Task.objects.raw(
             raw_query=f"select * from tracking_dev_task tdt "
                       f"join tracking_dev_employee tde on tde.employee_id = tdt.responsible_id "
