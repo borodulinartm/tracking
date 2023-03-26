@@ -1,6 +1,12 @@
 {% extends 'include/base.html' %}
 {% load static %}
 
+{% block title %}
+    <div class="title_block">
+        <h2 class="title">Отчёт по текущим задачам сотрудника</h2>
+    </div>
+{% endblock title %}
+
 {% block config %}
     <!--Chart js-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js"
@@ -67,7 +73,7 @@
                                 maxTicksLimit: 7
                             }
                         }],
-                        yAxes :[{
+                        yAxes: [{
                             ticks: {
                                 beginAtZero: true
                             }
@@ -128,7 +134,7 @@
                             }
                         }],
                         yAxes: [{
-                            ticks : {
+                            ticks: {
                                 beginAtZero: true
                             }
                         }]
@@ -180,112 +186,94 @@
 {% endblock script %}
 
 {% block content %}
-    <div class="list_button_block">
+    <div class="container-fluid">
+        <div class="d-flex justify-content-end" style="margin-bottom: 150px">
+            <div class="row w-75">
+                {% for data in user_info %}
+                    <div class="mb-3">
+                        <span class="fw-bolder text_button" style="font-size: 24px">
+                            ФИО сотрудника:
+                        </span>
+                        <span class="fw-normal text_button" style="font-size: 24px">
+                                {{ data.first_name }} {{ data.last_name }}
+                        </span>
+                    </div>
+
+                    <div class="mb-3">
+                        <span class="fw-bolder text_button" style="font-size: 24px">
+                            Адрес электронной почты</span>
+                        <span class="fw-normal text_button" style="font-size: 24px">{{ data.email }}</span>
+                    </div>
+
+                    <div class="mb-3">
+                        <span class="fw-bolder text_button" style="font-size: 24px">
+                            Должность:</span>
+                        <span class="fw-normal text_button" style="font-size: 24px">
+                            {{ data.post }}
+                        </span>
+                    </div>
+
+                    <div class="mb-3">
+                        <span class="fw-bolder text_button" style="font-size: 24px">
+                            Дата присоединения:</span>
+                        <span class="fw-normal text_button" style="font-size: 24px">
+                            {{ data.date_joined }}
+                        </span>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
         <div class="title_block">
-            <h2 class="title">Сведения о сотруднике</h2>
+            <h2 class="title">Не выполненные задачи</h2>
         </div>
-        <div class="position_block">
-            {% for data in user_info %}
 
-                <div class="d-flex justify-content-center">
-                    <div class="row w-75">
-                        <div class="text_button" aria-current="true">
-                            <p class="mb-1 text-center" style="font-size: 36px">
-                                <span class="fw-normal">
-                                    <img src="{% static 'img/user.svg' %}" alt="User" rel="icon">
-                                </span> {{ data.first_name }} {{ data.last_name }}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="d-flex justify-content-center">
-                    <div class="row w-75">
-                        <div class="text_button" aria-current="true">
-                            <p class="mb-1 text-center" style="font-size: 36px">
-                                <span class="fw-normal">
-                                    <img src="{% static 'img/email.svg' %}" alt="User" rel="icon">
-                                </span> {{ data.email }}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="d-flex justify-content-center">
-                    <div class="row w-75">
-                        <div class="text_button" aria-current="true">
-                            <p class="mb-1 text-center" style="font-size: 36px">
-                                <span class="fw-normal">
-                                    <img src="{% static 'img/post.svg' %}" alt="User" rel="icon">
-                                </span> {{ data.post }}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="d-flex justify-content-center">
-                    <div class="row w-75">
-                        <div class="text_button" aria-current="true">
-                            <p class="mb-1 text-center" style="font-size: 36px">
-                                <span class="fw-normal">
-                                    <img src="{% static 'img/calendar.svg' %}" alt="User" rel="icon">
-                                </span> {{ data.date_joined }}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            {% endfor %}
+        <div style="height: 20%">
+            <canvas id="myChart" width="400" height="100"></canvas>
         </div>
-    </div>
-    <div class="title_block">
-        <h2 class="title">Не выполненные задачи</h2>
-    </div>
 
-    <div style="height: 25%">
-        <canvas id="myChart" width="400" height="100"></canvas>
-    </div>
-
-    <div class="row">
-        <a href="{% url 'uncompleted_tasks_by_user' project_id=project_id employee_id=employee_id sort='uncompleted' %}"
-           class="list-group-item list-group-item-action text_button" aria-current="true">
-            <div class="d-flex w-100 justify-content-between">
-                <h3 class="mb-1">
-                    Подробнее
-                    <span class="fw-normal">
+        <div class="row">
+            <a href="{% url 'uncompleted_tasks_by_user' project_id=project_id employee_id=employee_id sort='uncompleted' %}"
+               class="list-group-item list-group-item-action text_button" aria-current="true">
+                <div class="d-flex w-100 justify-content-between">
+                    <h3 class="mb-1">
+                        Подробнее
+                        <span class="fw-normal">
                         <img src="{% static 'img/angle-right.svg' %}" alt="Right" rel="icon">
                     </span>
-                </h3>
-            </div>
-        </a>
-    </div>
+                    </h3>
+                </div>
+            </a>
+        </div>
 
-    <div class="title_block">
-        <h2 class="title">Закрытые задачи</h2>
-    </div>
+        <div class="title_block" style="margin-top: 150px">
+            <h2 class="title">Закрытые задачи</h2>
+        </div>
 
-    <div style="height: 25%">
-        <canvas id="myChart2" width="400" height="100"></canvas>
-    </div>
+        <div style="height: 20%">
+            <canvas id="myChart2" width="400" height="100"></canvas>
+        </div>
 
-    <div class="row">
-        <a href="{% url 'uncompleted_tasks_by_user' project_id=project_id employee_id=employee_id sort='completed' %}"
-           class="list-group-item list-group-item-action text_button" aria-current="true">
-            <div class="d-flex w-100 justify-content-between">
-                <h3 class="mb-1">
-                    Подробнее
-                    <span class="fw-normal">
+        <div class="row">
+            <a href="{% url 'uncompleted_tasks_by_user' project_id=project_id employee_id=employee_id sort='completed' %}"
+               class="list-group-item list-group-item-action text_button" aria-current="true">
+                <div class="d-flex w-100 justify-content-between">
+                    <h3 class="mb-1">
+                        Подробнее
+                        <span class="fw-normal">
                         <img src="{% static 'img/angle-right.svg' %}" alt="Right" rel="icon">
                     </span>
-                </h3>
-            </div>
-        </a>
-    </div>
+                    </h3>
+                </div>
+            </a>
+        </div>
 
-    <div class="title_block">
-        <h2 class="title">Количество задач по состояниям</h2>
-    </div>
+        <div class="title_block" style="margin-top: 150px">
+            <h2 class="title">Количество задач по состояниям</h2>
+        </div>
 
-    <div style="height: 25%">
-        <canvas id="myChart3" width="400" height="100"></canvas>
+        <div style="height: 25%">
+            <canvas id="myChart3" width="400" height="100"></canvas>
+        </div>
     </div>
 {% endblock content %}

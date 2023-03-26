@@ -69,11 +69,19 @@
                                         <small>${element.date_create}</small>
                                     </div>
 
-                                    <p class="mb-1">
+                                    <p class="mb-1" style="margin-top: 10px">
+                                        <span class="fw-normal">
+                                            <img src="{% static 'img/info_compact.svg' %}" alt="type" rel="icon">
+                                        </span>
+
                                         ${element.description}
                                     </p>
 
-                                    <p class="mb-1">
+                                    <p class="mb-1" style="margin-top: 10px">
+                                        <span class="fw-normal">
+                                            <img src="{% static 'img/date_fast_compact.svg' %}" alt="type" rel="icon">
+                                        </span>
+
                                         ${element.date_start} - ${element.date_end}
                                     </p>
                                 </a>

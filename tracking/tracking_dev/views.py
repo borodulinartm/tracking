@@ -1,8 +1,3 @@
-from django.contrib.auth import password_validation
-from django.contrib.auth.hashers import check_password
-from django.db.models import Q
-from django.utils.timezone import now
-from django.views.decorators.csrf import csrf_exempt
 from django.contrib import auth, messages
 from django.http import HttpResponseNotFound, HttpResponseForbidden, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, redirect, reverse, get_object_or_404
@@ -1335,8 +1330,6 @@ def create_priority(request):
                 next = request.POST.get('next', '/')
                 messages.success(request, "Приоритет был успешно создан")
                 return HttpResponseRedirect(next)
-        else:
-            print("I am here")
     else:
         creation_form = CreatePriorityForm()
 
@@ -1429,9 +1422,9 @@ def get_color_for_priority(priority_value):
     if 1 <= priority_value <= 30:
         return "#00FF00"
     elif 31 <= priority_value <= 65:
-        return "#ffff00"
+        return "#F4CA16"
     elif 66 <= priority_value <= 90:
-        return "#ffa500"
+        return "#F08F27"
     else:
         return "#ff0000"
 
@@ -3156,6 +3149,7 @@ def calculate_report_tasks(request, project_id):
         'count_tasks_by_states': count_tasks_by_states,
         'is_project_zone': 1,
         'project_id': project_id,
+        'show_choose_project': 1,
         'list_projects': raw_data,
         'colors': random_colors_array
     })
@@ -3301,6 +3295,7 @@ def report_by_votes(request, project_id):
         'list_projects': raw_data,
         'list_tasks': list_tasks,
         'is_project_zone': 1,
+        'show_choose_project': 1,
         'project_id': project_id,
     })
 
@@ -3359,13 +3354,19 @@ def get_list_votes_for_certain_tasks(request, project_id):
 
 # This view provides a list of the completed or uncompleted tasks
 def show_uncompleted_tasks_by_user(request, project_id, employee_id, sort):
-    query = f"select * from tracking_dev_task tdt join tracking_dev_state tds on tdt.state_id = tds.state_id " \
+    query = f"select * from tracking_dev_task tdt " \
+            f"join tracking_dev_state tds on tdt.state_id = tds.state_id " \
+            f"join tracking_dev_priority tdp on tdp.priority_id = tdt.priority_id " \
             f"where tdt.project_id = {project_id} and tdt.responsible_id = {employee_id} "
 
     if sort == "uncompleted":
+        title_text = "Не выполненные задачи"
         query += "and tds.\"isClosed\" = false "
     else:
+        title_text = "Закрытые задачи"
         query += "and tds.\"isClosed\" = true "
+
+    query += "order by tdp.priority_value desc"
 
     count_tasks = Task.objects.raw(raw_query=query)
 
@@ -3380,6 +3381,8 @@ def show_uncompleted_tasks_by_user(request, project_id, employee_id, sort):
         "count_tasks": count_tasks,
         'is_project_zone': 1,
         'list_projects': raw_data,
+        'title_text': title_text,
+        'show_choose_project': 1,
         'project_id': project_id
     })
 
@@ -3395,11 +3398,17 @@ def kanban_board_manager(request, project_id):
     data = State.objects.raw(
         raw_query=f"select * from tracking_dev_state_projects tdsp "
                   f"join tracking_dev_state tds on tdsp.state_id = tds.state_id "
-                  f"where tdsp.project_id = {project_id}"
+                  f"where tdsp.project_id = {project_id} "
+                  f"order by tds.percentage"
     )
 
     tasks_by_state = []
     for elem in data:
+        query = f"select * from tracking_dev_task tdt "\
+                      f"join tracking_dev_employee tde on tde.employee_id = tdt.responsible_id "\
+                      f"join auth_user au on au.id = tde.user_id "\
+                      f"where tdt.state_id = {elem.state_id} and tdt.project_id = {project_id} "\
+                      f"and tdt.is_activate = true;"
         tasks_query = Task.objects.raw(
             raw_query=f"select * from tracking_dev_task tdt "
                       f"join tracking_dev_employee tde on tde.employee_id = tdt.responsible_id "
@@ -3429,5 +3438,6 @@ def kanban_board_manager(request, project_id):
         'project_id': project_id,
         # The project zone variable can implement fast access to functions of the project.
         'is_project_zone': 1,
+        'show_choose_project': 1,
         'list_projects': raw_data
     })

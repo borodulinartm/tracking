@@ -57,7 +57,12 @@
                                             ${element.first_name} ${element.last_name}</h3>
                                             <small>${element.date_create}</small>
                                         </div>
-                                        <p class="mb-1">${element.description}</p>
+                                        <p class="mb-1" style="margin-top: 10px">
+                                            <span class="fw-normal">
+                                                <img src="{% static 'img/info_compact.svg' %}" alt="type" rel="icon">
+                                            </span>
+                                            ${element.description}
+                                        </p>
                                     </a>
                                 </div>
                            `
