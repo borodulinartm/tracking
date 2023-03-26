@@ -866,7 +866,7 @@ def task_description(request, project_id, task_id):
         'list_sprints': list_of_sprints_for_task,
         'project_id': project_id,
         'is_project_zone': 1,
-        'show_choose_project': 0,
+        'show_choose_project': 1,
         'count_subtasks': len(list(list_of_subtasks)),
         'is_current_user_voted': len(list(user_voted)) > 0,
         'count_votes': len(list(count_votes)),
@@ -1790,6 +1790,17 @@ def edit_type_task(request, type_id):
     })
 
 
+def get_project_name(project_id):
+    query = Project.objects.raw(
+        raw_query=f"SELECT project_id, name from tracking_dev_project WHERE project_id={project_id}"
+    )
+
+    result = ""
+    for data in query:
+        result = data.name
+    return result
+
+
 # This view provides task creation form
 def create_task(request, project_id):
     if not request.user.is_authenticated:
@@ -1833,6 +1844,23 @@ def create_task(request, project_id):
                             state=state, priority=priority, type=type_task, date_deadline=date_deadline, project=arr,
                             manager=manager)
                 task.save()
+
+                # Отправка сообщения на электронную почту
+                receipents = list({get_user_info_from_employee_id(responsible),
+                                   get_user_info_from_employee_id(initiator),
+                                   get_user_info_from_employee_id(manager)})
+                send_mail(f"{get_project_name(project_id)} {code}", f"""Была создана задача!
+1. Код задачи - {code};
+2. Название задачи - {creation_form.cleaned_data['name']};
+3. Описание задачи - {creation_form.cleaned_data['description']};
+4. Ответственный - {responsible};
+5. Проверяющий - {manager};
+6. Инициатор задачи - {initiator};
+7. Статус задачи - {state};
+8. Приортет задачи - {priority};
+9. Тип задачи - {type_task};
+10. Дата выполнения задачи - {date_deadline}""",
+                          settings.EMAIL_HOST_USER, recipient_list=receipents)
 
                 next = request.POST.get('next', '/')
 
@@ -1925,13 +1953,8 @@ def create_subtask_form(request, project_id, task_id):
 
 
 # Функция, которая отправляет сообщение на электронную почту пользователю сообщение
-def send_mail_to_user(email, name, *args):
-    text_message = f"Здравствуйте, {name}!\n"
-
-    for value in args:
-        text_message += value + "\n"
-
-    send_mail("Тестовая тема", text_message, settings.EMAIL_HOST_USER, recipient_list=[email])
+def send_mail_to_user(subject, text, *args):
+    send_mail(subject, text, settings.EMAIL_HOST_USER, recipient_list=[args])
 
 
 # This view allows user edit your task (only for administrators)
@@ -1953,10 +1976,6 @@ def edit_task(request, project_id, task_id):
         initiator = form.cleaned_data['initiator']
         manager = form.cleaned_data['manager']
 
-        # Извлекаем название задачи и описание
-        name = form.cleaned_data['name']
-        description = form.cleaned_data['description']
-
         is_task_exists = Task.objects.filter(Q(code=code) & ~Q(task_id=task_id) & Q(is_activate=True)).count()
         if is_task_exists:
             messages.error(request, f"Задача с кодом '{code}' уже существует в системе. Пожалуйста, "
@@ -1965,8 +1984,21 @@ def edit_task(request, project_id, task_id):
             form.save()
 
             # Отправка сообщения на электронную почту
-            email = get_user_info_from_employee_id(responsible)
-            send_mail_to_user(email, responsible, f"Отредактирвана задача '{code}'")
+            receipents = list({get_user_info_from_employee_id(responsible),
+                               get_user_info_from_employee_id(initiator),
+                               get_user_info_from_employee_id(manager)})
+            send_mail(f"{get_project_name(project_id)} {form.cleaned_data['code']}", f"""Была изменена задача!
+1. Код задачи - {code};
+2. Название задачи - {form.cleaned_data['name']};
+3. Описание задачи - {form.cleaned_data['description']};
+4. Ответственный - {responsible};
+5. Проверяющий - {manager};
+6. Инициатор задачи - {initiator};
+7. Статус задачи - {form.cleaned_data['state']};
+8. Приортет задачи - {form.cleaned_data['priority']};
+9. Тип задачи - {form.cleaned_data['type']};
+10. Дата выполнения задачи - {form.cleaned_data['date_deadline']}""",
+                      settings.EMAIL_HOST_USER, recipient_list=receipents)
 
             next = request.POST.get('next', '/')
 
