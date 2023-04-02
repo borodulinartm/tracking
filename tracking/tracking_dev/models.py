@@ -6,30 +6,6 @@ from django.contrib.auth.models import User, AbstractUser
 from colorfield.fields import ColorField
 
 
-# Create your models here.
-# Класс - картотека проектов
-class Project(models.Model):
-    # For the postgres sql if you want to create an autoincrement field, you should create auto field
-    # By default, Django provides an ID, which got an autoincrement purpose.
-    project_id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=50, default="hello_world")
-    description = models.TextField(default='description of the project')
-    # This field needs to add by default
-    date_create = models.DateTimeField(blank=True, default=django.utils.timezone.now())
-    # This field will be use when the field is updated
-    date_change = models.DateTimeField(auto_now=True)
-    code = models.CharField(max_length=50, default="default code")
-    # This field uses for deleting information from a database
-    is_activate = models.BooleanField(default=True)
-
-    def __str__(self):
-        return str(self.name)
-
-    class Meta:
-        verbose_name = "Project"
-        verbose_name_plural = "Project description"
-
-
 class Profession(models.Model):
     profession_id = models.AutoField(primary_key=True)
     code = models.CharField(max_length=50, default="something_code")
@@ -46,6 +22,58 @@ class Profession(models.Model):
     class Meta:
         verbose_name = "Profession"
         verbose_name_plural = "Profession description"
+
+
+# Create your models here.
+# Класс - картотека проектов
+class Project(models.Model):
+    # For the postgres sql if you want to create an autoincrement field, you should create auto field
+    # By default, Django provides an ID, which got an autoincrement purpose.
+    project_id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=50, default="hello_world")
+    description = models.TextField(default='description of the project')
+    # This field needs to add by default
+    date_create = models.DateTimeField(blank=True, default=django.utils.timezone.now())
+    # This field will be use when the field is updated
+    date_change = models.DateTimeField(auto_now=True)
+    code = models.CharField(max_length=50, default="default code")
+    # Add extra fields (such as state of the project, budget, etc.)
+    budget = models.IntegerField(default=0)
+    date_deadline = models.DateField(default=django.utils.timezone.now())
+    # Трудоёмкость проекта (в часах)
+    laboriousness = models.IntegerField(default=0)
+    # This field uses for deleting information from a database
+    is_activate = models.BooleanField(default=True)
+
+
+# This model provides an employee, which extends user
+# I can make the extent of the abstract user, but I don't make it
+# because it is more simple.
+class Employee(models.Model):
+    employee_id = models.AutoField(primary_key=True)
+    post = models.CharField(max_length=50, default="default post")
+    description = models.TextField(default="the description of the post")
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    date_create = models.DateTimeField(default=django.utils.timezone.now(), blank=True)
+    date_change = models.DateTimeField(auto_now=True)
+    # Add Many-to-many relationship
+    projects = models.ManyToManyField(Project, related_name="employee_projects")
+    profession = models.ForeignKey(Profession, on_delete=models.CASCADE, related_name="employee_profession", default=2)
+    is_activate = models.BooleanField(default=True)
+
+    def __str__(self):
+        return str(self.user.first_name) + " " + str(self.user.last_name)
+
+    class Meta:
+        verbose_name = "Employee"
+        verbose_name_plural = "Employee description"
+
+    def __str__(self):
+        return str(self.name)
+
+    class Meta:
+        verbose_name = "Project"
+        verbose_name_plural = "Project description"
 
 
 # Class—State of the tasks
@@ -112,29 +140,6 @@ class TypeTask(models.Model):
     class Meta:
         verbose_name = "Type"
         verbose_name_plural = "Type description"
-
-
-# This model provides an employee, which extends user
-# I can make the extent of the abstract user, but I don't make it
-# because it is more simple.
-class Employee(models.Model):
-    employee_id = models.AutoField(primary_key=True)
-    post = models.CharField(max_length=50, default="default post")
-    description = models.TextField(default="the description of the post")
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    date_create = models.DateTimeField(default=django.utils.timezone.now(), blank=True)
-    date_change = models.DateTimeField(auto_now=True)
-    # Add Many-to-many relationship
-    projects = models.ManyToManyField(Project, related_name="employee_projects")
-    profession = models.ForeignKey(Profession, on_delete=models.CASCADE, related_name="employee_profession", default=2)
-    is_activate = models.BooleanField(default=True)
-
-    def __str__(self):
-        return str(self.user.first_name) + " " + str(self.user.last_name)
-
-    class Meta:
-        verbose_name = "Employee"
-        verbose_name_plural = "Employee description"
 
 
 # This model provides an information about task

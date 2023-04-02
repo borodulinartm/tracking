@@ -67,6 +67,29 @@
                         </div>
                     </div>
                 </div>
+                <div class="col-sm">
+                    <div class="d-flex justify-content-center">
+                        <div class="row w-100">
+                            <div class="position_block">
+                                <span class="fw-bolder text_button">Бюджет:</span>
+                                <span class="fw-normal text_button">{{ content_list.budget }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm">
+                    <div class="d-flex justify-content-center">
+                        <div class="row w-100">
+                            <div class="position_block">
+                                <span class="fw-bolder text_button">Трудоёмкость проекта (в часах):</span>
+                                <span class="fw-normal text_button">{{ content_list.laboriousness }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="row">
@@ -99,25 +122,83 @@
                 </div>
             </div>
 
-            {% for participant in participants %}
-                <div class="row w-100">
-                    <div class="col-sm">
-                        <div class="position_block w-100 collapse rounded-2" id="collapseExample">
-                            <a href="{% url 'employee_description' employee_id=participant.employee_id %}"
-                               class="list-group-item list-group-item-action text_button"
-                               aria-current="true">
-                                <div class="d-flex w-100 justify-content-between">
-                                    <h3 class="mb-1">
-                                        <img src="{% static 'img/user.svg' %}" alt="user" rel="icon">
-                                        {{ participant.first_name }} {{ participant.last_name }}</h3>
-                                    <small>{{ participant.date_create }}</small>
-                                </div>
-                                <p class="mb-1">{{ participant.post }}</p>
-                            </a>
+            <div class="position_block">
+                {% for participant in participants %}
+                    <div class="position_block w-100 collapse" id="collapseExample">
+                        <a href="{% url 'employee_description' employee_id=participant.employee_id %}"
+                           class="list-group-item list-group-item-action text_button rounded-2"
+                           aria-current="true">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h3 class="mb-1">
+                                    <img src="{% static 'img/user.svg' %}" alt="user" rel="icon">
+                                    {{ participant.first_name }} {{ participant.last_name }}</h3>
+                                <small>{{ participant.date_create }}</small>
+                            </div>
+
+                            <p class="mb-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" id="Layer_1" data-name="Layer 1" viewBox="0 0 24 24" width="24" height="24">
+                                    <polygon points="13 14 13 16 11 16 11 14 0 14 0 24 24 24 24 14 13 14"></polygon>
+                                    <path d="M24,12V7a3,3,0,0,0-3-3H18V2a2,2,0,0,0-2-2H8A2,2,0,0,0,6,2V4H3A3,3,0,0,0,0,7v5ZM8,2h8V4H8Z"></path>
+                                </svg>
+                                {{ participant.post }}
+                            </p>
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="row">
+                <div class="col-sm">
+                    <div class="d-flex justify-content-center">
+                        <div class="row w-100">
+                            <div style="margin-left: 15px">
+                                <a class="align-items-center text-dark fw-bolder text_button text-decoration-none dropdown-toggle"
+                                   data-bs-toggle="collapse" href="#collapseExample_tasks" role="button"
+                                   aria-expanded="false" aria-controls="collapseExample_tasks">
+                                    Список задач
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
-            {% endfor %}
+            </div>
+
+            <div class="position_block">
+                {% for task in list_tasks %}
+                    <div class="row w-100 collapse" id="collapseExample_tasks">
+                        <a href="{% url 'task_description' project_id=project_id task_id=task.task_id %}"
+                           class="list-group-item list-group-item-action text_button rounded-2"
+                           aria-current="true">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h3 class="mb-1" style="color: {{ task.priority_color }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" id="Layer_1" data-name="Layer 1"
+                                         viewBox="0 0 24 24" width="36" height="36">
+                                        <path fill="{{ task.priority_color }}"
+                                              d="M24,18.586c0,1.068-.416,2.072-1.172,2.828l-1.414,1.414c-.755,.756-1.76,1.172-2.828,1.172s-2.073-.416-2.829-1.172l-2.69-2.69c-.391-.391-.391-1.023,0-1.414s1.023-.391,1.414,0l2.69,2.69c.756,.756,2.073,.756,2.829,0l1.414-1.414c.378-.378,.586-.88,.586-1.414s-.208-1.036-.586-1.414l-1.931-1.932-1.415,1.414c-.391,.391-1.023,.391-1.414,0s-.391-1.023,0-1.414l2.122-2.121c.391-.391,1.023-.391,1.414,0l2.638,2.639c.756,.755,1.172,1.759,1.172,2.828ZM3.862,10.933c.195,.195,.451,.293,.707,.293s.512-.098,.707-.293c.391-.391,.391-1.023,0-1.414l-2.69-2.69c-.378-.378-.586-.88-.586-1.414s.208-1.036,.586-1.414l1.414-1.414c.756-.756,2.073-.756,2.829,0l1.932,1.932-1.415,1.414c-.391,.391-.391,1.023,0,1.414s1.023,.391,1.414,0l2.122-2.121c.188-.188,.293-.441,.293-.707s-.105-.52-.293-.707l-2.639-2.639C6.732-.34,4.097-.34,2.586,1.172l-1.414,1.414c-.756,.756-1.172,1.76-1.172,2.828s.416,2.073,1.172,2.828l2.69,2.69ZM22.925,6.269L6.95,22.242c-1.132,1.134-2.639,1.758-4.242,1.758H1c-.552,0-1-.447-1-1v-1.708c0-1.603,.624-3.109,1.757-4.242L17.731,1.075c1.431-1.431,3.761-1.433,5.193,0,1.431,1.432,1.431,3.762,0,5.193Zm-5.2,2.371l-2.365-2.365L3.171,18.464c-.755,.756-1.171,1.76-1.171,2.828v.708h.708c1.069,0,2.073-.416,2.828-1.172l12.19-12.189Zm3.785-6.15c-.652-.652-1.712-.651-2.365,0l-2.371,2.371,2.365,2.365,2.371-2.371c.651-.652,.651-1.713,0-2.365Z"></path>
+                                    </svg>
+                                    {{ task.code }}: {{ task.name }}
+                                </h3>
+                                <small style="color: {{ task.priority_color }}">
+                                    {{ task.date_change }}
+                                </small>
+                            </div>
+
+                            <p class="mb-1" style="color: {{ task.priority_color }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" id="Outline" viewBox="0 0 24 24" width="24"
+                                     height="24">
+                                    <path fill="{{ task.priority_color }}"
+                                          d="M12,0A12,12,0,1,0,24,12,12.013,12.013,0,0,0,12,0Zm0,22A10,10,0,1,1,22,12,10.011,10.011,0,0,1,12,22Z"></path>
+                                    <path d="M12,10H11a1,1,0,0,0,0,2h1v6a1,1,0,0,0,2,0V12A2,2,0,0,0,12,10Z"
+                                          fill="{{ task.priority_color }}">
+                                    </path>
+                                    <circle cx="12" cy="6.5" r="1.5" fill="{{ task.priority_color }}"></circle>
+                                </svg>
+                                {{ task.description }}
+                            </p>
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
 
             <div class="row">
                 <div class="col-sm">

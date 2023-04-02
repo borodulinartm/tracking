@@ -67,7 +67,9 @@
                             </div>
                         </div>
                     </div>
+
                 {% else %}
+
                     <div class="container-fluid">
                         <div class="d-flex justify-content-center">
                             <div class="row">
@@ -81,6 +83,15 @@
                                 специалист :)
                             </p>
                         </div>
+
+                        {% if request.user.is_staff %}
+                            <div class="text_button">
+                                <p class="mb-3">Вам доступна возможность создавать собственные проекты и добавлять
+                                    пользователей</p>
+                                <a href="{% url 'create_project' %}?next={{ request.path|urlencode }}"
+                                   class="btn btn-primary text_button">Создать проект</a>
+                            </div>
+                        {% endif %}
                     </div>
                 {% endif %}
 

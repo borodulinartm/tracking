@@ -331,6 +331,17 @@ def project_description(request, project_id):
                   f"where project_id = {project_id} and tdep.is_activate=True;"
     )
 
+    list_tasks = Task.objects.raw(
+        raw_query=f"select tdt.task_id, tdt.code,  tdt.\"name\", tdt.description, tdt.date_change, "
+                  f"tdp2.priority_color  from tracking_dev_task tdt join tracking_dev_project tdp on "
+                  f"tdt.project_id = tdt.project_id join tracking_dev_state tds on tds.state_id = tdt.state_id "
+                  f"join tracking_dev_priority tdp2 on tdp2.priority_id = tdt.priority_id "
+                  f"join tracking_dev_employee tde on tde.employee_id = tdt.responsible_id "
+                  f"join auth_user au on au.id = tde.user_id "
+                  f"where tds.\"isClosed\" = false and tdt.is_activate and tdp.project_id = {project_id} "
+                  f"order by tdp2.priority_value desc, tdp.date_change"
+    )
+
     count_tasks = Task.objects.raw(
         raw_query=f"select * from tracking_dev_task tdt where tdt.project_id = {project_id} and is_activate=True"
     )
@@ -339,19 +350,19 @@ def project_description(request, project_id):
         raw_query=f"select tdp.project_id, tdp.code, tdp.date_create, tdp.description from tracking_dev_employee_projects tdep "
                   f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
                   f"join tracking_dev_project tdp on tdp.project_id = tdep.project_id "
-                  f"where tde.user_id = {request.user.id};"
+                  f"where tde.user_id = {request.user.id} and tdp.is_activate=True;"
     )
 
-    head = ["Номер", "Код", "Название", "Описание", "Дата создания"]
     return render(request, "include/description/project.html", {
         'title_page': 'Сведения о проекте',
-        'head': head,
         'table': raw_data,
         'show_list_group': 1,
         'count_tasks': len(list(count_tasks)),
         'data_group': all_projects,
         'participants': participants,
         'what_open': 1,
+        'project_id': project_id,
+        'list_tasks': list_tasks,
         'show_choose_project': 1,
         'list_projects': all_projects
     })
