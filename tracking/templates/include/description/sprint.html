@@ -97,6 +97,9 @@
                     <div class="d-flex justify-content-center">
                         <div class="row w-100">
                             <div class="position_block">
+                                <a href="#" class="btn btn-primary text_button">
+                                    Закрыть спринт
+                                </a>
                                 <a href="{% url 'sprint_edit' project_id=content_list.project_id sprint_id=content_list.sprint_id %}?next={{ request.path|urlencode }}"
                                    class="btn btn-primary text_button"> Редактировать
                                 </a>

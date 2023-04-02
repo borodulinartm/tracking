@@ -196,6 +196,7 @@ class Sprint(models.Model):
     date_create = models.DateTimeField(default=django.utils.timezone.now(), blank=True)  # This date you cannot change
     date_start = models.DateTimeField(default=django.utils.timezone.now())  # This date can change
     date_end = models.DateTimeField(default=django.utils.timezone.now())
+    is_closed = models.BooleanField(default=False)
     is_activate = models.BooleanField(default=True)
 
     # Add the external field many-to-many relationship

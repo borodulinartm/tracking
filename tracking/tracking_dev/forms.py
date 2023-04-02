@@ -63,10 +63,6 @@ class CreatePriorityForm(forms.ModelForm):
 
         self.fields['priority_color'] = forms.CharField(widget=forms.HiddenInput(), required=False)
 
-        # self.fields['priority_color'] = forms.CharField(widget=forms.TextInput(attrs={
-        #     "type": 'color'
-        # }))
-
         self.fields['projects'] = forms.ModelMultipleChoiceField(
             queryset=Project.objects.filter(is_activate=True),
             widget=forms.CheckboxSelectMultiple, required=False
@@ -214,7 +210,7 @@ class LoginForm(forms.Form):
 class UserRegistrationForm(UserCreationForm):
     class Meta:
         model = User
-        fields = ['username', 'first_name', 'last_name', 'email', 'password1', 'password2', 'is_staff']
+        fields = ['username', 'first_name', 'last_name', 'email', 'password1', 'password2']
 
     def __init__(self, *args, **kwargs):
         super(UserRegistrationForm, self).__init__(*args, **kwargs)
@@ -250,10 +246,6 @@ class UserRegistrationForm(UserCreationForm):
         self.fields['password2'].label = "Подтверждение пароля"
         self.fields['password2'].help_text = "<p style='margin-bottom: 20px'>Подтвердите Ваш " \
                                              "пароль для верификации в системе</p>"
-
-        self.fields['is_staff'].label = "Является администратором"
-        self.fields['is_staff'].help_text = "<p style='margin-bottom: 20px'>Администратору доступен расширенный " \
-                                            "функционал системы, не доступный обычному пользователю</p>"
 
 
 class CreateTaskForm(forms.ModelForm):
