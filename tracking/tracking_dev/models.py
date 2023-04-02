@@ -45,6 +45,13 @@ class Project(models.Model):
     # This field uses for deleting information from a database
     is_activate = models.BooleanField(default=True)
 
+    def __str__(self):
+        return str(self.name)
+
+    class Meta:
+        verbose_name = "Project"
+        verbose_name_plural = "Project description"
+
 
 # This model provides an employee, which extends user
 # I can make the extent of the abstract user, but I don't make it
@@ -66,13 +73,6 @@ class Employee(models.Model):
     class Meta:
         verbose_name = "Employee"
         verbose_name_plural = "Employee description"
-
-    def __str__(self):
-        return str(self.name)
-
-    class Meta:
-        verbose_name = "Project"
-        verbose_name_plural = "Project description"
 
 
 # Class—State of the tasks

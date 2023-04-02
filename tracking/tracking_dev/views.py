@@ -740,7 +740,7 @@ def employee_list(request):
         return HttpResponseForbidden()
 
     raw_data = Employee.objects.raw(
-        raw_query="select au.first_name, au.last_name, tde.employee_id, tde.post, tde.description, tde.date_create, "
+        raw_query="select au.first_name, au.last_name, tde.employee_id, tde.description, tde.date_create, "
                   "1 as name_exists "
                   "from tracking_dev_employee tde join auth_user au on au.id = tde.user_id where tde.is_activate=True;"
     )
@@ -862,9 +862,10 @@ def task_description(request, project_id, task_id):
     )
 
     count_votes = Employee.objects.raw(
-        raw_query=f"select tdte.id, tdte.employee_id, au.first_name, au.last_name, "
-                  f"tde.post from tracking_dev_task_employee tdte "
+        raw_query=f"select tdte.id, tdte.employee_id, au.first_name, au.last_name, tdp.\"name\" as post "
+                  f"from tracking_dev_task_employee tdte "
                   f"join tracking_dev_employee tde on tde.employee_id = tdte.employee_id "
+                  f"join tracking_dev_profession tdp on tde.profession_id=tdp.profession_id "
                   f"join auth_user au on au.id = tde.user_id  "
                   f"where tdte.task_id = {task_id}"
     )
@@ -2142,8 +2143,9 @@ def search(request, project_id):
             series = request.GET.get('series')
             if series != '':
                 query_se = Employee.objects.raw(
-                    raw_query=f"select *, au.id as user_id, au.username "
+                    raw_query=f"select *, au.id as user_id, au.username, tdp.\"name\" as post "
                               f"from tracking_dev_employee tde join auth_user au on tde.user_id = au.id "
+                              f"join tracking_dev_profession tdp on tde.profession_id = tdp.profession_id"
                               f"where tde.is_activate and (strpos(lower(au.first_name), lower('{series}')) > 0 or "
                               f"strpos(lower(au.last_name), lower('{series}')) > 0 or "
                               f"strpos(lower(au.username), lower('{series}')) > 0 ) "
@@ -2267,8 +2269,9 @@ def vote(request, project_id, task_id):
 
             count_votes = Employee.objects.raw(
                 raw_query=f"select tdte.id, tdte.employee_id, au.first_name, au.last_name, "
-                          f"tde.post from tracking_dev_task_employee tdte "
+                          f"tdp.\"name\" as post from tracking_dev_task_employee tdte "
                           f"join tracking_dev_employee tde on tde.employee_id = tdte.employee_id "
+                          f"join tracking_dev_profession tdp on tde.profession_id = tdp.profession_id "
                           f"join auth_user au on au.id = tde.user_id  "
                           f"where tdte.task_id = {task_id}"
             )
@@ -2453,12 +2456,15 @@ def employee_search(request):
             series = request.GET.get('series')
             if series != '':
                 query_se = Employee.objects.raw(
-                    raw_query=f"select au.first_name, au.last_name, tde.employee_id, tde.post, tde.description, tde.date_create, "
+                    raw_query=f"select au.first_name, au.last_name, tde.employee_id, "
+                              f"tdp.\"name\" as post, tde.description, tde.date_create, "
                               f"strpos(lower(au.first_name), lower('{series}')) as name_exists, "
                               f"strpos(lower(au.last_name), lower('{series}')) as surname_exists, "
                               f"strpos(lower(au.username), lower('{series}')) as username_exists, "
                               f"strpos(lower(tde.description), lower('{series}')) as description_exists "
-                              f"from tracking_dev_employee tde join auth_user au on au.id = tde.user_id "
+                              f"from tracking_dev_employee tde "
+                              f"join auth_user au on au.id = tde.user_id "
+                              f"join tracking_dev_profession tdp on tdp.profession_id = tde.profession_id "
                               f"where tde.is_activate=True;"
                 )
             else:
@@ -3489,6 +3495,25 @@ def show_uncompleted_tasks_by_user(request, project_id, employee_id, sort):
     })
 
 
+# Получаем оформленную и упакованную задачу, исходя из её состояния
+def get_task_by_state(elem, project_id):
+    tasks_query = Task.objects.raw(
+        raw_query=f"select * from tracking_dev_task tdt "
+                  f"join tracking_dev_employee tde on tde.employee_id = tdt.responsible_id "
+                  f"join auth_user au on au.id = tde.user_id "
+                  f"where tdt.state_id = {elem['state_id']} and tdt.project_id = {project_id} "
+                  f"and tdt.is_activate = true;"
+    )
+
+    my_dict = {
+        "state": elem['name'],
+        "description": elem['description'],
+        "tasks": tasks_query
+    }
+
+    return my_dict
+
+
 # This view provides a kanban board manager
 def kanban_board_manager(request, project_id):
     if not request.user.is_authenticated:
@@ -3497,35 +3522,38 @@ def kanban_board_manager(request, project_id):
     if not is_user_in_this_project(request, project_id):
         return HttpResponseForbidden()
 
+    # Получаем список состояний, которые определены в задаче
     data = State.objects.raw(
-        raw_query=f"select * from tracking_dev_state_projects tdsp "
-                  f"join tracking_dev_state tds on tdsp.state_id = tds.state_id "
-                  f"where tdsp.project_id = {project_id} "
-                  f"order by tds.percentage"
+        raw_query=f"select distinct tdt.state_id, tds.percentage, tds.\"name\", tds.description from tracking_dev_task tdt "
+                  f"join tracking_dev_state tds on tds.state_id = tdt.state_id "
+                  f"where tdt.project_id = {project_id} order by tds.percentage"
+    )
+
+    # Получаем список состояний, которые есть в картотеке состояний, но при этом, которых нет в списке задач
+    data_extra = State.objects.raw(
+        raw_query=f"select tdsp.state_id, tds.percentage, tds.\"name\", tds.description from tracking_dev_state_projects tdsp "
+                  f"join tracking_dev_state tds on tdsp.state_id=tds.state_id "
+                  f"where tdsp.state_id not in (select distinct tdt.state_id from tracking_dev_task tdt "
+                  f"join tracking_dev_state tds on tds.state_id = tdt.state_id "
+                  f"where tdt.project_id = {project_id})"
     )
 
     tasks_by_state = []
+
+    states = []
+
     for elem in data:
-        query = f"select * from tracking_dev_task tdt " \
-                f"join tracking_dev_employee tde on tde.employee_id = tdt.responsible_id " \
-                f"join auth_user au on au.id = tde.user_id " \
-                f"where tdt.state_id = {elem.state_id} and tdt.project_id = {project_id} " \
-                f"and tdt.is_activate = true;"
-        tasks_query = Task.objects.raw(
-            raw_query=f"select * from tracking_dev_task tdt "
-                      f"join tracking_dev_employee tde on tde.employee_id = tdt.responsible_id "
-                      f"join auth_user au on au.id = tde.user_id "
-                      f"where tdt.state_id = {elem.state_id} and tdt.project_id = {project_id} "
-                      f"and tdt.is_activate = true;"
-        )
+        states.append({"state_id": elem.state_id, "percentage": elem.percentage, "name": elem.name, "description": elem.description})
 
-        my_dict = {
-            "state": elem.name,
-            "description": elem.description,
-            "tasks": tasks_query
-        }
+    for elem in data_extra:
+        states.append({"state_id": elem.state_id, "percentage": elem.percentage, "name": elem.name, "description": elem.description})
 
-        tasks_by_state.append(my_dict)
+    print(states)
+    states_sorted = sorted(states, key=lambda d: d['percentage'])
+    print(states_sorted)
+
+    for data in states_sorted:
+        tasks_by_state.append(get_task_by_state(data, project_id))
 
     raw_data = Project.objects.raw(
         raw_query=f"select * from tracking_dev_employee_projects tdep "

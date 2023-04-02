@@ -94,3 +94,8 @@ td, th {
 .block_title {
     margin-bottom: 10px;
 }
+
+.horizontal-scroll {
+    overflow-x: auto;
+    white-space: nowrap;
+}
