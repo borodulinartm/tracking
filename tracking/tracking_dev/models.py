@@ -51,7 +51,6 @@ class Project(models.Model):
 # because it is more simple.
 class Employee(models.Model):
     employee_id = models.AutoField(primary_key=True)
-    post = models.CharField(max_length=50, default="default post")
     description = models.TextField(default="the description of the post")
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     date_create = models.DateTimeField(default=django.utils.timezone.now(), blank=True)

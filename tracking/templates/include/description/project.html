@@ -105,7 +105,6 @@
                 </div>
             </div>
 
-
             <div class="row">
                 <div class="col-sm">
                     <div class="d-flex justify-content-center">
@@ -136,11 +135,12 @@
                             </div>
 
                             <p class="mb-1">
-                                <svg xmlns="http://www.w3.org/2000/svg" id="Layer_1" data-name="Layer 1" viewBox="0 0 24 24" width="24" height="24">
+                                <svg xmlns="http://www.w3.org/2000/svg" id="Layer_1" data-name="Layer 1"
+                                     viewBox="0 0 24 24" width="24" height="24">
                                     <polygon points="13 14 13 16 11 16 11 14 0 14 0 24 24 24 24 14 13 14"></polygon>
                                     <path d="M24,12V7a3,3,0,0,0-3-3H18V2a2,2,0,0,0-2-2H8A2,2,0,0,0,6,2V4H3A3,3,0,0,0,0,7v5ZM8,2h8V4H8Z"></path>
                                 </svg>
-                                {{ participant.post }}
+                                {{ participant.name }}
                             </p>
                         </a>
                     </div>
@@ -198,6 +198,43 @@
                         </a>
                     </div>
                 {% endfor %}
+            </div>
+
+            <div class="row">
+                <div class="col-sm">
+                    <div class="d-flex justify-content-center">
+                        <div class="row w-100">
+                            <div class="position_block">
+                                <a class="align-items-center text-dark fw-bolder text_button text-decoration-none dropdown-toggle"
+                                   data-bs-toggle="collapse" href="#collapseExample_laboriousness" role="button"
+                                   aria-expanded="false" aria-controls="collapseExample_laboriousness">
+                                    Трудоёмкость (по должностям)
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div>
+
+            <div class="position_block">
+                <div class="row w-100 collapse" id="collapseExample_laboriousness">
+                    <table class="table table-bordered">
+                        <tr>
+                            <th class="text_button fw-bold">Должность</th>
+                            <th class="text_button fw-bold">Плановая трудоёмкость, ч.</th>
+                            <th class="text_button fw-bold">Фактическая трудоёмкость, ч.</th>
+                        </tr>
+
+                        {% for data in laboriousness %}
+                            <tr>
+                                <th class="fw-normal text_button">{{ data.name }}</th>
+                                <th class="fw-normal text_button">{{ data.sum_capacity_plan }}</th>
+                                <th class="fw-normal text_button">{{ data.sum_capacity_fact }}</th>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
             </div>
 
             <div class="row">

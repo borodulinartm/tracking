@@ -72,7 +72,12 @@
                         <div class="row w-100">
                             <div class="position_block">
                                 <span class="fw-bolder text_button">Должность:</span>
-                                <span class="fw-normal text_button">{{ content_list.post }}</span>
+                                <span class="fw-normal text_button">
+                                    <a class="text_button link_inactive"
+                                       href="{% url 'profession_description' profession_id=content_list.profession_id %}">
+                                        {{ content_list.name }}
+                                    </a>
+                                </span>
                             </div>
                         </div>
                     </div>

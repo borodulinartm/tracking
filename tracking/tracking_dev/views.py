@@ -324,11 +324,12 @@ def project_description(request, project_id):
     )
 
     participants = Project.objects.raw(
-        raw_query=f"select au.first_name, au.last_name, tde.post,  tdep.project_id, tdep.employee_id , au.email "
-                  f"from tracking_dev_employee_projects tdep "
+        raw_query=f"select au.first_name, au.last_name, tdep.project_id, tdep.employee_id , au.email, tdp.\"name\""
+                  f" from tracking_dev_employee_projects tdep "
                   f"join tracking_dev_employee tde on tde.employee_id = tdep.employee_id "
+                  f"join tracking_dev_profession tdp on tdp.profession_id = tde.profession_id "
                   f"join auth_user au on au.id = tde.user_id "
-                  f"where project_id = {project_id} and tdep.is_activate=True;"
+                  f"where project_id = {project_id} and tdep.is_activate=True"
     )
 
     list_tasks = Task.objects.raw(
@@ -340,6 +341,16 @@ def project_description(request, project_id):
                   f"join auth_user au on au.id = tde.user_id "
                   f"where tds.\"isClosed\" = false and tdt.is_activate and tdp.project_id = {project_id} "
                   f"order by tdp2.priority_value desc, tdp.date_change"
+    )
+
+    laboriousness = Laboriousness.objects.raw(
+        raw_query=f"select 1 as laboriousness_id, tdp.name, SUM(tdl.capacity_plan) as sum_capacity_plan,"
+                  f" SUM(tdl.capacity_fact) as sum_capacity_fact from tracking_dev_laboriousness tdl "
+                  f"join tracking_dev_task tdt on tdl.task_id = tdt.task_id "
+                  f"join tracking_dev_employee tde on tdl.employee_id = tde.employee_id "
+                  f"join tracking_dev_profession tdp on tdp.profession_id = tde.profession_id "
+                  f"where tdt.project_id = {project_id} "
+                  f"group by tdp.name"
     )
 
     count_tasks = Task.objects.raw(
@@ -361,6 +372,7 @@ def project_description(request, project_id):
         'data_group': all_projects,
         'participants': participants,
         'what_open': 1,
+        'laboriousness': laboriousness,
         'project_id': project_id,
         'list_tasks': list_tasks,
         'show_choose_project': 1,
@@ -754,12 +766,16 @@ def employee_description(request, employee_id):
     if not request.user.is_authenticated:
         return HttpResponseNotFound()
 
-    query = f"select * from tracking_dev_employee tde join auth_user au on au.id = tde.user_id " \
-            f"where employee_id = {employee_id} and is_activate=True;"
+    query = f"select tde.employee_id, au.first_name, au.last_name, au.username, tdp.\"name\", au.email, au.id, " \
+            f"tde.description, tde.date_create, tde.date_change, tdp.profession_id  from tracking_dev_employee tde " \
+            f"join auth_user au on au.id = tde.user_id " \
+            f"join tracking_dev_profession tdp on tdp.profession_id = tde.profession_id " \
+            f"where tde.employee_id = {employee_id} and tde.is_activate=True"
+
     raw_data = Employee.objects.raw(raw_query=query)
 
     data = Employee.objects.raw(
-        raw_query="select au.first_name, au.last_name, tde.employee_id, tde.post, tde.description, tde.date_create "
+        raw_query="select au.first_name, au.last_name, tde.employee_id, tde.description, tde.date_create "
                   "from tracking_dev_employee tde join auth_user au on au.id = tde.user_id where tde.is_activate=True;"
     )
 
@@ -1057,11 +1073,10 @@ def get_list_collobarators_to_project(request, project_id):
         return HttpResponseNotFound()
 
     participants = Project.objects.raw(
-        raw_query=f"select au.first_name, au.last_name, au.id, tde.post, tdep.project_id, tdep.employee_id , au.email "
-                  f"from tracking_dev_employee_projects tdep "
-                  f"join tracking_dev_employee tde on tde.employee_id = tdep.employee_id "
-                  f"join auth_user au on au.id = tde.user_id "
-                  f"where project_id = {project_id} and tdep.is_activate=True;"
+        raw_query=f"select au.first_name, au.last_name, au.id, tdep.project_id, tdep.employee_id , au.email, tdp.\"name\""
+                  f" from tracking_dev_employee_projects tdep tracking_dev_employee tde on tde.employee_id = tdep.employee_id "
+                  f"join tracking_dev_profession tdp on tdp.profession_id = tde.profession_id  "
+                  f"join auth_user au on au.id = tde.user_id where project_id = {project_id} and tdep.is_activate=True"
     )
 
     list_count_participants = Project.objects.raw(
@@ -2448,7 +2463,7 @@ def employee_search(request):
                 )
             else:
                 query_se = Employee.objects.raw(
-                    raw_query=f"select au.first_name, au.last_name, tde.employee_id, tde.post, "
+                    raw_query=f"select au.first_name, au.last_name, tde.employee_id, "
                               f"tde.description, tde.date_create, "
                               f"1 as name_exists, 1 as surname_exists, 1 as username_exists, "
                               f"1 as description_exists from tracking_dev_employee tde join auth_user au "
@@ -2862,6 +2877,7 @@ def search_collabarators(request, project_id):
                               f"strpos(lower(au.last_name), lower('{series}')) as last_name_exists "
                               f"from tracking_dev_employee_projects tdep "
                               f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
+                              f"join tracking_dev_profession tdp on tdp.profession_id = tde.profession_id "
                               f"join auth_user au on tde.user_id = au.id "
                               f"where tdep.project_id={project_id} and tdep.is_activate=True"
                 )
@@ -2870,6 +2886,7 @@ def search_collabarators(request, project_id):
                     raw_query=f"select *, au.id as user_id, 1 as name_exists, 1 as last_name_exists "
                               f"from tracking_dev_employee_projects tdep "
                               f"join tracking_dev_employee tde on tdep.employee_id = tde.employee_id "
+                              f"join tracking_dev_profession tdp on tdp.profession_id = tde.profession_id "
                               f"join auth_user au on tde.user_id = au.id "
                               f"where tdep.project_id={project_id} and tdep.is_activate=True"
                 )
@@ -2884,7 +2901,7 @@ def search_collabarators(request, project_id):
                         "first_name": position.first_name,
                         "last_name": position.last_name,
                         "email": position.email,
-                        "post": position.post,
+                        "post": position.name,
                         "name_exists": position.name_exists,
                         "last_name_exists": position.last_name_exists
                     }
@@ -3329,6 +3346,7 @@ def report_by_employee(request, project_id, employee_id):
 
     user_description = Employee.objects.raw(
         raw_query=f"select * from tracking_dev_employee tde "
+                  f"join tracking_dev_profession tdp on tdp.profession_id = tde.profession_id "
                   f"join auth_user au ON tde.user_id = au.id where tde.employee_id = {employee_id}"
     )
 
