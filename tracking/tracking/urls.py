@@ -94,6 +94,7 @@ urlpatterns = [
     path('main_page/projects/<int:project_id>/collobarators/search', search, name="search"),
     path('main_page/projects/<int:project_id>/sprints/<int:sprint_id>/search', task_sprint_search,
          name="task_sprint_search"),
+    path('main_page/projects/<int:project_id>/sprints/<int:sprint_id>/close/<int:type_closing>', sprint_close, name="sprint_close"),
     path('main_page/finded_projects', project_search, name="project_search"),
     path('main_page/finded_states', state_search, name="state_search"),
     path('main_page/<int:project_id>/finded_sprints', sprint_search, name="sprint_search"),

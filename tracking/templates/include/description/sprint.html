@@ -97,9 +97,17 @@
                     <div class="d-flex justify-content-center">
                         <div class="row w-100">
                             <div class="position_block">
-                                <a href="#" class="btn btn-primary text_button">
-                                    Закрыть спринт
-                                </a>
+                                {% if not is_closed %}
+                                    <a href="{% url 'sprint_close' project_id=project_id sprint_id=sprint_id type_closing=1 %}"
+                                            class="btn btn-primary text_button">
+                                        Закрыть спринт
+                                    </a>
+                                {% else %}
+                                    <a href="{% url 'sprint_close' project_id=project_id sprint_id=sprint_id type_closing=0 %}"
+                                            class="btn btn-primary text_button">
+                                        Вернуть в работу
+                                    </a>
+                                {% endif %}
                                 <a href="{% url 'sprint_edit' project_id=content_list.project_id sprint_id=content_list.sprint_id %}?next={{ request.path|urlencode }}"
                                    class="btn btn-primary text_button"> Редактировать
                                 </a>

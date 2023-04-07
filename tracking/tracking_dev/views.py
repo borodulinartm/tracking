@@ -311,6 +311,17 @@ def get_list_projects(request):
     })
 
 
+# This function random generates a colors
+def generate_colors(count_elems):
+    random_colors_array = []
+    r = lambda: random.randint(0, 255)
+
+    for data in range(count_elems):
+        random_colors_array.append('#%02X%02X%02X' % (r(), r(), r()))
+
+    return random_colors_array
+
+
 # This is the view, which provide description about this project
 def project_description(request, project_id):
     if not request.user.is_authenticated:
@@ -339,7 +350,7 @@ def project_description(request, project_id):
                   f"join tracking_dev_priority tdp2 on tdp2.priority_id = tdt.priority_id "
                   f"join tracking_dev_employee tde on tde.employee_id = tdt.responsible_id "
                   f"join auth_user au on au.id = tde.user_id "
-                  f"where tds.\"isClosed\" = false and tdt.is_activate and tdp.project_id = {project_id} "
+                  f"where tds.\"isClosed\" = false and tdt.is_activate and tdt.project_id = {project_id} "
                   f"order by tdp2.priority_value desc, tdp.date_change"
     )
 
@@ -351,6 +362,18 @@ def project_description(request, project_id):
                   f"join tracking_dev_profession tdp on tdp.profession_id = tde.profession_id "
                   f"where tdt.project_id = {project_id} "
                   f"group by tdp.name"
+    )
+
+    sum_laboriousness_by_staff = Laboriousness.objects.raw(
+        raw_query=f"select 1 as laboriousness_id, SUM(tdl.capacity_plan) as sum_capacity_plan, "
+                  f"SUM(tdl.capacity_fact) as sum_capacity_fact, "
+                  f"au.first_name, au.last_name, tde.employee_id from tracking_dev_laboriousness tdl "
+                  f"join tracking_dev_employee tde on tdl.employee_id = tde.employee_id "
+                  f"join tracking_dev_task tdt on tdt.task_id = tdl.task_id "
+                  f"join auth_user au on tde.user_id = au.id "
+                  f"where tdt.project_id = {project_id} "
+                  f"group by tde.employee_id, au.first_name, au.last_name "
+                  f"order by sum_capacity_plan desc"
     )
 
     count_tasks = Task.objects.raw(
@@ -373,9 +396,11 @@ def project_description(request, project_id):
         'participants': participants,
         'what_open': 1,
         'laboriousness': laboriousness,
+        'colors': generate_colors(len(list(laboriousness))),
         'project_id': project_id,
         'list_tasks': list_tasks,
         'show_choose_project': 1,
+        'sum_laboriousness_by_staff': sum_laboriousness_by_staff,
         'list_projects': all_projects
     })
 
@@ -417,6 +442,11 @@ def sprint_description(request, project_id, sprint_id):
                   f"where tds.project_id = {project_id} and tds.sprint_id = {sprint_id} and tds.is_activate ;"
     )
 
+    is_closed = False
+    if len(list(sprint_desc)) == 1:
+        for data in sprint_desc:
+            is_closed = data.is_closed
+
     data = Sprint.objects.raw(
         raw_query=f"SELECT * FROM tracking_dev_sprint tds where is_activate=True and tds.project_id = {project_id}"
     )
@@ -448,6 +478,7 @@ def sprint_description(request, project_id, sprint_id):
         'show_list_group': 1,
         'data_group': data,
         'what_open': 7,
+        'is_closed': is_closed,
         'is_project_zone': 1,
         'project_id': project_id,
         'sprint_id': sprint_id,
@@ -943,6 +974,24 @@ def form_capacity_table(request, project_id, task_id):
 
             return JsonResponse({'data': data})
     return JsonResponse({'data': []})
+
+
+# this method provides closing sprint
+def sprint_close(request, project_id, sprint_id, type_closing):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound()
+
+    if (not request.user.is_staff) or (not is_user_in_this_project(request, project_id)):
+        return HttpResponseForbidden()
+
+    Sprint.objects.filter(sprint_id=sprint_id).update(is_closed=bool(type_closing))
+
+    if type_closing:
+        messages.success(request, "Спринт был успешно закрыт")
+    else:
+        messages.success(request, "Спринт был возвращён в работу")
+
+    return redirect(reverse('sprints', kwargs={"project_id": project_id}))
 
 
 # This view allows you to remove project. But it cannot remove if the tasks linked to project exists.
@@ -3543,10 +3592,12 @@ def kanban_board_manager(request, project_id):
     states = []
 
     for elem in data:
-        states.append({"state_id": elem.state_id, "percentage": elem.percentage, "name": elem.name, "description": elem.description})
+        states.append({"state_id": elem.state_id, "percentage": elem.percentage, "name": elem.name,
+                       "description": elem.description})
 
     for elem in data_extra:
-        states.append({"state_id": elem.state_id, "percentage": elem.percentage, "name": elem.name, "description": elem.description})
+        states.append({"state_id": elem.state_id, "percentage": elem.percentage, "name": elem.name,
+                       "description": elem.description})
 
     print(states)
     states_sorted = sorted(states, key=lambda d: d['percentage'])
