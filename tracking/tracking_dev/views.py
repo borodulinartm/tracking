@@ -387,6 +387,11 @@ def project_description(request, project_id):
                   f"where tde.user_id = {request.user.id} and tdp.is_activate=True;"
     )
 
+    laboriousness_itog = 0
+
+    for data in sum_laboriousness_by_staff:
+        laboriousness_itog += data.sum_capacity_fact
+
     return render(request, "include/description/project.html", {
         'title_page': 'Сведения о проекте',
         'table': raw_data,
@@ -399,6 +404,7 @@ def project_description(request, project_id):
         'colors': generate_colors(len(list(laboriousness))),
         'project_id': project_id,
         'list_tasks': list_tasks,
+        'itog': laboriousness_itog,
         'show_choose_project': 1,
         'sum_laboriousness_by_staff': sum_laboriousness_by_staff,
         'list_projects': all_projects
@@ -2139,7 +2145,9 @@ def edit_employee(request, employee_id):
             messages.error(request, "Пользователь с данным ник-неймом существует в системе. Пожалуйста, выберите "
                                     "другого пользователя")
         else:
+            # Сохраняем наш объект, меняем описание, а также пересохраняем с подтверждением
             form_employee.save()
+
             form_user.save()
 
             next = request.POST.get('next', '/')
@@ -2415,7 +2423,7 @@ def sprint_search(request, project_id):
                     raw_query=f"select *,"
                               f"strpos(lower(tds.\"name\"), lower('{series}')) as name_exists, "
                               f"strpos(lower(tds.description), lower('{series}')) "
-                              f"as description_exists from tracking_dev_sprint tds "
+                              f"as description_exists, tds.is_closed from tracking_dev_sprint tds "
                               f"where tds.project_id = {project_id} and tds.is_activate ;"
                 )
             else:
@@ -2437,6 +2445,7 @@ def sprint_search(request, project_id):
                         "name_exists": position.name_exists,
                         "description_exists": position.description_exists,
                         "date_start": position.date_start,
+                        "is_closed": position.is_closed,
                         "date_end": position.date_end
                     }
 

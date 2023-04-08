@@ -11,7 +11,7 @@ from .models import *
 class CreateProjectForm(forms.ModelForm):
     class Meta:
         model = Project
-        fields = ['code', 'name', 'description']
+        fields = ['code', 'name', 'description', 'laboriousness', 'budget', 'date_deadline']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -24,10 +24,23 @@ class CreateProjectForm(forms.ModelForm):
                                                                             'style': 'margin-bottom: 20px'}))
         self.fields['code'] = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'Введите код',
                                                                             'style': 'margin-bottom: 20px'}))
+        self.fields['date_deadline'] = forms.DateField(widget=forms.DateInput())
+        self.fields['laboriousness'] = forms.IntegerField(
+            widget=forms.TextInput(attrs={'placeholder': 'Введите трудоёмкость',
+                                          'style': 'margin-bottom: 20px'}))
+        self.fields['budget'] = forms.IntegerField(
+            widget=forms.TextInput(attrs={'placeholder': 'Введите бюджет проекта',
+                                          'style': 'margin-bottom: 20px'}))
 
         self.fields['name'].label = "Название"
         self.fields['description'].label = "Описание"
         self.fields['code'].label = "Код"
+        self.fields['date_deadline'].label = "Дата завершения проекта"
+        self.fields['laboriousness'].label = "Трудоёмкость"
+        self.fields['budget'].label = "Бюджет"
+
+        self.fields['date_deadline'].help_text = "<p style='margin-bottom: 20px'>Формат ввода данных: гг-мм-дд. " \
+                                                 "Пример: 2023-02-28</p>"
 
 
 # This class provides priority form

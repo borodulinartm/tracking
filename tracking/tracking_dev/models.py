@@ -48,6 +48,10 @@ class Project(models.Model):
     def __str__(self):
         return str(self.name)
 
+    @property
+    def is_past_due(self):
+        return datetime.date.today() > self.date_deadline
+
     class Meta:
         verbose_name = "Project"
         verbose_name_plural = "Project description"
