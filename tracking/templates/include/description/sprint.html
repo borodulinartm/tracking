@@ -92,6 +92,96 @@
                 </div>
             </div>
 
+            <!-- Добавляем под спойлер раздел "Трудоёмкость"-->
+            <div class="row">
+                <div class="col-sm">
+                    <div class="d-flex justify-content-center">
+                        <div class="row w-100">
+                            <div class="position_block">
+                                <a class="text-dark fw-bolder text_button text-decoration-none dropdown-toggle"
+                                   data-bs-toggle="collapse" href="#collapseExample_capacity" role="button"
+                                   aria-expanded="false" aria-controls="collapseCapacity_personal">
+                                    Трудоёмкость спринта
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="position_block rounded-2 collapse" id="collapseExample_capacity">
+                <a href="{% url 'report_laboriousness' project_id=project_id sprint_id=sprint_id %}"
+                   class="list-group-item list-group-item-action text_button"
+                   aria-current="true">
+                    <div class="d-flex w-75 justify-content-between">
+                        <h3 class="mb-1">
+                            Отчёт нагруженности сотрудников
+                            <span class="fw-normal">
+                            <img src="{% static 'img/angle-right.svg' %}" alt="Right" rel="icon">
+                        </span>
+                        </h3>
+                    </div>
+                </a>
+
+                <div class="position_block">
+                    <p class="text_button fw-normal" style="margin-top: 50px">Суммарная трудоёмкость по сотрудникам</p>
+                    <table class="table table-bordered">
+                        <tr>
+                            <th class="text_button fw-bold">ФИО сотрудника</th>
+                            <th class="text_button fw-bold">Плановая трудоёмкость, ч.</th>
+                            <th class="text_button fw-bold">Фактическая трудоёмкость, ч.</th>
+                        </tr>
+
+                        {% for data in capacity_sum_user %}
+                            <tr>
+                                <th class="text_button fw-normal">{{ data.first_name }} {{ data.last_name }}</th>
+                                <th class="text_button fw-normal">{{ data.capacity_sum_plan }}</th>
+                                <th class="text_button fw-normal">{{ data.capacity_sum_fact }}</th>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+
+            <!-- Добавляем под спойлер раздел "Задачи спринта"-->
+            <div class="row">
+                <div class="col-sm">
+                    <div class="d-flex justify-content-center">
+                        <div class="row w-100">
+                            <div class="position_block">
+                                <a class="text-dark fw-bolder text_button text-decoration-none dropdown-toggle"
+                                   data-bs-toggle="collapse" href="#collapseExample_tasks_list" role="button"
+                                   aria-expanded="false" aria-controls="collapseCapacity_personal">
+                                    Задачи спринта
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="position_block rounded-2 collapse" id="collapseExample_tasks_list">
+                <div class="block_title" style="margin-top: 50px">
+                    <h2 class="title">Задачи спринта</h2>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm">
+                        <div class="d-flex justify-content-center">
+                            <div class="row w-100">
+                                <div class="position_block">
+                                    <a href="#" class="btn btn-primary text_button" data-bs-toggle="modal"
+                                       data-bs-target="#exampleModal1">Добавить задачу
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="position_block" id="collapseExample_tasks"></div>
+            </div>
+
             <div class="row">
                 <div class="col-sm">
                     <div class="d-flex justify-content-center">
@@ -99,12 +189,12 @@
                             <div class="position_block">
                                 {% if not is_closed %}
                                     <a href="{% url 'sprint_close' project_id=project_id sprint_id=sprint_id type_closing=1 %}"
-                                            class="btn btn-primary text_button">
+                                       class="btn btn-primary text_button">
                                         Закрыть спринт
                                     </a>
                                 {% else %}
                                     <a href="{% url 'sprint_close' project_id=project_id sprint_id=sprint_id type_closing=0 %}"
-                                            class="btn btn-primary text_button">
+                                       class="btn btn-primary text_button">
                                         Вернуть в работу
                                     </a>
                                 {% endif %}
@@ -142,124 +232,32 @@
             </div>
 
         {% endfor %}
-
-
-        <!-- Добавляем под спойлер раздел "Трудоёмкость"-->
-        <div class="row">
-            <div class="col-sm">
-                <div class="d-flex justify-content-center">
-                    <div class="row w-100">
-                        <div class="position_block">
-                            <a class="text-dark fw-bolder text_button text-decoration-none dropdown-toggle"
-                               data-bs-toggle="collapse" href="#collapseExample_capacity" role="button"
-                               aria-expanded="false" aria-controls="collapseCapacity_personal">
-                                Трудоёмкость спринта
-                            </a>
-                        </div>
+        <!-- Search Bar -->
+        <div class="modal fade" id="exampleModal1" tabindex="-1" aria-labelledby="exampleModalLabel1"
+             aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel1">Добавление задачи</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Close">
+                        </button>
                     </div>
-                </div>
-            </div>
-        </div>
 
-        <div class="position_block rounded-2 collapse" id="collapseExample_capacity">
-            <a href="{% url 'report_laboriousness' project_id=project_id sprint_id=sprint_id %}"
-               class="list-group-item list-group-item-action text_button"
-               aria-current="true">
-                <div class="d-flex w-75 justify-content-between">
-                    <h3 class="mb-1">
-                        Отчёт нагруженности сотрудников
-                        <span class="fw-normal">
-                            <img src="{% static 'img/angle-right.svg' %}" alt="Right" rel="icon">
-                        </span>
-                    </h3>
-                </div>
-            </a>
-
-            <div class="position_block">
-                <p class="text_button fw-normal" style="margin-top: 50px">Суммарная трудоёмкость по сотрудникам</p>
-                <table class="table table-bordered">
-                    <tr>
-                        <th class="text_button fw-bold">ФИО сотрудника</th>
-                        <th class="text_button fw-bold">Плановая трудоёмкость, ч.</th>
-                        <th class="text_button fw-bold">Фактическая трудоёмкость, ч.</th>
-                    </tr>
-
-                    {% for data in capacity_sum_user %}
-                        <tr>
-                            <th class="text_button fw-normal">{{ data.first_name }} {{ data.last_name }}</th>
-                            <th class="text_button fw-normal">{{ data.capacity_sum_plan }}</th>
-                            <th class="text_button fw-normal">{{ data.capacity_sum_fact }}</th>
-                        </tr>
-                    {% endfor %}
-                </table>
-            </div>
-        </div>
-
-        <!-- Добавляем под спойлер раздел "Задачи спринта"-->
-        <div class="row">
-            <div class="col-sm">
-                <div class="d-flex justify-content-center">
-                    <div class="row w-100">
-                        <div class="position_block">
-                            <a class="text-dark fw-bolder text_button text-decoration-none dropdown-toggle"
-                               data-bs-toggle="collapse" href="#collapseExample_tasks_list" role="button"
-                               aria-expanded="false" aria-controls="collapseCapacity_personal">
-                                Задачи спринта
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="position_block rounded-2 collapse" id="collapseExample_tasks_list">
-            <div class="block_title" style="margin-top: 50px">
-                <h2 class="title">Задачи спринта</h2>
-            </div>
-
-            <div class="row">
-                <div class="col-sm">
-                    <div class="d-flex justify-content-center">
-                        <div class="row w-100">
-                            <div class="position_block">
-                                <a href="#" class="btn btn-primary text_button" data-bs-toggle="modal"
-                                   data-bs-target="#exampleModal1">Добавить задачу
-                                </a>
+                    <div class="modal-body text_button">
+                        <form action="{% url 'task_sprint_search' project_id=project_id sprint_id=sprint_id %}"
+                              class="form-inline" method="get">
+                            <div class="form-group mx-sm-3 mb-2">
+                                <label for="search-task-input"></label>
+                                <input name="search" class="form-control" id="search-task-input"
+                                       placeholder="Введите название задачи">
                             </div>
-                        </div>
+
+                            <div class="container-fluid" id="task_list_row"></div>
+                        </form>
                     </div>
                 </div>
             </div>
-
-            <!-- Search Bar -->
-            <div class="modal fade" id="exampleModal1" tabindex="-1" aria-labelledby="exampleModalLabel1"
-                 aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="exampleModalLabel1">Добавление задачи</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                    aria-label="Close">
-                            </button>
-                        </div>
-
-                        <div class="modal-body text_button">
-                            <form action="{% url 'task_sprint_search' project_id=project_id sprint_id=sprint_id %}"
-                                  class="form-inline" method="get">
-                                <div class="form-group mx-sm-3 mb-2">
-                                    <label for="search-task-input"></label>
-                                    <input name="search" class="form-control" id="search-task-input"
-                                           placeholder="Введите название задачи">
-                                </div>
-
-                                <div class="container-fluid" id="task_list_row"></div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="position_block" id="collapseExample_tasks"></div>
         </div>
     </div>
 {% endblock content %}

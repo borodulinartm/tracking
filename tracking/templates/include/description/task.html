@@ -300,6 +300,110 @@
                 {% endfor %}
             {% endif %}
 
+            {% if count_subtasks > 0 %}
+                <div class="row">
+                    <div class="col-sm">
+                        <div class="d-flex justify-content-center">
+                            <div class="row w-100">
+                                <div class="position_block">
+                                    <a class="text-dark fw-bolder text_button text-decoration-none dropdown-toggle"
+                                       data-bs-toggle="collapse" href="#collapseExample_subtasks" role="button"
+                                       aria-expanded="false" aria-controls="collapseExample_personal">
+                                        Подзадачи ({{ count_subtasks }})
+                                    </a>
+                                </div>
+
+                                {% for task in subtasks %}
+                                    <div id="collapseExample_subtasks" class="collapse rounded-2">
+                                        <a href="{% url 'task_description' project_id=project_id task_id=task.task_id %}"
+                                           class="list-group-item list-group-item-action text_button rounded-2"
+                                           aria-current="true">
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <h3 class="mb-1">
+                                                    <img src="{% static 'img/pencil.svg' %}" alt="pencil" rel="icon">
+                                                    {{ task.code }}
+                                                </h3>
+                                                <small>{{ task.date_create }}</small>
+                                            </div>
+                                            <p class="mb-1" style="margin-top: 10px">
+                                                <svg xmlns="http://www.w3.org/2000/svg" id="Outline" viewBox="0 0 24 24"
+                                                     width="24"
+                                                     height="24">
+                                                    <path d="M12,0A12,12,0,1,0,24,12,12.013,12.013,0,0,0,12,0Zm0,22A10,10,0,1,1,22,12,10.011,10.011,0,0,1,12,22Z"></path>
+                                                    <path d="M12,10H11a1,1,0,0,0,0,2h1v6a1,1,0,0,0,2,0V12A2,2,0,0,0,12,10Z"></path>
+                                                    <circle cx="12" cy="6.5" r="1.5"></circle>
+                                                </svg>
+                                                {{ task.description|truncatechars:100 }}
+                                            </p>
+                                        </a>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <div class="row">
+                <div class="col-sm">
+                    <div class="d-flex justify-content-center">
+                        <div class="row w-100" id="foo">
+                            <div class="position_block">
+                                <a class="text-dark fw-bolder text_button text-decoration-none dropdown-toggle"
+                                   data-bs-toggle="collapse" href="#collapseExample_votes" role="button"
+                                   aria-expanded="false" aria-controls="collapseVote_personal"
+                                   id="count_votes">
+                                    Проголосовавшие участники ({{ count_votes }})
+                                </a>
+                            </div>
+
+                            {% for vote in votes %}
+                                <div id="collapseExample_votes" class="collapse rounded-2 vote_div">
+                                    <a href="{% url 'employee_description' employee_id=vote.employee_id %}"
+                                       class="list-group-item list-group-item-action text_button rounded-2"
+                                       aria-current="true" id="employee_vote">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <h3 class="mb-1">
+                                                <img src="{% static 'img/pencil.svg' %}" alt="pencil" rel="icon">
+                                                {{ vote.first_name }} {{ vote.last_name }}
+                                            </h3>
+                                        </div>
+                                        <p class="mb-1" style="margin-top: 10px">
+                                            <svg xmlns="http://www.w3.org/2000/svg" id="Outline" viewBox="0 0 24 24"
+                                                 width="24"
+                                                 height="24">
+                                                <path d="M12,0A12,12,0,1,0,24,12,12.013,12.013,0,0,0,12,0Zm0,22A10,10,0,1,1,22,12,10.011,10.011,0,0,1,12,22Z"></path>
+                                                <path d="M12,10H11a1,1,0,0,0,0,2h1v6a1,1,0,0,0,2,0V12A2,2,0,0,0,12,10Z"></path>
+                                                <circle cx="12" cy="6.5" r="1.5"></circle>
+                                            </svg>
+                                            {{ vote.post|truncatechars:100 }}
+                                        </p>
+                                    </a>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm">
+                    <div class="d-flex justify-content-center">
+                        <div class="row w-100">
+                            <div class="position_block">
+                                <a class="text-dark fw-bolder text_button text-decoration-none dropdown-toggle"
+                                   data-bs-toggle="collapse" href="#collapseExample_capacity" role="button"
+                                   aria-expanded="false" aria-controls="collapseCapacity_personal">
+                                    Трудоёмкость
+                                </a>
+                            </div>
+
+                            <div class="collapse rounded-2 my_table" id="collapseExample_capacity"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="row">
                 <div class="col-sm">
                     <div class="d-flex justify-content-center">
@@ -388,109 +492,6 @@
             </div>
         {% endfor %}
 
-        {% if count_subtasks > 0 %}
-            <div class="row">
-                <div class="col-sm">
-                    <div class="d-flex justify-content-center">
-                        <div class="row w-100">
-                            <div class="position_block">
-                                <a class="text-dark fw-bolder text_button text-decoration-none dropdown-toggle"
-                                   data-bs-toggle="collapse" href="#collapseExample_subtasks" role="button"
-                                   aria-expanded="false" aria-controls="collapseExample_personal">
-                                    Подзадачи ({{ count_subtasks }})
-                                </a>
-                            </div>
-
-                            {% for task in subtasks %}
-                                <div id="collapseExample_subtasks" class="collapse rounded-2">
-                                    <a href="{% url 'task_description' project_id=project_id task_id=task.task_id %}"
-                                       class="list-group-item list-group-item-action text_button rounded-2"
-                                       aria-current="true">
-                                        <div class="d-flex w-100 justify-content-between">
-                                            <h3 class="mb-1">
-                                                <img src="{% static 'img/pencil.svg' %}" alt="pencil" rel="icon">
-                                                {{ task.code }}
-                                            </h3>
-                                            <small>{{ task.date_create }}</small>
-                                        </div>
-                                        <p class="mb-1" style="margin-top: 10px">
-                                            <svg xmlns="http://www.w3.org/2000/svg" id="Outline" viewBox="0 0 24 24"
-                                                 width="24"
-                                                 height="24">
-                                                <path d="M12,0A12,12,0,1,0,24,12,12.013,12.013,0,0,0,12,0Zm0,22A10,10,0,1,1,22,12,10.011,10.011,0,0,1,12,22Z"></path>
-                                                <path d="M12,10H11a1,1,0,0,0,0,2h1v6a1,1,0,0,0,2,0V12A2,2,0,0,0,12,10Z"></path>
-                                                <circle cx="12" cy="6.5" r="1.5"></circle>
-                                            </svg>
-                                            {{ task.description|truncatechars:100 }}
-                                        </p>
-                                    </a>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        {% endif %}
-
-        <div class="row">
-            <div class="col-sm">
-                <div class="d-flex justify-content-center">
-                    <div class="row w-100" id="foo">
-                        <div class="position_block">
-                            <a class="text-dark fw-bolder text_button text-decoration-none dropdown-toggle"
-                               data-bs-toggle="collapse" href="#collapseExample_votes" role="button"
-                               aria-expanded="false" aria-controls="collapseVote_personal"
-                               id="count_votes">
-                                Проголосовавшие участники ({{ count_votes }})
-                            </a>
-                        </div>
-
-                        {% for vote in votes %}
-                            <div id="collapseExample_votes" class="collapse rounded-2 vote_div">
-                                <a href="{% url 'employee_description' employee_id=vote.employee_id %}"
-                                   class="list-group-item list-group-item-action text_button rounded-2"
-                                   aria-current="true" id="employee_vote">
-                                    <div class="d-flex w-100 justify-content-between">
-                                        <h3 class="mb-1">
-                                            <img src="{% static 'img/pencil.svg' %}" alt="pencil" rel="icon">
-                                            {{ vote.first_name }} {{ vote.last_name }}
-                                        </h3>
-                                    </div>
-                                    <p class="mb-1" style="margin-top: 10px">
-                                        <svg xmlns="http://www.w3.org/2000/svg" id="Outline" viewBox="0 0 24 24"
-                                             width="24"
-                                             height="24">
-                                            <path d="M12,0A12,12,0,1,0,24,12,12.013,12.013,0,0,0,12,0Zm0,22A10,10,0,1,1,22,12,10.011,10.011,0,0,1,12,22Z"></path>
-                                            <path d="M12,10H11a1,1,0,0,0,0,2h1v6a1,1,0,0,0,2,0V12A2,2,0,0,0,12,10Z"></path>
-                                            <circle cx="12" cy="6.5" r="1.5"></circle>
-                                        </svg>
-                                        {{ vote.post|truncatechars:100 }}
-                                    </p>
-                                </a>
-                            </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-sm">
-                <div class="d-flex justify-content-center">
-                    <div class="row w-100">
-                        <div class="position_block">
-                            <a class="text-dark fw-bolder text_button text-decoration-none dropdown-toggle"
-                               data-bs-toggle="collapse" href="#collapseExample_capacity" role="button"
-                               aria-expanded="false" aria-controls="collapseCapacity_personal">
-                                Трудоёмкость
-                            </a>
-                        </div>
-
-                        <div class="collapse rounded-2 my_table" id="collapseExample_capacity"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 {% endblock content %}
 

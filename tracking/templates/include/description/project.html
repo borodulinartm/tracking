@@ -6,7 +6,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js"
             integrity="sha256-Uv9BNBucvCPipKQ2NS9wYpJmi8DTOEfTA/nH2aoJALw=" crossorigin="anonymous"></script>
 
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.css"
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.css"
           integrity="sha256-aa0xaJgmK/X74WM224KMQeNQC2xYKwlAt08oZqjeF0E=" crossorigin="anonymous"/>
 
 {% endblock config %}
@@ -132,6 +132,20 @@
             </div>
 
             <div class="position_block">
+                <div class="position_block w-100 collapse" id="collapseExample">
+                    <a href="{% url 'collabs' project_id=content_list.project_id %}"
+                       class="list-group-item list-group-item-action text_button" aria-current="true">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h3 class="mb-1">
+                                Подробнее
+                                <span class="fw-normal">
+                                    <img src="{% static 'img/angle-right.svg' %}" alt="Right" rel="icon">
+                                </span>
+                            </h3>
+                        </div>
+                    </a>
+                </div>
+
                 {% for participant in participants %}
                     <div class="position_block w-100 collapse" id="collapseExample">
                         <a href="{% url 'employee_description' employee_id=participant.employee_id %}"

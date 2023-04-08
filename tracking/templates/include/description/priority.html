@@ -101,6 +101,72 @@
                 </div>
             </div>
 
+            <div class="row">
+                <div class="col-sm">
+                    <div class="d-flex justify-content-center">
+                        <div class="row w-100">
+                            <div class="position_block" id="count_projects">
+                                <a class="text-dark fw-bolder text_button text-decoration-none dropdown-toggle"
+                                   data-bs-toggle="collapse" href="#collapseExample_projects" role="button"
+                                   aria-expanded="false" aria-controls="collapseExample_personal">
+                                    Доступно в проектах ({{ projects_accessible|length }})
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="collapseExample_projects" class="collapse rounded-2">
+                <div class="position_block">
+                    <a class="btn btn-outline-light"
+                       data-bs-toggle="modal"
+                       onclick="fill_checkboxes()"
+                       data-bs-target="#collapseExample_settings_projects">
+                        <img src="{% static 'img/settings-sliders.svg' %}" alt="settings" rel="icon">
+                    </a>
+                </div>
+
+                <div class="position_block" id="block_projects">
+                </div>
+            </div>
+
+            <div class="modal fade" id="collapseExample_settings_projects" tabindex="-1"
+                 aria-labelledby="exampleModalLabel"
+                 aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Выбор проекта</h5>
+                            <a type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></a>
+                        </div>
+
+                        <div class="modal-body text_button">
+                            <form class="form-inline search-form" method="get">
+                                {% csrf_token %}
+                                <div class="position_block form-check" style="margin-bottom: 10px">
+                                    <label for="projects_all">Отметить всё</label>
+                                    <input class="form-check-input" type="checkbox" id="projects_all"
+                                           onclick="manage_all_checkboxes()">
+                                </div>
+
+                                <hr>
+
+                                <div class="position_block" id="block_checkboxes">
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="modal-footer">
+                            <a type="button" data-bs-dismiss="modal"
+                               href="#"
+                               onclick="insert_data()"
+                               class="btn btn-primary">Подтвердить</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             {% if request.user.is_staff %}
                 <div class="row">
                     <div class="col-sm">
@@ -166,71 +232,6 @@
                 </div>
             </div>
         {% endfor %}
-
-        <div class="row">
-            <div class="col-sm">
-                <div class="d-flex justify-content-center">
-                    <div class="row w-100">
-                        <div class="position_block" id="count_projects">
-                            <a class="text-dark fw-bolder text_button text-decoration-none dropdown-toggle"
-                               data-bs-toggle="collapse" href="#collapseExample_projects" role="button"
-                               aria-expanded="false" aria-controls="collapseExample_personal">
-                                Доступно в проектах ({{ projects_accessible|length }})
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="collapseExample_projects" class="collapse rounded-2">
-            <div class="position_block">
-                <a class="btn btn-outline-light"
-                   data-bs-toggle="modal"
-                   onclick="fill_checkboxes()"
-                   data-bs-target="#collapseExample_settings_projects">
-                    <img src="{% static 'img/settings-sliders.svg' %}" alt="settings" rel="icon">
-                </a>
-            </div>
-
-            <div class="position_block" id="block_projects">
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="collapseExample_settings_projects" tabindex="-1" aria-labelledby="exampleModalLabel"
-         aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Выбор проекта</h5>
-                    <a type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></a>
-                </div>
-
-                <div class="modal-body text_button">
-                    <form class="form-inline search-form" method="get">
-                        {% csrf_token %}
-                        <div class="position_block form-check" style="margin-bottom: 10px">
-                            <label for="projects_all">Отметить всё</label>
-                            <input class="form-check-input" type="checkbox" id="projects_all"
-                                   onclick="manage_all_checkboxes()">
-                        </div>
-
-                        <hr>
-
-                        <div class="position_block" id="block_checkboxes">
-                        </div>
-                    </form>
-                </div>
-
-                <div class="modal-footer">
-                    <a type="button" data-bs-dismiss="modal"
-                       href="#"
-                       onclick="insert_data()"
-                       class="btn btn-primary">Подтвердить</a>
-                </div>
-            </div>
-        </div>
     </div>
 {% endblock content %}
 

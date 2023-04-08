@@ -343,15 +343,15 @@ def project_description(request, project_id):
                   f"where project_id = {project_id} and tdep.is_activate=True"
     )
 
+    # Получаем список задач отсортированных по убыванию приоритета, а также по дате обновления
     list_tasks = Task.objects.raw(
         raw_query=f"select tdt.task_id, tdt.code,  tdt.\"name\", tdt.description, tdt.date_change, "
-                  f"tdp2.priority_color  from tracking_dev_task tdt join tracking_dev_project tdp on "
-                  f"tdt.project_id = tdt.project_id join tracking_dev_state tds on tds.state_id = tdt.state_id "
+                  f"tdp2.priority_color  from tracking_dev_task tdt join tracking_dev_state "
+                  f"tds on tds.state_id = tdt.state_id "
                   f"join tracking_dev_priority tdp2 on tdp2.priority_id = tdt.priority_id "
                   f"join tracking_dev_employee tde on tde.employee_id = tdt.responsible_id "
-                  f"join auth_user au on au.id = tde.user_id "
-                  f"where tds.\"isClosed\" = false and tdt.is_activate and tdt.project_id = {project_id} "
-                  f"order by tdp2.priority_value desc, tdp.date_change"
+                  f"where tds.\"isClosed\" = false and tdt.is_activate and tdt.project_id = 16 "
+                  f"order by tdp2.priority_value desc, tdt.date_change"
     )
 
     laboriousness = Laboriousness.objects.raw(
@@ -1514,7 +1514,7 @@ def edit_sprint(request, project_id, sprint_id):
 
 def get_color_for_priority(priority_value):
     if 1 <= priority_value <= 30:
-        return "#00FF00"
+        return "#00CC00"
     elif 31 <= priority_value <= 65:
         return "#F4CA16"
     elif 66 <= priority_value <= 90:
@@ -2028,11 +2028,6 @@ def create_subtask_form(request, project_id, task_id):
     })
 
 
-# Функция, которая отправляет сообщение на электронную почту пользователю сообщение
-def send_mail_to_user(subject, text, *args):
-    send_mail(subject, text, settings.EMAIL_HOST_USER, recipient_list=[args])
-
-
 # This view allows user edit your task (only for administrators)
 def edit_task(request, project_id, task_id):
     if not request.user.is_authenticated:
@@ -2059,26 +2054,35 @@ def edit_task(request, project_id, task_id):
         else:
             form.save()
 
-            # Отправка сообщения на электронную почту
-            receipents = list({get_user_info_from_employee_id(responsible),
-                               get_user_info_from_employee_id(initiator),
-                               get_user_info_from_employee_id(manager)})
-            send_mail(f"{get_project_name(project_id)} {form.cleaned_data['code']}", f"""Была изменена задача!
-1. Код задачи - {code};
-2. Название задачи - {form.cleaned_data['name']};
-3. Описание задачи - {form.cleaned_data['description']};
-4. Ответственный - {responsible};
-5. Проверяющий - {manager};
-6. Инициатор задачи - {initiator};
-7. Статус задачи - {form.cleaned_data['state']};
-8. Приортет задачи - {form.cleaned_data['priority']};
-9. Тип задачи - {form.cleaned_data['type']};
-10. Дата выполнения задачи - {form.cleaned_data['date_deadline']}""",
-                      settings.EMAIL_HOST_USER, recipient_list=receipents)
+            is_success_email = True
+
+            try:
+                # Отправка сообщения на электронную почту
+                receipents = list({get_user_info_from_employee_id(responsible),
+                                   get_user_info_from_employee_id(initiator),
+                                   get_user_info_from_employee_id(manager)})
+                send_mail(f"{get_project_name(project_id)} {form.cleaned_data['code']}", f"""Была изменена задача!
+    1. Код задачи - {code};
+    2. Название задачи - {form.cleaned_data['name']};
+    3. Описание задачи - {form.cleaned_data['description']};
+    4. Ответственный - {responsible};
+    5. Проверяющий - {manager};
+    6. Инициатор задачи - {initiator};
+    7. Статус задачи - {form.cleaned_data['state']};
+    8. Приортет задачи - {form.cleaned_data['priority']};
+    9. Тип задачи - {form.cleaned_data['type']};
+    10. Дата выполнения задачи - {form.cleaned_data['date_deadline']}""",
+                          settings.EMAIL_HOST_USER, recipient_list=receipents)
+            except Exception as error:
+                is_success_email = False
 
             next = request.POST.get('next', '/')
 
-            messages.success(request, "Задача была успешно изменена")
+            if is_success_email:
+                messages.success(request, "Задача была успешно изменена")
+            else:
+                messages.warning(request, "Задача была изменена, однако на почту участникам изменения не были отправлены")
+
             return HttpResponseRedirect(next)
 
     return render(request, 'include/base_form.html', {
@@ -3599,9 +3603,7 @@ def kanban_board_manager(request, project_id):
         states.append({"state_id": elem.state_id, "percentage": elem.percentage, "name": elem.name,
                        "description": elem.description})
 
-    print(states)
     states_sorted = sorted(states, key=lambda d: d['percentage'])
-    print(states_sorted)
 
     for data in states_sorted:
         tasks_by_state.append(get_task_by_state(data, project_id))
