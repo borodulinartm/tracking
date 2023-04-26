@@ -137,13 +137,15 @@
                                         display: false,
                                     }, ticks: {
                                         autoSkip: true,
-                                        maxTicksLimit: 20
+                                        maxTicksLimit: 20,
+                                        fontSize: 30
                                     }
                                 }],
                                 yAxes: [{
                                     stacked: true,
                                     ticks: {
                                         beginAtZero: true,
+                                        fontSize: 30
                                     },
                                     type: 'linear',
                                 }]
@@ -151,7 +153,12 @@
 
                             responsive: true,
                             maintainAspectRatio: false,
-                            legend: {position: 'top'},
+                            legend: {
+                                position: 'top',
+                                labels: {
+                                    fontSize: 30
+                                }
+                            },
                         }
 
                     });

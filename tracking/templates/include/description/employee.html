@@ -126,7 +126,7 @@
                         <div class="d-flex justify-content-center">
                             <div class="row w-100">
                                 <div class="position_block">
-                                    <a href="{% url 'edit_employee' employee_id=content_list.employee_id %}"
+                                    <a href="{% url 'edit_employee' employee_id=content_list.employee_id %}?next={{ request.path|urlencode }}"
                                        class="btn btn-primary text_button">Редактировать</a>
                                 </div>
                             </div>

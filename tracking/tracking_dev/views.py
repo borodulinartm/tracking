@@ -1225,8 +1225,8 @@ def remove_all_users_from_current_project(request, project_id):
     with connection.cursor() as cursor:
         cursor.execute(f"delete from tracking_dev_employee_projects tdep "
                        f"where tdep.employee_id in (select tde.employee_id from tracking_dev_employee "
-                       f"tde where tde.user_id != 2) "
-                       f"and tdep.project_id = 16")
+                       f"tde where tde.user_id != {request.user.id}) "
+                       f"and tdep.project_id = {project_id}")
         messages.success(request, "Все пользователи были удалены из проекта")
 
     # Redirect to the website with project
@@ -1734,6 +1734,8 @@ def create_state(request):
                                        "Процент выполнения задачи не может превышать 99 для не закрытого состояния задачи")
                     else:
                         creation_form.save()
+
+                        messages.success(request, "Состояние успешно создано")
                         return HttpResponseRedirect(next)
         else:
             messages.error(request, "Произошла ошибка при вводе данных. Убедитесь, что информация введена верно")
@@ -2206,7 +2208,7 @@ def search(request, project_id):
                 query_se = Employee.objects.raw(
                     raw_query=f"select *, au.id as user_id, au.username, tdp.\"name\" as post "
                               f"from tracking_dev_employee tde join auth_user au on tde.user_id = au.id "
-                              f"join tracking_dev_profession tdp on tde.profession_id = tdp.profession_id"
+                              f"join tracking_dev_profession tdp on tde.profession_id = tdp.profession_id "
                               f"where tde.is_activate and (strpos(lower(au.first_name), lower('{series}')) > 0 or "
                               f"strpos(lower(au.last_name), lower('{series}')) > 0 or "
                               f"strpos(lower(au.username), lower('{series}')) > 0 ) "
@@ -2750,7 +2752,7 @@ def search_tasks(request, project_id):
                               f"strpos(lower(tdt.description), lower('{series}')) as description_exists, "
                               f"strpos(lower(au.first_name), lower('{series}')) as au1_name_exists, "
                               f"strpos(lower(au2.first_name), lower('{series}')) as au2_name_exists,"
-                              f"strpos(lower(au3.first_name), lower('{series}')) as au3_name_exists, "
+                              f"strpos(lower(au3.first_name), lower('{series}')) as au3_name_exists "
                               f"from tracking_dev_task tdt "
                               f"join tracking_dev_employee tde on tdt.manager_id = tde.employee_id "
                               f"join tracking_dev_employee tde2 on tdt.responsible_id = tde2.employee_id "
@@ -2777,7 +2779,7 @@ def search_tasks(request, project_id):
                               f"join tracking_dev_employee tde2 on tdt.responsible_id = tde2.employee_id "
                               f"join tracking_dev_employee tde3 on tdt.initiator_id = tde3.employee_id "
                               f"join tracking_dev_state tds on tds.state_id = tdt.state_id "
-                              f"join tracking_dev_priority tdp on tdp.priority_id = tdt.priority_id"
+                              f"join tracking_dev_priority tdp on tdp.priority_id = tdt.priority_id "
                               f"join auth_user au on au.id=tde.user_id "
                               f"join auth_user au2 on au2.id=tde2.user_id "
                               f"join auth_user au3 on au3.id=tde3.user_id "
@@ -2800,7 +2802,7 @@ def search_tasks(request, project_id):
                               f"join tracking_dev_employee tde2 on tdt.responsible_id = tde2.employee_id "
                               f"join tracking_dev_employee tde3 on tdt.initiator_id = tde3.employee_id "
                               f"join tracking_dev_state tds on tds.state_id = tdt.state_id "
-                              f"join tracking_dev_priority tdp on tdt.priority_id = tdp.priority_id"
+                              f"join tracking_dev_priority tdp on tdt.priority_id = tdp.priority_id "
                               f"join auth_user au on au.id=tde.user_id "
                               f"join auth_user au2 on au2.id=tde2.user_id "
                               f"join auth_user au3 on au3.id=tde3.user_id "
@@ -3591,24 +3593,11 @@ def kanban_board_manager(request, project_id):
                   f"where tdt.project_id = {project_id} order by tds.percentage"
     )
 
-    # Получаем список состояний, которые есть в картотеке состояний, но при этом, которых нет в списке задач
-    data_extra = State.objects.raw(
-        raw_query=f"select tdsp.state_id, tds.percentage, tds.\"name\", tds.description from tracking_dev_state_projects tdsp "
-                  f"join tracking_dev_state tds on tdsp.state_id=tds.state_id "
-                  f"where tdsp.state_id not in (select distinct tdt.state_id from tracking_dev_task tdt "
-                  f"join tracking_dev_state tds on tds.state_id = tdt.state_id "
-                  f"where tdt.project_id = {project_id})"
-    )
-
     tasks_by_state = []
 
     states = []
 
     for elem in data:
-        states.append({"state_id": elem.state_id, "percentage": elem.percentage, "name": elem.name,
-                       "description": elem.description})
-
-    for elem in data_extra:
         states.append({"state_id": elem.state_id, "percentage": elem.percentage, "name": elem.name,
                        "description": elem.description})
 

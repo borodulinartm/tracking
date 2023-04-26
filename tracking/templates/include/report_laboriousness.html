@@ -54,19 +54,28 @@
                             stacked: true,
                             gridLines: {
                                 display: false,
+                            },
+                            ticks: {
+                                fontSize: 20
                             }
                         }],
                         yAxes: [{
                             stacked: true,
                             ticks: {
                                 beginAtZero: true,
+                                fontSize: 20
                             },
                             type: 'linear',
                         }]
                     },
                     responsive: true,
                     maintainAspectRatio: false,
-                    legend: {position: 'bottom'},
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            fontSize: 20
+                        }
+                    }
                 }
             });
         });

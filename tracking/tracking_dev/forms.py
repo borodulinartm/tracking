@@ -114,7 +114,9 @@ class CreateStateForm(forms.ModelForm):
             'style': 'margin-bottom: 20px'
         }))
 
-        self.fields['percentage'] = forms.IntegerField(widget=forms.TextInput(attrs={
+        self.fields['percentage'] = forms.IntegerField(error_messages={
+            "invalid": "Введите числовое значение процента состояния"
+        }, widget=forms.TextInput(attrs={
             'placeholder': 'Процент выполнения задачи при данном состоянии',
             'style': 'margin-bottom: 20px'
         }))
@@ -224,6 +226,12 @@ class UserRegistrationForm(UserCreationForm):
     class Meta:
         model = User
         fields = ['username', 'first_name', 'last_name', 'email', 'password1', 'password2']
+        error_messages = {
+            "username": {
+                "required": "Данное поле является обязательным",
+                "unique": "Пользователь с данным именем уже существует в системе"
+            }
+        }
 
     def __init__(self, *args, **kwargs):
         super(UserRegistrationForm, self).__init__(*args, **kwargs)
@@ -439,11 +447,15 @@ class CreateLaboriousnessForm(forms.ModelForm):
 
         self.fields['employee'] = forms.ModelChoiceField(queryset=Employee.objects.all())
 
-        self.fields['capacity_plan'] = forms.IntegerField(widget=forms.TextInput(attrs={
+        self.fields['capacity_plan'] = forms.IntegerField(error_messages={
+            "invalid": "Введите целое число"
+        }, widget=forms.TextInput(attrs={
             'placeholder': 'Введите колчичество часов',
             'style': 'margin-bottom: 20px'
         }))
-        self.fields['capacity_fact'] = forms.IntegerField(widget=forms.TextInput(attrs={
+        self.fields['capacity_fact'] = forms.IntegerField(error_messages={
+            "invalid": "Введите целое число"
+        }, widget=forms.TextInput(attrs={
             'placeholder': 'Введите количество фактических часов',
             'style': 'margin-bottom: 20px'
         }))

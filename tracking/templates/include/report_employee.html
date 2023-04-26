@@ -70,17 +70,22 @@
                                 drawBorder: false
                             },
                             ticks: {
-                                maxTicksLimit: 7
+                                maxTicksLimit: 7,
+                                fontSize: 20
                             }
                         }],
                         yAxes: [{
                             ticks: {
-                                beginAtZero: true
+                                beginAtZero: true,
+                                fontSize: 20
                             }
                         }]
                     },
                     legend: {
-                        display: false
+                        display: false,
+                        labels: {
+                            fontSize: 20
+                        }
                     },
                 }
             });
@@ -130,17 +135,22 @@
                                 drawBorder: false
                             },
                             ticks: {
-                                maxTicksLimit: 7
+                                maxTicksLimit: 7,
+                                fontSize: 20
                             }
                         }],
                         yAxes: [{
                             ticks: {
-                                beginAtZero: true
+                                beginAtZero: true,
+                                fontSize: 20
                             }
                         }]
                     },
                     legend: {
-                        display: false
+                        display: false,
+                        labels: {
+                            fontSize: 20
+                        }
                     },
                 }
             });
@@ -174,6 +184,12 @@
                     }]
                 },
                 options: {
+                    legend: {
+                        display: true,
+                        labels: {
+                            fontSize: 20
+                        }
+                    },
                     scales: {
                         y: {
                             beginAtZero: true
